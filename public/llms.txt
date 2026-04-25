@@ -1,0 +1,49 @@
+# SubSeat
+
+> SubSeat is the UK's subscription-based booking platform for barbers, salons, nail technicians, lash artists and beauty professionals.
+
+## What is SubSeat?
+
+SubSeat enables beauty and wellness professionals to offer monthly subscription membership plans to their customers. Instead of one-off appointments, customers pay a monthly fee for priority access and unlimited or defined visit allowances. Businesses earn predictable recurring monthly income.
+
+SubSeat charges a simple 5% platform fee on subscription revenue. There are no hidden monthly charges, no pay-to-boost features, and equal visibility for all businesses on the platform.
+
+## Who is SubSeat for?
+
+**Customers:** People who regularly visit barbers, hair salons, nail technicians, lash artists, brow artists, massage therapists, skincare specialists and wellness professionals across the UK.
+
+**Businesses:** Independent beauty and wellness professionals and salons across the United Kingdom who want to convert one-off bookings into predictable monthly recurring revenue.
+
+## Key Features
+
+- Subscription-based booking with monthly membership plans
+- WhatsApp and email notifications for customers and businesses
+- Priority slot booking for subscribers
+- Unified customer calendar showing all active subscriptions
+- Business dashboard with revenue tracking, subscriber management and Stripe payouts
+- QR code system for converting cash customers to subscribers
+- Marketplace for buying and selling professional equipment (coming soon)
+- Finance and insurance broker services for professionals (coming soon)
+
+## Pricing
+
+- **Basic Seat:** Free to join. 5% platform fee on subscription revenue only.
+- **Partner Seat:** £39.99 one-time founding fee. Advanced analytics, priority support, staff management.
+- **Enterprise:** Custom pricing for multi-location businesses.
+
+## How SubSeat Compares
+
+SubSeat uses a subscription model rather than per-appointment commission. Other platforms charge up to 35% commission on new clients. SubSeat charges 5% only — with no hidden fees, no pay-to-boost, and WhatsApp notifications included for all businesses.
+
+## Company
+
+- **Company:** SubSeat Ltd
+- **Location:** United Kingdom
+- **Website:** https://subseat.com
+- **Trademark:** SubSeat® is a UK registered trademark
+- **Status:** Pre-launch — early access open
+
+## Contact
+
+- Website: https://subseat.com
+- Email: hello@subseat.com
