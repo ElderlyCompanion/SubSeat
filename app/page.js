@@ -118,32 +118,57 @@ const css = `
   input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:8px;background:#e0e0e0;outline:none}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--p);cursor:pointer;box-shadow:0 2px 8px rgba(86,59,231,.3)}
 
-  /* RESPONSIVE */
+  /* ── TABLET ── */
   @media(max-width:1024px){
-    .hero-grid{grid-template-columns:1fr!important}
+    .hero-grid{grid-template-columns:1fr!important;text-align:center}
     .hero-phone{display:none!important}
+    .hero-benefits{justify-content:center!important}
     .path-grid{grid-template-columns:1fr!important}
+    .pri-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
   }
+  /* ── MOBILE ── */
   @media(max-width:900px){
     .nav-center{display:none!important}
-    .cat-grid{grid-template-columns:repeat(2,1fr)!important}
-    .hiw-grid{grid-template-columns:1fr!important}
-    .stats-grid{grid-template-columns:repeat(2,1fr)!important}
-    .pri-grid{grid-template-columns:1fr!important}
-    .eco-grid{grid-template-columns:1fr!important}
-    .about-grid{grid-template-columns:1fr!important}
-    .footer-grid{grid-template-columns:1fr 1fr!important}
+    .cat-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+    .hiw-grid{grid-template-columns:1fr!important;gap:48px!important}
+    .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:24px!important}
+    .pri-grid{grid-template-columns:1fr!important;gap:20px!important}
+    .eco-grid{grid-template-columns:1fr!important;gap:16px!important}
+    .about-grid{grid-template-columns:1fr!important;gap:16px!important}
+    .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important}
     .compare-col3{display:none!important}
     .dash-grid{grid-template-columns:1fr 1fr!important}
-    .growth-flex{flex-direction:column!important}
+    .growth-flex{flex-direction:column!important;align-items:center!important}
+    .pri-featured{transform:scale(1)!important}
   }
+  /* ── SMALL MOBILE ── */
   @media(max-width:600px){
-    .hero-btns{flex-direction:column!important}
-    .hero-btns .btn-primary,.hero-btns .btn-secondary{width:100%!important}
-    .cat-grid{grid-template-columns:1fr 1fr!important}
-    .final-btns{flex-direction:column!important;align-items:center!important}
-    .dash-grid{grid-template-columns:1fr!important}
+    .hero-grid{padding:100px 5% 60px!important}
+    .hero-btns{flex-direction:column!important;width:100%!important}
+    .hero-btns .btn-primary,
+    .hero-btns .btn-secondary{width:100%!important;justify-content:center!important}
+    .hero-benefits{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+    .cat-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    .cat-img{height:150px!important}
+    .final-btns{flex-direction:column!important;align-items:center!important;width:100%!important}
+    .final-btns .btn-white,
+    .final-btns .btn-white-outline{width:100%!important;max-width:300px!important;justify-content:center!important}
+    .dash-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    .dash-card{padding:14px!important}
+    .growth-dash{padding:18px!important;max-width:100%!important}
     .about-grid{grid-template-columns:1fr!important}
+    .eco-grid{grid-template-columns:1fr!important}
+    .pri-grid{grid-template-columns:1fr!important}
+    .path-grid{grid-template-columns:1fr!important}
+    .stats-grid{grid-template-columns:1fr 1fr!important;gap:20px!important}
+    .footer-grid{grid-template-columns:1fr 1fr!important;gap:20px!important}
+    .section-inner{padding:64px 5%!important}
+    .compare-row{padding:12px 16px!important;font-size:13px!important}
+    .compare-head{padding:12px 16px!important}
+    .search-wrap{padding:5px 5px 5px 14px!important}
+    .search-input{font-size:13px!important}
+    .hiw-step{gap:14px!important}
+    .hiw-num{min-width:44px!important;height:44px!important}
   }
 `;
 
@@ -303,7 +328,7 @@ function Hero() {
     <section id="hero" style={{ minHeight: "100vh", padding: "130px 5% 80px", background: `linear-gradient(145deg, ${L} 0%, #f8f7ff 30%, ${W} 65%)`, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: `radial-gradient(circle, ${L} 0%, transparent 65%)`, opacity: .5 }} />
       <div style={{ position: "absolute", bottom: -120, left: -120, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, ${L} 0%, transparent 65%)`, opacity: .35 }} />
-      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", position: "relative", zIndex: 1 }} className="hero-grid">
+      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", position: "relative", zIndex: 1 }} className="hero-grid section-inner">
         <div>
           <div className="fu d0"><LiveCounter /></div>
           <h1 className="fu d1" style={{ fontWeight: 900, fontSize: "clamp(40px,5.5vw,72px)", lineHeight: 1.06, letterSpacing: "-2.5px", color: C, marginBottom: 24 }}>
@@ -324,7 +349,7 @@ function Hero() {
           </div>
           <div className="fu d4">
             <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Trusted by professionals across London, Birmingham, Manchester and beyond.</p>
-            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="hero-benefits">
               {["Priority booking", "Fewer no-shows", "Recurring revenue", "Secure payments"].map(b => (
                 <div key={b} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ width: 18, height: 18, borderRadius: "50%", background: L, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -339,7 +364,7 @@ function Hero() {
         <div className="hero-phone fu d5"><PhoneMockup /></div>
       </div>
       <div className="fu d6" style={{ maxWidth: 700, margin: "56px auto 0" }}>
-        <div style={{ background: W, borderRadius: 18, padding: "6px 6px 6px 22px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 16px 60px rgba(86,59,231,.14)", border: `1.5px solid ${L}` }}>
+        <div className="search-wrap" style={{ background: W, borderRadius: 18, padding: "6px 6px 6px 22px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 16px 60px rgba(86,59,231,.14)", border: `1.5px solid ${L}` }}>
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={P} strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
           <input className="search-input" placeholder="Search barbers, salons, nail techs near you..." />
           <button className="btn-primary" style={{ padding: "13px 24px", fontSize: 14, borderRadius: 12 }}>Search</button>
@@ -403,8 +428,8 @@ function Categories() {
         </div>
         <div className="cat-grid reveal" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
           {cats.map((c, i) => (
-            <div key={i} className="lift-sm" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 210, border: "2px solid transparent" }}>
-              <img src={c.img} alt={c.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <div key={i} className="lift-sm cat-card-wrap" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 210, border: "2px solid transparent" }}>
+              <img src={c.img} alt={c.label} className="cat-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(23,23,23,.85) 0%, rgba(23,23,23,.05) 55%, transparent 100%)" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px" }}>
                 <div style={{ fontWeight: 800, fontSize: 16, color: W }}>{c.label}</div>
@@ -449,8 +474,8 @@ function HowItWorks() {
                 <span style={{ fontWeight: 700, fontSize: 13, color: col.dark ? W : P }}>{col.side}</span>
               </div>
               {col.steps.map((s, i) => (
-                <div key={i} style={{ display: "flex", gap: 20, marginBottom: 36, alignItems: "flex-start" }}>
-                  <div style={{ minWidth: 56, height: 56, borderRadius: 16, background: col.dark ? C : P, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: col.dark ? "none" : "0 4px 16px rgba(86,59,231,.28)" }}>
+                <div key={i} className="hiw-step" style={{ display: "flex", gap: 20, marginBottom: 36, alignItems: "flex-start" }}>
+                  <div className="hiw-num" style={{ minWidth: 56, height: 56, borderRadius: 16, background: col.dark ? C : P, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: col.dark ? "none" : "0 4px 16px rgba(86,59,231,.28)" }}>
                     <span style={{ fontWeight: 900, fontSize: 15, color: W }}>{s.n}</span>
                   </div>
                   <div>
@@ -493,7 +518,7 @@ function BusinessGrowth() {
         </div>
         {/* DASHBOARD MOCKUP */}
         <div style={{ flex: 1, minWidth: 300, display: "flex", justifyContent: "center" }}>
-          <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 24, padding: 28, backdropFilter: "blur(12px)", maxWidth: 520, width: "100%" }}>
+          <div className="growth-dash" style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 24, padding: 28, backdropFilter: "blur(12px)", maxWidth: 520, width: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
               <div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 4 }}>Good morning, Marcus</div>
@@ -554,13 +579,13 @@ function WhySubSeat() {
           <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7 }}>Traditional booking platforms were built for transactions. SubSeat was built for relationships, loyalty and recurring revenue.</p>
         </div>
         <div className="reveal" style={{ border: `1.5px solid ${L}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 4px 32px rgba(86,59,231,.08)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: P, padding: "16px 28px" }}>
+          <div className="compare-head" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: P, padding: "16px 28px" }}>
             {["Feature", "SubSeat", "Industry Standard"].map((h, i) => (
               <span key={i} className={i === 2 ? "compare-col3" : ""} style={{ fontWeight: 700, fontSize: 13, color: W, opacity: i === 0 ? .65 : 1 }}>{h}</span>
             ))}
           </div>
           {rows.map((r, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", padding: "16px 28px", background: i % 2 === 0 ? W : G, borderTop: `1px solid ${L}`, alignItems: "center" }}>
+            <div key={i} className="compare-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", padding: "16px 28px", background: i % 2 === 0 ? W : G, borderTop: `1px solid ${L}`, alignItems: "center" }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: C }}>{r.f}</span>
               <span style={{ fontSize: 14, fontWeight: 700, color: P }}>{r.us}</span>
               <span className="compare-col3" style={{ fontSize: 13, color: "#999" }}>{r.ind}</span>
@@ -579,13 +604,13 @@ function Pricing() {
     {
       name: "Basic Seat", price: "Free", sub: "No monthly fee — ever", hi: false, badge: null,
       features: ["Up to 3 services listed", "Full booking calendar", "Email & WhatsApp alerts", "QR code for walk-in conversion", "Your own SubSeat profile page", "Stripe-secured payouts"],
-      note: "Free to join. Simple 5% platform fee — no hidden monthly charges.",
+      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
       cta: "Start Free",
     },
     {
       name: "Partner Seat", price: "£39.99", sub: "One-time founding price", hi: true, badge: "Pre-Launch Price",
       features: ["Everything in Basic", "Partner badge on profile", "Advanced revenue analytics", "Priority WhatsApp support", "Early access to new features", "Staff & commission tracking", "Unlimited service listings"],
-      note: "Free to join. Simple 5% platform fee — no hidden monthly charges.",
+      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
       cta: "Claim Founding Access",
     },
     {
@@ -601,11 +626,11 @@ function Pricing() {
         <div style={{ textAlign: "center", marginBottom: 70 }}>
           <span className="section-label">For Businesses</span>
           <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 10 }}>Honest pricing. No surprises.</h2>
-          <p style={{ fontSize: 16, color: "#666" }}>Free to join. We only earn when you earn.</p>
+          <p style={{ fontSize: 16, color: "#666" }}>Free to join. We only earn when you earn. 5% platform fee + VAT applies.</p>
         </div>
         <div className="pri-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, alignItems: "start" }}>
           {tiers.map((t, i) => (
-            <div key={i} className="lift" style={{ background: t.hi ? P : W, border: t.hi ? "none" : `2px solid ${L}`, borderRadius: 24, padding: "40px 32px", position: "relative", boxShadow: t.hi ? "0 32px 80px rgba(86,59,231,.38)" : "0 2px 16px rgba(86,59,231,.06)", transform: t.hi ? "scale(1.04)" : "scale(1)" }}>
+            <div key={i} className={`lift ${t.hi ? "pri-featured" : ""}`} style={{ background: t.hi ? P : W, border: t.hi ? "none" : `2px solid ${L}`, borderRadius: 24, padding: "40px 32px", position: "relative", boxShadow: t.hi ? "0 32px 80px rgba(86,59,231,.38)" : "0 2px 16px rgba(86,59,231,.06)", transform: t.hi ? "scale(1.04)" : "scale(1)" }}>
               {t.badge && <div style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,.2)", borderRadius: 100, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: W }}>{t.badge}</div>}
               <div style={{ fontWeight: 700, fontSize: 13, color: t.hi ? "rgba(255,255,255,.6)" : "#888", marginBottom: 14 }}>{t.name}</div>
               <div style={{ fontWeight: 900, fontSize: 48, color: t.hi ? W : C, letterSpacing: "-2.5px", marginBottom: 4 }}>{t.price}</div>
