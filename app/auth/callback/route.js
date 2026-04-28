@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
 
   if (code) {
     const supabase = createClient(
@@ -15,17 +14,26 @@ export async function GET(request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data?.user) {
-      // Redirect based on user role
       const role = data.user.user_metadata?.role
 
       if (role === 'business') {
-        return NextResponse.redirect(`${origin}/dashboard`)
+        // Check if they've already done onboarding
+        const { data: business } = await supabase
+          .from('businesses')
+          .select('id')
+          .eq('owner_id', data.user.id)
+          .single()
+
+        if (business) {
+          return NextResponse.redirect(`${origin}/dashboard`)
+        } else {
+          return NextResponse.redirect(`${origin}/onboarding`)
+        }
       } else {
         return NextResponse.redirect(`${origin}/discover`)
       }
     }
   }
 
-  // If something went wrong redirect to auth page with error
   return NextResponse.redirect(`${origin}/auth?error=auth_failed`)
 }
