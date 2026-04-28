@@ -216,8 +216,8 @@ function Nav({ scrolled }) {
           ))}
         </nav>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn-ghost">Sign In</button>
-          <button className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>Get Started</button>
+          <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-ghost">Sign In</button></a>
+          <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>Get Started</button></a>
         </div>
       </div>
     </header>
@@ -344,8 +344,8 @@ function Hero() {
             The smarter way to book barbers, salons and beauty professionals — while helping businesses earn predictable monthly income through memberships.
           </p>
           <div className="fu d3 hero-btns" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 32 }}>
-            <button className="btn-primary" onClick={() => document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" })}>Find a Professional</button>
-            <button className="btn-secondary" onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>Grow My Business</button>
+            <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-primary">Find a Professional</button></a>
+            <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-secondary">Grow My Business</button></a>
           </div>
           <div className="fu d4">
             <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Trusted by professionals across London, Birmingham, Manchester and beyond.</p>
@@ -366,8 +366,8 @@ function Hero() {
       <div className="fu d6" style={{ maxWidth: 700, margin: "56px auto 0" }}>
         <div className="search-wrap" style={{ background: W, borderRadius: 18, padding: "6px 6px 6px 22px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 16px 60px rgba(86,59,231,.14)", border: `1.5px solid ${L}` }}>
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={P} strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-          <input className="search-input" placeholder="Search barbers, salons, nail techs near you..." />
-          <button className="btn-primary" style={{ padding: "13px 24px", fontSize: 14, borderRadius: 12 }}>Search</button>
+          <input className="search-input" placeholder="Search barbers, salons, nail techs near you..." onKeyDown={e => e.key === "Enter" && (window.location.href = "/discover")} />
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-primary" style={{ padding: "13px 24px", fontSize: 14, borderRadius: 12 }}>Search</button></a>
         </div>
         <p style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#aaa", fontWeight: 500 }}>Free to join. No setup fee.</p>
       </div>
@@ -386,8 +386,8 @@ function PathSection() {
         </div>
         <div className="path-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           {[
-            { tag: "For Customers", title: "Discover. Subscribe. Enjoy.", body: "Discover trusted professionals near you. Book instantly, subscribe for savings, and keep your favourite time slot.", cta: "Find a Professional", href: "#categories", dark: false },
-            { tag: "For Businesses", title: "Turn bookings into income.", body: "Turn one-off bookings into predictable monthly revenue. Build loyalty, reduce gaps, and grow faster.", cta: "Join SubSeat", href: "#pricing", dark: true },
+            { tag: "For Customers", title: "Discover. Subscribe. Enjoy.", body: "Discover trusted professionals near you. Book instantly, subscribe for savings, and keep your favourite time slot.", cta: "Find a Professional", href: "/discover", dark: false },
+            { tag: "For Businesses", title: "Turn bookings into income.", body: "Turn one-off bookings into predictable monthly revenue. Build loyalty, reduce gaps, and grow faster.", cta: "Join SubSeat", href: "/onboarding", dark: true },
           ].map((c, i) => (
             <div key={i} className="lift" style={{ background: c.dark ? P : W, border: c.dark ? "none" : `2px solid ${L}`, borderRadius: 28, padding: "48px 44px", position: "relative", overflow: "hidden" }}>
               {c.dark && <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, borderRadius: "50%", background: "rgba(255,255,255,.06)" }} />}
@@ -428,7 +428,8 @@ function Categories() {
         </div>
         <div className="cat-grid reveal" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
           {cats.map((c, i) => (
-            <div key={i} className="lift-sm cat-card-wrap" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 210, border: "2px solid transparent" }}>
+            <a key={i} href={`/discover?category=${c.label.toLowerCase().replace(/\s+/g, "-")}`} style={{ textDecoration: "none" }}>
+            <div className="lift-sm cat-card-wrap" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 210, border: "2px solid transparent" }}>
               <img src={c.img} alt={c.label} className="cat-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(23,23,23,.85) 0%, rgba(23,23,23,.05) 55%, transparent 100%)" }} />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px" }}>
@@ -436,10 +437,11 @@ function Categories() {
               </div>
               <div style={{ position: "absolute", top: 12, right: 12, background: P, borderRadius: 100, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: W }}>View</div>
             </div>
+            </a>
           ))}
         </div>
         <div style={{ textAlign: "center", marginTop: 40 }}>
-          <button className="btn-secondary" onClick={() => document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" })}>Explore All Categories</button>
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-secondary">Explore All Categories</button></a>
         </div>
       </div>
     </section>
@@ -514,7 +516,7 @@ function BusinessGrowth() {
               </div>
             ))}
           </div>
-          <button className="btn-white" onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>Grow My Business</button>
+          <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-white">Grow My Business</button></a>
         </div>
         {/* DASHBOARD MOCKUP */}
         <div style={{ flex: 1, minWidth: 300, display: "flex", justifyContent: "center" }}>
@@ -730,8 +732,8 @@ function FinalCTA() {
           Whether you're booking your next appointment or growing your business, SubSeat is where recurring self-care begins.
         </p>
         <div className="final-btns" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn-white" onClick={() => document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" })}>Find a Professional</button>
-          <button className="btn-white-outline" onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>Grow My Business</button>
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-white">Find a Professional</button></a>
+          <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-white-outline">Grow My Business</button></a>
         </div>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,.45)", marginTop: 24 }}>Free to join. No setup fee.</p>
       </div>
