@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { supabase } from "../../lib/supabase";
 
 const P = "#563BE7";
@@ -102,7 +102,7 @@ function NotFound() {
 }
 
 export default function BusinessProfilePage({ params }) {
-  const { category, slug } = params;
+  const { category, slug } = use(params);
   const [business, setBusiness] = useState(null);
   const [services, setServices] = useState([]);
   const [staff, setStaff] = useState([]);
@@ -157,7 +157,9 @@ export default function BusinessProfilePage({ params }) {
   if (notFound) return <><style>{css}</style><NotFound /></>;
 
   const categoryLabel = category.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-  const avgRating = reviews.length > 0 ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1) : null;
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
 
   return (
     <>
@@ -193,7 +195,6 @@ export default function BusinessProfilePage({ params }) {
       <div style={{ background: W, borderBottom: `1px solid #eee` }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 5%" }}>
           <div style={{ display: "flex", gap: 24, alignItems: "flex-end", transform: "translateY(-40px)", marginBottom: "-16px", flexWrap: "wrap" }}>
-            {/* LOGO */}
             <div style={{
               width: 96, height: 96, borderRadius: 22, border: `4px solid ${W}`,
               background: business.logo_url ? "transparent" : L,
@@ -205,8 +206,6 @@ export default function BusinessProfilePage({ params }) {
                 : <span style={{ fontSize: 36 }}>✂️</span>
               }
             </div>
-
-            {/* INFO */}
             <div style={{ flex: 1, paddingBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
                 <h1 style={{ fontWeight: 900, fontSize: "clamp(20px, 3vw, 28px)", color: C, letterSpacing: "-.5px" }}>{business.business_name}</h1>
@@ -230,8 +229,6 @@ export default function BusinessProfilePage({ params }) {
               </div>
             </div>
           </div>
-
-          {/* TABS */}
           <div style={{ display: "flex", borderTop: `1px solid #eee`, marginTop: 8 }}>
             {["services", "staff", "reviews", "about"].map(tab => (
               <button key={tab} className={`tab ${activeTab === tab ? "active" : ""}`} onClick={() => setActiveTab(tab)}>
@@ -246,11 +243,7 @@ export default function BusinessProfilePage({ params }) {
       {/* MAIN CONTENT */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 5%" }}>
         <div className="profile-grid" style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 28 }}>
-
-          {/* LEFT — MAIN */}
           <div>
-
-            {/* SERVICES TAB */}
             {activeTab === "services" && (
               <div className="fu">
                 <h2 style={{ fontWeight: 800, fontSize: 20, color: C, marginBottom: 20 }}>Subscription Plans</h2>
@@ -283,7 +276,6 @@ export default function BusinessProfilePage({ params }) {
               </div>
             )}
 
-            {/* STAFF TAB */}
             {activeTab === "staff" && (
               <div className="fu">
                 <h2 style={{ fontWeight: 800, fontSize: 20, color: C, marginBottom: 20 }}>Meet the Team</h2>
@@ -308,7 +300,6 @@ export default function BusinessProfilePage({ params }) {
               </div>
             )}
 
-            {/* REVIEWS TAB */}
             {activeTab === "reviews" && (
               <div className="fu">
                 <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
@@ -329,7 +320,9 @@ export default function BusinessProfilePage({ params }) {
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <div style={{ width: 38, height: 38, borderRadius: "50%", background: L, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
-                              {r.profiles?.avatar_url ? <img src={r.profiles.avatar_url} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} alt="" /> : "👤"}
+                              {r.profiles?.avatar_url
+                                ? <img src={r.profiles.avatar_url} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} alt="" />
+                                : "👤"}
                             </div>
                             <div>
                               <div style={{ fontWeight: 600, fontSize: 14, color: C }}>{r.profiles?.full_name || "Customer"}</div>
@@ -352,11 +345,10 @@ export default function BusinessProfilePage({ params }) {
               </div>
             )}
 
-            {/* ABOUT TAB */}
             {activeTab === "about" && (
               <div className="fu">
                 <h2 style={{ fontWeight: 800, fontSize: 20, color: C, marginBottom: 20 }}>About</h2>
-                <div style={{ background: W, borderRadius: 16, padding: 24, border: `1.5px solid #eee`, marginBottom: 20 }}>
+                <div style={{ background: W, borderRadius: 16, padding: 24, border: `1.5px solid #eee` }}>
                   {business.description && (
                     <p style={{ fontSize: 15, color: "#555", lineHeight: 1.75, marginBottom: 20 }}>{business.description}</p>
                   )}
@@ -380,13 +372,13 @@ export default function BusinessProfilePage({ params }) {
             )}
           </div>
 
-          {/* RIGHT — SIDEBAR */}
+          {/* SIDEBAR */}
           <div>
-            {/* QUICK SUBSCRIBE */}
             <div className="fu d1" style={{ background: W, borderRadius: 20, padding: 24, border: `1.5px solid #eee`, marginBottom: 20, boxShadow: "0 4px 20px rgba(86,59,231,.08)" }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: C, marginBottom: 4 }}>Subscribe from</div>
               <div style={{ fontWeight: 900, fontSize: 36, color: P, letterSpacing: "-1.5px", marginBottom: 4 }}>
-                £{services.length > 0 ? Math.min(...services.map(s => parseFloat(s.monthly_price))).toFixed(0) : "—"}<span style={{ fontSize: 14, fontWeight: 500, color: "#888" }}>/mo</span>
+                £{services.length > 0 ? Math.min(...services.map(s => parseFloat(s.monthly_price))).toFixed(0) : "—"}
+                <span style={{ fontSize: 14, fontWeight: 500, color: "#888" }}>/mo</span>
               </div>
               <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Priority booking · Cancel anytime</div>
               <button className="btn-subscribe" onClick={() => services.length > 0 && handleSubscribe(services[0])}>
@@ -395,7 +387,6 @@ export default function BusinessProfilePage({ params }) {
               <div style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#bbb" }}>🔒 Stripe-secured payments</div>
             </div>
 
-            {/* STATS */}
             <div className="fu d2" style={{ background: W, borderRadius: 20, padding: 24, border: `1.5px solid #eee`, marginBottom: 20 }}>
               <div className="stats-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {[
@@ -412,7 +403,6 @@ export default function BusinessProfilePage({ params }) {
               </div>
             </div>
 
-            {/* SHARE */}
             <div className="fu d3" style={{ background: W, borderRadius: 20, padding: 24, border: `1.5px solid #eee` }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: C, marginBottom: 16 }}>Share this profile</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
