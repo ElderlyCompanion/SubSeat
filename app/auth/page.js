@@ -58,8 +58,8 @@ function LogoMark() {
 }
 
 export default function AuthPage() {
-  const [mode, setMode] = useState("signup"); // signup | login
-  const [role, setRole] = useState("customer"); // customer | business
+  const [mode, setMode] = useState("signup");
+  const [role, setRole] = useState("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -98,16 +98,40 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
       setError(error.message);
-    } else {
-      window.location.href = role === "business" ? "/dashboard" : "/discover";
+      setLoading(false);
+      return;
     }
+
+    // Get role from user metadata
+    const userRole = data.user?.user_metadata?.role;
+
+    if (userRole === 'business') {
+      // Check if they have already completed onboarding
+      const { data: business } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', data.user.id)
+        .single();
+
+      if (business) {
+        // Already onboarded — go to dashboard
+        window.location.href = '/dashboard';
+      } else {
+        // Not onboarded yet — go to onboarding
+        window.location.href = '/onboarding';
+      }
+    } else {
+      // Customer — go to discover
+      window.location.href = '/discover';
+    }
+
     setLoading(false);
   };
 

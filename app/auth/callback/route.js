@@ -17,7 +17,6 @@ export async function GET(request) {
       const role = data.user.user_metadata?.role
 
       if (role === 'business') {
-        // Check if they've already done onboarding
         const { data: business } = await supabase
           .from('businesses')
           .select('id')
