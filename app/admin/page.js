@@ -54,22 +54,27 @@ const css = `
     display: inline-block; padding: 3px 10px; border-radius: 100px;
     font-size: 11px; font-weight: 700;
   }
-  .badge-green { background: rgba(34,197,94,.15); color: #4ade80; }
-  .badge-red { background: rgba(239,68,68,.15); color: #f87171; }
-  .badge-purple { background: rgba(86,59,231,.3); color: #a78bfa; }
+  .badge-green  { background: rgba(34,197,94,.15);  color: #4ade80; }
+  .badge-red    { background: rgba(239,68,68,.15);  color: #f87171; }
+  .badge-purple { background: rgba(86,59,231,.3);   color: #a78bfa; }
   .badge-orange { background: rgba(245,158,11,.15); color: #fbbf24; }
+  .badge-grey   { background: rgba(255,255,255,.08); color: rgba(255,255,255,.4); }
 
   .btn-danger {
-    background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.3);
-    border-radius: 8px; padding: 6px 14px; font-family: 'Poppins', sans-serif;
-    font-weight: 700; font-size: 12px; cursor: pointer; transition: all .18s;
+    background: rgba(239,68,68,.15); color: #f87171;
+    border: 1px solid rgba(239,68,68,.3);
+    border-radius: 8px; padding: 6px 14px;
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12px;
+    cursor: pointer; transition: all .18s;
   }
   .btn-danger:hover { background: rgba(239,68,68,.3); }
+  .btn-danger:disabled { opacity: .4; cursor: not-allowed; }
 
   .btn-primary {
     background: ${P}; color: ${W}; border: none;
-    border-radius: 10px; padding: 10px 20px; font-family: 'Poppins', sans-serif;
-    font-weight: 700; font-size: 13px; cursor: pointer; transition: all .2s;
+    border-radius: 10px; padding: 10px 20px;
+    font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13px;
+    cursor: pointer; transition: all .2s;
   }
   .btn-primary:hover { background: #4429d4; }
 
@@ -81,34 +86,44 @@ const css = `
   .input-field:focus { border-color: ${P}; }
   .input-field::placeholder { color: rgba(255,255,255,.3); }
 
-  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: ${GREEN}; animation: pulse 2s infinite; }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: ${GREEN}; animation: pulse 2s infinite;
+  }
 
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.8);
+    position: fixed; inset: 0; background: rgba(0,0,0,.85);
     display: flex; align-items: center; justify-content: center;
-    z-index: 999; backdrop-filter: blur(4px);
+    z-index: 999; backdrop-filter: blur(6px);
   }
 
   @media(max-width: 900px) {
     .admin-layout { grid-template-columns: 1fr !important; }
-    .sidebar { display: none !important; }
-    .stats-grid { grid-template-columns: 1fr 1fr !important; }
+    .sidebar      { display: none !important; }
+    .stats-grid   { grid-template-columns: 1fr 1fr !important; }
   }
 `;
 
-const ADMIN_EMAIL = "mrnicholson@hotmail.com"; // ← Your admin email
+const ADMIN_EMAIL = "mrnicholson@hotmail.com";
 
 /* ── CONFIRM MODAL ── */
-function ConfirmModal({ message, onConfirm, onCancel }) {
+function ConfirmModal({ message, confirmLabel = "Yes, Remove", onConfirm, onCancel }) {
   return (
     <div className="modal-overlay">
-      <div style={{ background: "#1a1a2e", borderRadius: 20, padding: 32, maxWidth: 400, width: "90%", border: "1px solid rgba(255,255,255,.12)" }}>
-        <div style={{ fontSize: 40, textAlign: "center", marginBottom: 16 }}>⚠️</div>
+      <div style={{ background: "#1a1a2e", borderRadius: 20, padding: 32, maxWidth: 420, width: "90%", border: "1px solid rgba(255,255,255,.12)" }}>
+        <div style={{ fontSize: 44, textAlign: "center", marginBottom: 16 }}>⚠️</div>
         <h3 style={{ fontWeight: 800, fontSize: 18, color: W, textAlign: "center", marginBottom: 12 }}>Are you sure?</h3>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,.6)", textAlign: "center", marginBottom: 28, lineHeight: 1.6 }}>{message}</p>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,.6)", textAlign: "center", marginBottom: 8, lineHeight: 1.65 }}>{message}</p>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,.3)", textAlign: "center", marginBottom: 28 }}>
+          Their data is kept securely in the database and can be restored at any time.
+        </p>
         <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={onCancel} style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "none", borderRadius: 10, padding: "12px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, color: W, cursor: "pointer" }}>Cancel</button>
-          <button onClick={onConfirm} style={{ flex: 1, background: RED, border: "none", borderRadius: 10, padding: "12px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, color: W, cursor: "pointer" }}>Yes, Delete</button>
+          <button onClick={onCancel} style={{ flex: 1, background: "rgba(255,255,255,.08)", border: "none", borderRadius: 10, padding: "13px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, color: W, cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button onClick={onConfirm} style={{ flex: 1, background: RED, border: "none", borderRadius: 10, padding: "13px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, color: W, cursor: "pointer" }}>
+            {confirmLabel}
+          </button>
         </div>
       </div>
     </div>
@@ -118,12 +133,12 @@ function ConfirmModal({ message, onConfirm, onCancel }) {
 /* ── SIDEBAR ── */
 function Sidebar({ active, setActive }) {
   const items = [
-    { id: "overview",   icon: "📊", label: "Overview" },
+    { id: "overview",   icon: "📊", label: "Overview"   },
     { id: "businesses", icon: "🏪", label: "Businesses" },
-    { id: "customers",  icon: "👥", label: "Customers" },
-    { id: "finance",    icon: "💰", label: "Finance" },
-    { id: "disputes",   icon: "⚠️",  label: "Disputes" },
-    { id: "analytics",  icon: "📈", label: "Analytics" },
+    { id: "customers",  icon: "👥", label: "Customers"  },
+    { id: "finance",    icon: "💰", label: "Finance"    },
+    { id: "disputes",   icon: "⚠️",  label: "Disputes"   },
+    { id: "analytics",  icon: "📈", label: "Analytics"  },
   ];
   return (
     <div style={{ background: "#13131f", borderRadius: 20, padding: 20, border: "1px solid rgba(255,255,255,.06)", height: "fit-content", position: "sticky", top: 88 }}>
@@ -160,24 +175,21 @@ function Sidebar({ active, setActive }) {
 /* ── OVERVIEW ── */
 function Overview({ businesses, profiles, subscriptions }) {
   const stats = [
-    { label: "Total Businesses", val: businesses.length, icon: "🏪", color: P },
-    { label: "Total Customers", val: profiles.filter(p => p.role === "customer").length, icon: "👥", color: "#22c55e" },
-    { label: "Active Subscriptions", val: subscriptions.length, icon: "💳", color: "#f59e0b" },
-    { label: "Platform Revenue", val: `£${(subscriptions.reduce((a, s) => a + (parseFloat(s.monthly_price || 0) * 0.05), 0)).toFixed(2)}`, icon: "💰", color: "#8b5cf6" },
+    { label: "Total Businesses",     val: businesses.length,                                                                                        icon: "🏪", color: P          },
+    { label: "Total Customers",      val: profiles.filter(p => p.role === "customer").length,                                                       icon: "👥", color: "#22c55e"  },
+    { label: "Active Subscriptions", val: subscriptions.length,                                                                                     icon: "💳", color: "#f59e0b"  },
+    { label: "Platform Revenue",     val: `£${subscriptions.reduce((a, s) => a + parseFloat(s.monthly_price || 0) * 0.05, 0).toFixed(2)}`,          icon: "💰", color: "#8b5cf6"  },
   ];
-
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
         <h2 style={{ fontWeight: 800, fontSize: 22, color: W }}>Platform Overview</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,.15)", borderRadius: 100, padding: "4px 12px" }}>
-          <div className="live-dot" />
-          <span style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>Live</span>
+          <div className="live-dot" /><span style={{ fontSize: 12, color: "#4ade80", fontWeight: 700 }}>Live</span>
         </div>
       </div>
 
-      {/* STATS */}
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
         {stats.map((s, i) => (
           <div key={i} className="stat-card fu">
             <div style={{ fontSize: 28, marginBottom: 12 }}>{s.icon}</div>
@@ -187,33 +199,32 @@ function Overview({ businesses, profiles, subscriptions }) {
         ))}
       </div>
 
-      {/* RECENT BUSINESSES */}
       <div className="card fu" style={{ marginBottom: 20 }}>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Recently Joined Businesses</h3>
+        {businesses.length === 0 && <div style={{ color: "rgba(255,255,255,.3)", fontSize: 14 }}>No businesses yet</div>}
         {businesses.slice(0, 5).map((b, i) => (
           <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: i < 4 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 14, color: W }}>{b.business_name}</div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)" }}>{b.category} · {b.city}</div>
             </div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span className={`badge ${b.is_active ? "badge-green" : "badge-red"}`}>{b.is_active ? "Active" : "Inactive"}</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <span className={`badge ${b.is_active ? "badge-green" : "badge-red"}`}>{b.is_active ? "Active" : "Hidden"}</span>
               {b.tier === "partner" && <span className="badge badge-purple">Partner</span>}
             </div>
           </div>
         ))}
       </div>
 
-      {/* PLATFORM INFO */}
       <div className="card fu">
         <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Platform Summary</h3>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
           {[
             { label: "Partner Businesses", val: businesses.filter(b => b.tier === "partner").length },
             { label: "Verified Businesses", val: businesses.filter(b => b.is_verified).length },
-            { label: "Active Businesses", val: businesses.filter(b => b.is_active).length },
+            { label: "Active Businesses",  val: businesses.filter(b => b.is_active).length },
           ].map((s, i) => (
-            <div key={i} style={{ background: "rgba(255,255,255,.04)", borderRadius: 12, padding: "16px" }}>
+            <div key={i} style={{ background: "rgba(255,255,255,.04)", borderRadius: 12, padding: 16 }}>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>
               <div style={{ fontWeight: 900, fontSize: 24, color: P }}>{s.val}</div>
             </div>
@@ -226,27 +237,28 @@ function Overview({ businesses, profiles, subscriptions }) {
 
 /* ── BUSINESSES ── */
 function Businesses({ businesses, onRefresh }) {
-  const [search, setSearch] = useState("");
-  const [confirm, setConfirm] = useState(null);
+  const [search, setSearch]             = useState("");
+  const [confirm, setConfirm]           = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [showHidden, setShowHidden]     = useState(false);
 
-  const filtered = businesses.filter(b =>
+  const visible  = businesses.filter(b => showHidden ? true : b.slug && !b.slug.startsWith("removed-"));
+  const filtered = visible.filter(b =>
     b.business_name?.toLowerCase().includes(search.toLowerCase()) ||
     b.city?.toLowerCase().includes(search.toLowerCase()) ||
     b.category?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async (id, name) => {
-    setConfirm({ id, name });
-  };
-
-  const confirmDelete = async () => {
+  /* SOFT DELETE — hides from platform, keeps all data in Supabase */
+  const confirmRemove = async () => {
     setActionLoading(confirm.id);
-    // Delete services first
-    await supabase.from("services").delete().eq("business_id", confirm.id);
-    await supabase.from("staff").delete().eq("business_id", confirm.id);
-    await supabase.from("reviews").delete().eq("business_id", confirm.id);
-    await supabase.from("businesses").delete().eq("id", confirm.id);
+    await supabase
+      .from("businesses")
+      .update({
+        is_active: false,
+        slug: `removed-${confirm.id.slice(0, 8)}`,
+      })
+      .eq("id", confirm.id);
     setConfirm(null);
     setActionLoading(null);
     onRefresh();
@@ -271,24 +283,38 @@ function Businesses({ businesses, onRefresh }) {
     onRefresh();
   };
 
+  /* RESTORE a previously removed business */
+  const restoreBusiness = async (b) => {
+    const slug = b.business_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    setActionLoading(b.id);
+    await supabase.from("businesses").update({ is_active: true, slug }).eq("id", b.id);
+    setActionLoading(null);
+    onRefresh();
+  };
+
+  const isRemoved = (b) => b.slug?.startsWith("removed-");
+
   return (
     <div>
       {confirm && (
         <ConfirmModal
-          message={`This will permanently delete "${confirm.name}" and all their services, staff and reviews. This cannot be undone.`}
-          onConfirm={confirmDelete}
+          confirmLabel="Yes, Remove from Platform"
+          message={`"${confirm.name}" will be hidden from SubSeat and their profile URL will be deactivated. All their data — services, staff, subscribers and history — stays safely in the database and can be restored at any time.`}
+          onConfirm={confirmRemove}
           onCancel={() => setConfirm(null)}
         />
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h2 style={{ fontWeight: 800, fontSize: 22, color: W }}>Businesses ({businesses.length})</h2>
+        <button onClick={() => setShowHidden(!showHidden)}
+          style={{ background: "rgba(255,255,255,.08)", border: "none", borderRadius: 8, padding: "8px 16px", fontFamily: "Poppins", fontWeight: 600, fontSize: 12, color: showHidden ? "#fbbf24" : "rgba(255,255,255,.5)", cursor: "pointer" }}>
+          {showHidden ? "Hide Removed" : "Show Removed"}
+        </button>
       </div>
 
-      {/* SEARCH */}
-      <input className="input-field" placeholder="Search businesses..." value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
+      <input className="input-field" placeholder="Search by name, city or category..." value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
 
-      {/* TABLE */}
       <div style={{ background: "#1a1a2e", borderRadius: 16, border: "1px solid rgba(255,255,255,.08)", overflow: "hidden" }}>
         {/* HEADER */}
         <div className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto", background: "rgba(255,255,255,.04)", borderBottom: "1px solid rgba(255,255,255,.1)" }}>
@@ -301,49 +327,63 @@ function Businesses({ businesses, onRefresh }) {
           <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,.3)" }}>No businesses found</div>
         )}
 
-        {filtered.map((b, i) => (
-          <div key={b.id} className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto" }}>
+        {filtered.map(b => (
+          <div key={b.id} className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr auto", opacity: isRemoved(b) ? 0.5 : 1 }}>
             {/* NAME */}
             <div>
               <div style={{ fontWeight: 700, fontSize: 14, color: W }}>{b.business_name}</div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)" }}>{b.slug}</div>
             </div>
             {/* CATEGORY */}
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)" }}>{b.category}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", textTransform: "capitalize" }}>{b.category?.replace(/-/g, " ")}</div>
             {/* CITY */}
             <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)" }}>{b.city || "—"}</div>
             {/* TIER */}
             <div>
-              <select value={b.tier || "basic"} onChange={e => setTier(b.id, e.target.value)}
-                style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, padding: "4px 8px", color: W, fontFamily: "Poppins", fontSize: 12, cursor: "pointer" }}>
-                <option value="basic">Basic</option>
-                <option value="partner">Partner</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
+              {isRemoved(b) ? (
+                <span className="badge badge-grey">Removed</span>
+              ) : (
+                <select value={b.tier || "basic"} onChange={e => setTier(b.id, e.target.value)}
+                  style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, padding: "4px 8px", color: W, fontFamily: "Poppins", fontSize: 12, cursor: "pointer" }}>
+                  <option value="basic">Basic</option>
+                  <option value="partner">Partner</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
+              )}
             </div>
             {/* STATUS */}
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <span className={`badge ${b.is_active ? "badge-green" : "badge-red"}`}>{b.is_active ? "Active" : "Inactive"}</span>
-              {b.is_verified && <span className="badge badge-purple">Verified</span>}
+              {isRemoved(b)
+                ? <span className="badge badge-red">Hidden</span>
+                : <span className={`badge ${b.is_active ? "badge-green" : "badge-red"}`}>{b.is_active ? "Active" : "Suspended"}</span>
+              }
+              {b.is_verified && !isRemoved(b) && <span className="badge badge-purple">Verified</span>}
             </div>
             {/* ACTIONS */}
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={() => toggleActive(b.id, b.is_active)} disabled={actionLoading === b.id}
-                style={{ background: "rgba(255,255,255,.08)", border: "none", borderRadius: 8, padding: "6px 12px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: W, cursor: "pointer" }}>
-                {b.is_active ? "Suspend" : "Activate"}
-              </button>
-              <button onClick={() => toggleVerified(b.id, b.is_verified)} disabled={actionLoading === b.id}
-                style={{ background: "rgba(86,59,231,.2)", border: "none", borderRadius: 8, padding: "6px 12px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: "#a78bfa", cursor: "pointer" }}>
-                {b.is_verified ? "Unverify" : "Verify"}
-              </button>
-              <a href={`/${b.category}/${b.slug}`} target="_blank" style={{ textDecoration: "none" }}>
-                <button style={{ background: "rgba(255,255,255,.06)", border: "none", borderRadius: 8, padding: "6px 10px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: W, cursor: "pointer" }}>
-                  View
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {isRemoved(b) ? (
+                <button onClick={() => restoreBusiness(b)} disabled={actionLoading === b.id}
+                  style={{ background: "rgba(34,197,94,.15)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 8, padding: "6px 12px", fontFamily: "Poppins", fontWeight: 700, fontSize: 11, color: "#4ade80", cursor: "pointer" }}>
+                  Restore
                 </button>
-              </a>
-              <button className="btn-danger" onClick={() => handleDelete(b.id, b.business_name)} disabled={actionLoading === b.id}>
-                Delete
-              </button>
+              ) : (
+                <>
+                  <button onClick={() => toggleActive(b.id, b.is_active)} disabled={actionLoading === b.id}
+                    style={{ background: "rgba(255,255,255,.08)", border: "none", borderRadius: 8, padding: "6px 12px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: W, cursor: "pointer" }}>
+                    {b.is_active ? "Suspend" : "Activate"}
+                  </button>
+                  <button onClick={() => toggleVerified(b.id, b.is_verified)} disabled={actionLoading === b.id}
+                    style={{ background: "rgba(86,59,231,.2)", border: "none", borderRadius: 8, padding: "6px 12px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: "#a78bfa", cursor: "pointer" }}>
+                    {b.is_verified ? "Unverify" : "Verify"}
+                  </button>
+                  <a href={`/${b.category}/${b.slug}`} target="_blank" style={{ textDecoration: "none" }}>
+                    <button style={{ background: "rgba(255,255,255,.06)", border: "none", borderRadius: 8, padding: "6px 10px", fontFamily: "Poppins", fontWeight: 600, fontSize: 11, color: W, cursor: "pointer" }}>View</button>
+                  </a>
+                  <button className="btn-danger" onClick={() => setConfirm({ id: b.id, name: b.business_name })} disabled={actionLoading === b.id}>
+                    Remove
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -356,26 +396,22 @@ function Businesses({ businesses, onRefresh }) {
 function Customers({ profiles }) {
   const [search, setSearch] = useState("");
   const customers = profiles.filter(p => p.role !== "business");
-  const filtered = customers.filter(p =>
+  const filtered  = customers.filter(p =>
     p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
     p.email?.toLowerCase().includes(search.toLowerCase())
   );
-
   return (
     <div>
       <h2 style={{ fontWeight: 800, fontSize: 22, color: W, marginBottom: 20 }}>Customers ({customers.length})</h2>
       <input className="input-field" placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
-
       <div style={{ background: "#1a1a2e", borderRadius: 16, border: "1px solid rgba(255,255,255,.08)", overflow: "hidden" }}>
         <div className="table-row" style={{ gridTemplateColumns: "2fr 2fr 1fr 1fr", background: "rgba(255,255,255,.04)", borderBottom: "1px solid rgba(255,255,255,.1)" }}>
           {["Name", "Email", "Role", "Joined"].map(h => (
             <div key={h} style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)", textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</div>
           ))}
         </div>
-        {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,.3)" }}>No customers found</div>
-        )}
-        {filtered.map((p, i) => (
+        {filtered.length === 0 && <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,.3)" }}>No customers found</div>}
+        {filtered.map(p => (
           <div key={p.id} className="table-row" style={{ gridTemplateColumns: "2fr 2fr 1fr 1fr" }}>
             <div style={{ fontWeight: 600, fontSize: 14, color: W }}>{p.full_name || "—"}</div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)" }}>{p.email}</div>
@@ -391,21 +427,18 @@ function Customers({ profiles }) {
 /* ── FINANCE ── */
 function Finance({ businesses, subscriptions }) {
   const totalGross = subscriptions.reduce((a, s) => a + parseFloat(s.monthly_price || 0), 0);
-  const totalFee = totalGross * 0.05;
-  const totalVAT = totalFee * 0.20;
-  const totalNet = totalFee - totalVAT;
-
+  const totalFee   = totalGross * 0.05;
+  const totalVAT   = totalFee  * 0.20;
+  const totalNet   = totalFee  - totalVAT;
   return (
     <div>
       <h2 style={{ fontWeight: 800, fontSize: 22, color: W, marginBottom: 24 }}>Finance & Commission</h2>
-
-      {/* SUMMARY CARDS */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
         {[
-          { label: "Gross Volume", val: `£${totalGross.toFixed(2)}`, sub: "All subscription revenue", color: "#22c55e" },
-          { label: "Platform Fee (5%)", val: `£${totalFee.toFixed(2)}`, sub: "SubSeat commission", color: P },
-          { label: "VAT (20%)", val: `£${totalVAT.toFixed(2)}`, sub: "Payable to HMRC", color: "#f59e0b" },
-          { label: "Net Revenue", val: `£${totalNet.toFixed(2)}`, sub: "After VAT", color: "#8b5cf6" },
+          { label: "Gross Volume",     val: `£${totalGross.toFixed(2)}`, sub: "All subscription revenue", color: "#22c55e" },
+          { label: "Platform Fee (5%)",val: `£${totalFee.toFixed(2)}`,   sub: "SubSeat commission",       color: P         },
+          { label: "VAT (20%)",        val: `£${totalVAT.toFixed(2)}`,   sub: "Payable to HMRC",          color: "#f59e0b" },
+          { label: "Net Revenue",      val: `£${totalNet.toFixed(2)}`,   sub: "After VAT",                color: "#8b5cf6" },
         ].map((s, i) => (
           <div key={i} className="stat-card">
             <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>{s.label}</div>
@@ -414,23 +447,21 @@ function Finance({ businesses, subscriptions }) {
           </div>
         ))}
       </div>
-
-      {/* PER BUSINESS */}
       <div className="card">
         <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Commission Per Business</h3>
         {businesses.length === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,.3)" }}>No businesses yet</div>
         ) : (
-          <div>
+          <>
             <div className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "rgba(255,255,255,.04)", borderRadius: "8px 8px 0 0" }}>
               {["Business", "Subscribers", "Monthly Revenue", "SubSeat Fee"].map(h => (
                 <div key={h} style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)", textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</div>
               ))}
             </div>
-            {businesses.map((b, i) => {
-              const bizSubs = subscriptions.filter(s => s.business_id === b.id);
+            {businesses.map(b => {
+              const bizSubs    = subscriptions.filter(s => s.business_id === b.id);
               const bizRevenue = bizSubs.reduce((a, s) => a + parseFloat(s.monthly_price || 0), 0);
-              const bizFee = bizRevenue * 0.05;
+              const bizFee     = bizRevenue * 0.05;
               return (
                 <div key={b.id} className="table-row" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr" }}>
                   <div style={{ fontWeight: 600, fontSize: 14, color: W }}>{b.business_name}</div>
@@ -440,7 +471,7 @@ function Finance({ businesses, subscriptions }) {
                 </div>
               );
             })}
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -465,7 +496,7 @@ function Disputes({ disputes }) {
               <div style={{ fontWeight: 700, fontSize: 14, color: W }}>{d.category}</div>
               <span className={`badge ${d.status === "open" ? "badge-red" : d.status === "resolved" ? "badge-green" : "badge-orange"}`}>{d.status}</span>
             </div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 8 }}>{d.description}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 6 }}>{d.description}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{new Date(d.created_at).toLocaleDateString("en-GB")}</div>
           </div>
         ))}
@@ -475,23 +506,13 @@ function Disputes({ disputes }) {
 }
 
 /* ── ANALYTICS ── */
-function Analytics({ businesses, profiles, subscriptions }) {
-  const categoryCount = businesses.reduce((acc, b) => {
-    acc[b.category] = (acc[b.category] || 0) + 1;
-    return acc;
-  }, {});
-
-  const cityCount = businesses.reduce((acc, b) => {
-    if (b.city) acc[b.city] = (acc[b.city] || 0) + 1;
-    return acc;
-  }, {});
-
+function Analytics({ businesses }) {
+  const categoryCount = businesses.reduce((acc, b) => { acc[b.category] = (acc[b.category] || 0) + 1; return acc; }, {});
+  const cityCount     = businesses.reduce((acc, b) => { if (b.city) acc[b.city] = (acc[b.city] || 0) + 1; return acc; }, {});
   return (
     <div>
       <h2 style={{ fontWeight: 800, fontSize: 22, color: W, marginBottom: 24 }}>Platform Analytics</h2>
-
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        {/* BY CATEGORY */}
         <div className="card">
           <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Businesses by Category</h3>
           {Object.entries(categoryCount).sort((a, b) => b[1] - a[1]).map(([cat, count], i) => (
@@ -507,8 +528,6 @@ function Analytics({ businesses, profiles, subscriptions }) {
           ))}
           {Object.keys(categoryCount).length === 0 && <div style={{ color: "rgba(255,255,255,.3)", fontSize: 14 }}>No data yet</div>}
         </div>
-
-        {/* BY CITY */}
         <div className="card">
           <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Businesses by City</h3>
           {Object.entries(cityCount).sort((a, b) => b[1] - a[1]).map(([city, count], i) => (
@@ -524,16 +543,14 @@ function Analytics({ businesses, profiles, subscriptions }) {
           ))}
           {Object.keys(cityCount).length === 0 && <div style={{ color: "rgba(255,255,255,.3)", fontSize: 14 }}>No data yet</div>}
         </div>
-
-        {/* PLATFORM HEALTH */}
         <div className="card" style={{ gridColumn: "1 / -1" }}>
           <h3 style={{ fontWeight: 700, fontSize: 15, color: W, marginBottom: 16 }}>Platform Health</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
             {[
-              { label: "Active Rate", val: `${businesses.length > 0 ? Math.round((businesses.filter(b => b.is_active).length / businesses.length) * 100) : 0}%`, color: "#22c55e" },
-              { label: "Verified Rate", val: `${businesses.length > 0 ? Math.round((businesses.filter(b => b.is_verified).length / businesses.length) * 100) : 0}%`, color: P },
-              { label: "Partner Rate", val: `${businesses.length > 0 ? Math.round((businesses.filter(b => b.tier === "partner").length / businesses.length) * 100) : 0}%`, color: "#f59e0b" },
-              { label: "Avg Rating", val: businesses.length > 0 ? (businesses.reduce((a, b) => a + parseFloat(b.rating || 0), 0) / businesses.length).toFixed(1) : "—", color: "#f59e0b" },
+              { label: "Active Rate",  val: `${businesses.length > 0 ? Math.round(businesses.filter(b => b.is_active).length / businesses.length * 100) : 0}%`, color: "#22c55e" },
+              { label: "Verified Rate",val: `${businesses.length > 0 ? Math.round(businesses.filter(b => b.is_verified).length / businesses.length * 100) : 0}%`, color: P         },
+              { label: "Partner Rate", val: `${businesses.length > 0 ? Math.round(businesses.filter(b => b.tier === "partner").length / businesses.length * 100) : 0}%`, color: "#f59e0b" },
+              { label: "Avg Rating",   val: businesses.length > 0 ? (businesses.reduce((a, b) => a + parseFloat(b.rating || 0), 0) / businesses.length).toFixed(1) : "—", color: "#f59e0b" },
             ].map((s, i) => (
               <div key={i} style={{ background: "rgba(255,255,255,.04)", borderRadius: 12, padding: 16, textAlign: "center" }}>
                 <div style={{ fontWeight: 900, fontSize: 28, color: s.color, marginBottom: 4 }}>{s.val}</div>
@@ -549,23 +566,19 @@ function Analytics({ businesses, profiles, subscriptions }) {
 
 /* ── ROOT ── */
 export default function AdminPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]           = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
-  const [businesses, setBusinesses] = useState([]);
-  const [profiles, setProfiles] = useState([]);
+  const [businesses, setBusinesses]     = useState([]);
+  const [profiles, setProfiles]         = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
-  const [disputes, setDisputes] = useState([]);
+  const [disputes, setDisputes]         = useState([]);
 
   useEffect(() => { checkAuth(); }, []);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.email !== ADMIN_EMAIL) {
-      setUnauthorized(true);
-      setLoading(false);
-      return;
-    }
+    if (!user || user.email !== ADMIN_EMAIL) { setUnauthorized(true); setLoading(false); return; }
     await loadData();
   };
 
@@ -609,8 +622,6 @@ export default function AdminPage() {
   return (
     <>
       <style>{css}</style>
-
-      {/* TOP NAV */}
       <nav style={{ background: "#13131f", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "0 5%", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: P, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -623,21 +634,20 @@ export default function AdminPage() {
           <div className="live-dot" />
           <span style={{ fontSize: 12, color: "#4ade80", fontWeight: 600 }}>All systems operational</span>
         </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>admin.subseat.co.uk</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>subseat.co.uk/admin</div>
       </nav>
 
-      {/* LAYOUT */}
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "28px 5%", display: "grid", gridTemplateColumns: "220px 1fr", gap: 24 }} className="admin-layout">
         <div className="sidebar">
           <Sidebar active={activeSection} setActive={setActiveSection} />
         </div>
         <div className="fu">
-          {activeSection === "overview"   && <Overview businesses={businesses} profiles={profiles} subscriptions={subscriptions} />}
+          {activeSection === "overview"   && <Overview   businesses={businesses} profiles={profiles} subscriptions={subscriptions} />}
           {activeSection === "businesses" && <Businesses businesses={businesses} onRefresh={loadData} />}
-          {activeSection === "customers"  && <Customers profiles={profiles} />}
-          {activeSection === "finance"    && <Finance businesses={businesses} subscriptions={subscriptions} />}
-          {activeSection === "disputes"   && <Disputes disputes={disputes} />}
-          {activeSection === "analytics"  && <Analytics businesses={businesses} profiles={profiles} subscriptions={subscriptions} />}
+          {activeSection === "customers"  && <Customers  profiles={profiles} />}
+          {activeSection === "finance"    && <Finance    businesses={businesses} subscriptions={subscriptions} />}
+          {activeSection === "disputes"   && <Disputes   disputes={disputes} />}
+          {activeSection === "analytics"  && <Analytics  businesses={businesses} profiles={profiles} subscriptions={subscriptions} />}
         </div>
       </div>
     </>
