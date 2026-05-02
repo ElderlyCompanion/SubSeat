@@ -8,202 +8,213 @@ const G = "#F4F4F4";
 const W = "#ffffff";
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior:smooth; }
-  body { font-family:'Poppins',sans-serif; background:${W}; color:${C}; overflow-x:hidden; }
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+  body{font-family:'Poppins',sans-serif;background:#fff;color:${C};overflow-x:hidden}
 
-  @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes pulse    { 0%,100%{box-shadow:0 0 0 0 rgba(86,59,231,.4)} 50%{box-shadow:0 0 0 12px rgba(86,59,231,0)} }
-  @keyframes spin     { to{transform:rotate(360deg)} }
-  @keyframes fomoIn   { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fomoOut  { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-8px)} }
-  @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  @keyframes gradMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+  :root{
+    --p:${P};--l:${L};--c:${C};--g:${G};
+    --shadow-sm:0 2px 12px rgba(86,59,231,.10);
+    --shadow-md:0 8px 32px rgba(86,59,231,.16);
+    --shadow-lg:0 24px 80px rgba(86,59,231,.22);
+  }
 
-  .fu  { animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both }
-  .d1  { animation-delay:.1s  }
-  .d2  { animation-delay:.2s  }
-  .d3  { animation-delay:.3s  }
-  .d4  { animation-delay:.4s  }
-  .d5  { animation-delay:.5s  }
+  @keyframes fadeUp  {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn  {from{opacity:0}to{opacity:1}}
+  @keyframes ticker  {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  @keyframes pulse   {0%,100%{box-shadow:0 0 0 0 rgba(86,59,231,.5)}50%{box-shadow:0 0 0 14px rgba(86,59,231,0)}}
+  @keyframes blink   {0%,100%{opacity:1}50%{opacity:.3}}
+  @keyframes float   {0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  @keyframes fomoIn  {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fomoOut {from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px)}}
 
-  /* NAV */
-  nav {
-    position:fixed; top:0; left:0; right:0; z-index:100;
-    background:rgba(255,255,255,.92); backdrop-filter:blur(16px);
-    border-bottom:1px solid rgba(0,0,0,.06);
-    height:68px; display:flex; align-items:center;
-    padding:0 6%; justify-content:space-between;
+  .fu {animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both}
+  .fi {animation:fadeIn .6s ease both}
+  .d0{animation-delay:0s}.d1{animation-delay:.1s}.d2{animation-delay:.2s}
+  .d3{animation-delay:.3s}.d4{animation-delay:.4s}.d5{animation-delay:.5s}.d6{animation-delay:.6s}
+
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+
+  .lift{transition:transform .22s ease,box-shadow .22s ease;cursor:pointer}
+  .lift:hover{transform:translateY(-4px);box-shadow:0 24px 80px rgba(86,59,231,.20)}
+  .lift-sm{transition:transform .18s ease,box-shadow .18s ease;cursor:pointer}
+  .lift-sm:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(86,59,231,.16)}
+
+  .btn-primary{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--p);color:#fff;border:none;
+    padding:15px 28px;border-radius:12px;
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;transition:all .2s ease;
+    box-shadow:0 6px 24px rgba(86,59,231,.32);white-space:nowrap;
+  }
+  .btn-primary:hover{background:#4429d4;transform:translateY(-2px);box-shadow:0 12px 40px rgba(86,59,231,.42)}
+  .btn-secondary{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:transparent;color:var(--p);border:2px solid var(--p);
+    padding:13px 26px;border-radius:12px;
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;transition:all .2s ease;white-space:nowrap;
+  }
+  .btn-secondary:hover{background:var(--l);transform:translateY(-2px)}
+  .btn-ghost{
+    display:inline-flex;align-items:center;justify-content:center;
+    background:transparent;color:var(--c);border:none;
+    font-family:'Poppins',sans-serif;font-weight:600;font-size:14px;
+    cursor:pointer;transition:color .18s;padding:10px 18px;border-radius:10px;
+  }
+  .btn-ghost:hover{color:var(--p)}
+  .btn-white{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:#fff;color:var(--p);border:none;
+    padding:15px 28px;border-radius:12px;
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;transition:all .2s ease;box-shadow:0 4px 20px rgba(0,0,0,.12);
+  }
+  .btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.18)}
+  .btn-white-outline{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:transparent;color:#fff;border:2px solid rgba(255,255,255,.5);
+    padding:13px 26px;border-radius:12px;
+    font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;
+    cursor:pointer;transition:all .2s ease;
+  }
+  .btn-white-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+
+  .nav-a{
+    font-size:14px;font-weight:500;color:${C};text-decoration:none;
+    opacity:.75;transition:all .18s;padding:6px 2px;position:relative;
+  }
+  .nav-a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:2px;background:var(--p);border-radius:2px;transition:width .22s ease}
+  .nav-a:hover{opacity:1;color:var(--p)}
+  .nav-a:hover::after{width:100%}
+
+  .section-label{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:2.5px;
+    text-transform:uppercase;color:var(--p);background:var(--l);
+    padding:6px 16px;border-radius:100px;margin-bottom:18px;
   }
 
   /* FOMO BAR */
-  .fomo-bar {
-    position:fixed; top:68px; left:0; right:0; z-index:99;
-    background:${C}; height:40px;
-    display:flex; align-items:center; justify-content:center; gap:10px;
+  .fomo-bar{
+    position:fixed;top:0;left:0;right:0;z-index:600;
+    background:${C};height:38px;
+    display:flex;align-items:center;justify-content:center;gap:10px;
   }
-  .fomo-text {
-    font-size:13px; font-weight:700; color:${W};
-    animation:fomoIn .4s ease both;
+  .fomo-text{
+    font-size:12px;font-weight:700;color:${W};
+    animation:fomoIn .35s ease both;
   }
-  .fomo-text.exit { animation:fomoOut .3s ease both; }
+  .fomo-text.exit{animation:fomoOut .25s ease both;}
 
-  /* HERO */
-  .hero {
-    padding:180px 6% 100px;
-    background:linear-gradient(135deg,#f0eeff 0%,#e8e0ff 50%,#f5f0ff 100%);
-    background-size:200% 200%;
-    animation:gradMove 8s ease infinite;
-    text-align:center; position:relative; overflow:hidden;
+  .phone-wrap{
+    width:280px;height:560px;border-radius:44px;background:#fff;
+    box-shadow:0 40px 120px rgba(86,59,231,.28),0 0 0 1px rgba(86,59,231,.12);
+    overflow:hidden;position:relative;flex-shrink:0;
+    animation:float 6s ease-in-out infinite;
   }
-  .hero::before {
-    content:''; position:absolute; inset:0;
-    background:radial-gradient(ellipse at 50% 0%,rgba(86,59,231,.15) 0%,transparent 70%);
-    pointer-events:none;
+  .phone-notch{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:120px;height:34px;background:${C};border-radius:0 0 20px 20px;z-index:10;
   }
-
-  .hero-headline {
-    font-size:clamp(36px,6vw,72px); font-weight:900;
-    color:${C}; line-height:1.08; letter-spacing:-2px;
-    margin-bottom:20px;
+  .dash-card{
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;padding:20px;backdrop-filter:blur(8px);
   }
-  .hero-headline span { color:${P}; }
-
-  .hero-sub {
-    font-size:clamp(15px,2vw,20px); color:#555; font-weight:500;
-    max-width:600px; margin:0 auto 36px; line-height:1.6;
+  .search-input{
+    flex:1;border:none;outline:none;background:transparent;
+    font-family:'Poppins',sans-serif;font-size:15px;color:${C};
   }
+  .search-input::placeholder{color:#aaa}
 
-  /* BUTTONS */
-  .btn-hero-primary {
-    display:inline-flex; align-items:center; gap:8px;
-    background:${P}; color:${W}; border:none;
-    padding:16px 32px; border-radius:14px;
-    font-family:'Poppins',sans-serif; font-weight:800; font-size:16px;
-    cursor:pointer; transition:all .2s;
-    box-shadow:0 8px 32px rgba(86,59,231,.35);
-    text-decoration:none;
+  /* ── TABLET ── */
+  @media(max-width:1024px){
+    .hero-grid{grid-template-columns:1fr!important;text-align:center}
+    .hero-phone{display:none!important}
+    .hero-benefits{justify-content:center!important}
+    .path-grid{grid-template-columns:1fr!important}
+    .pri-grid{grid-template-columns:1fr 1fr!important;gap:16px!important}
   }
-  .btn-hero-primary:hover { background:#4429d4; transform:translateY(-2px); box-shadow:0 12px 40px rgba(86,59,231,.45); }
-
-  .btn-hero-secondary {
-    display:inline-flex; align-items:center; gap:8px;
-    background:${W}; color:${P}; border:2px solid ${P};
-    padding:15px 32px; border-radius:14px;
-    font-family:'Poppins',sans-serif; font-weight:800; font-size:16px;
-    cursor:pointer; transition:all .2s;
-    text-decoration:none;
+  /* ── MOBILE ── */
+  @media(max-width:900px){
+    .nav-center{display:none!important}
+    .cat-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}
+    .hiw-grid{grid-template-columns:1fr!important;gap:48px!important}
+    .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:24px!important}
+    .pri-grid{grid-template-columns:1fr!important;gap:20px!important}
+    .eco-grid{grid-template-columns:1fr!important;gap:16px!important}
+    .about-grid{grid-template-columns:1fr!important;gap:16px!important}
+    .footer-grid{grid-template-columns:1fr 1fr!important;gap:32px!important}
+    .compare-col3{display:none!important}
+    .dash-grid{grid-template-columns:1fr 1fr!important}
+    .growth-flex{flex-direction:column!important;align-items:center!important}
+    .pri-featured{transform:scale(1)!important}
   }
-  .btn-hero-secondary:hover { background:${L}; transform:translateY(-2px); }
-
-  /* TRUST LINE */
-  .trust-line {
-    display:flex; align-items:center; justify-content:center; gap:20px;
-    flex-wrap:wrap; margin-top:20px;
-  }
-  .trust-item { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#888; }
-
-  /* SECTION */
-  section { padding:80px 6%; }
-  .section-label { font-size:12px; font-weight:800; color:${P}; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
-  .section-title { font-size:clamp(28px,4vw,44px); font-weight:900; color:${C}; line-height:1.15; letter-spacing:-1px; margin-bottom:16px; }
-  .section-sub   { font-size:16px; color:#666; max-width:520px; line-height:1.6; margin-bottom:48px; }
-
-  /* SPLIT PATH */
-  .path-card {
-    background:${W}; border-radius:24px; padding:36px;
-    border:2px solid #eee; transition:all .25s; text-align:center;
-  }
-  .path-card:hover { border-color:${P}; transform:translateY(-4px); box-shadow:0 20px 60px rgba(86,59,231,.12); }
-  .path-card .icon { font-size:48px; margin-bottom:16px; }
-  .path-card h3 { font-size:22px; font-weight:800; color:${C}; margin-bottom:10px; }
-  .path-card p  { font-size:14px; color:#666; line-height:1.6; margin-bottom:24px; }
-
-  /* PROOF STRIP */
-  .proof-strip {
-    background:${C}; padding:48px 6%; text-align:center;
-  }
-
-  /* HOW IT WORKS */
-  .step-num {
-    width:40px; height:40px; border-radius:12px; background:${L};
-    display:flex; align-items:center; justify-content:center;
-    font-size:16px; font-weight:900; color:${P}; margin-bottom:14px;
-  }
-
-  /* VALUE SECTION */
-  .value-card {
-    background:${W}; border-radius:20px; padding:28px;
-    border:1.5px solid #eee; transition:all .2s;
-  }
-  .value-card:hover { border-color:${P}; box-shadow:0 8px 32px rgba(86,59,231,.10); transform:translateY(-2px); }
-  .value-icon { font-size:36px; margin-bottom:14px; }
-
-  /* PRICING */
-  .price-card {
-    background:${W}; border-radius:24px; padding:32px;
-    border:2px solid #eee; transition:all .2s;
-  }
-  .price-card.featured { border-color:${P}; box-shadow:0 16px 56px rgba(86,59,231,.16); }
-  .price-card:hover { transform:translateY(-3px); }
-
-  /* ECOSYSTEM */
-  .eco-card {
-    background:${W}; border-radius:20px; padding:28px;
-    border:1.5px solid #eee; transition:all .2s;
-  }
-  .eco-card:hover { border-color:${P}; transform:translateY(-2px); }
-
-  /* FINAL CTA */
-  .cta-section {
-    background:linear-gradient(135deg,${P} 0%,#7c5cff 50%,#a855f7 100%);
-    background-size:200% 200%; animation:gradMove 6s ease infinite;
-    padding:100px 6%; text-align:center;
-  }
-
-  /* FOOTER */
-  footer { background:${C}; padding:48px 6%; }
-
-  /* SOCIAL PROOF NUMBERS */
-  .stat-bubble {
-    background:${W}; border-radius:16px; padding:18px 24px;
-    box-shadow:0 8px 32px rgba(0,0,0,.08); text-align:center;
-    animation:float 4s ease-in-out infinite;
-  }
-
-  @media(max-width:768px) {
-    .hero   { padding:160px 5% 80px; }
-    section { padding:60px 5%; }
-    .hero-headline { letter-spacing:-1px; }
-    .two-col { grid-template-columns:1fr !important; }
-    .three-col { grid-template-columns:1fr !important; }
-    .four-col  { grid-template-columns:1fr 1fr !important; }
-    .btn-row   { flex-direction:column; align-items:center; }
-    .trust-line { gap:12px; }
+  /* ── SMALL MOBILE ── */
+  @media(max-width:600px){
+    .hero-grid{padding:100px 5% 60px!important}
+    .hero-btns{flex-direction:column!important;width:100%!important}
+    .hero-btns .btn-primary,
+    .hero-btns .btn-secondary{width:100%!important;justify-content:center!important}
+    .hero-benefits{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+    .cat-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    .cat-img{height:150px!important}
+    .final-btns{flex-direction:column!important;align-items:center!important;width:100%!important}
+    .final-btns .btn-white,
+    .final-btns .btn-white-outline{width:100%!important;max-width:300px!important;justify-content:center!important}
+    .dash-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+    .dash-card{padding:14px!important}
+    .growth-dash{padding:18px!important;max-width:100%!important}
+    .about-grid{grid-template-columns:1fr!important}
+    .eco-grid{grid-template-columns:1fr!important}
+    .pri-grid{grid-template-columns:1fr!important}
+    .path-grid{grid-template-columns:1fr!important}
+    .stats-grid{grid-template-columns:1fr 1fr!important;gap:20px!important}
+    .footer-grid{grid-template-columns:1fr 1fr!important;gap:20px!important}
+    .section-inner{padding:64px 5%!important}
+    .compare-row{padding:12px 16px!important;font-size:13px!important}
+    .compare-head{padding:12px 16px!important}
+    .search-wrap{padding:5px 5px 5px 14px!important}
+    .search-input{font-size:13px!important}
+    .hiw-step{gap:14px!important}
+    .hiw-num{min-width:44px!important;height:44px!important}
   }
 `;
 
-/* ── FOMO BAR ── */
+/* ─── SCROLL REVEAL HOOK ─── */
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+/* ─── FOMO BAR ─── */
 const FOMO_PHRASES = [
-  { text:"🔥 Next 10 bookings get priority access",              color:"#f59e0b" },
-  { text:"⚡ Limited slots available this week",                 color:"#22c55e" },
-  { text:"🔒 Members are locking in their slots",               color:"#a78bfa" },
-  { text:"📍 Fewer than 20 priority slots left near you",       color:"#f87171" },
-  { text:"🚀 Early access now open across the UK",              color:"#34d399" },
+  { text: "🔥 Next 10 bookings get priority access",             color: "#f59e0b" },
+  { text: "⚡ Limited slots available this week",                color: "#34d399" },
+  { text: "🔒 Members are locking in their slots",              color: "#a78bfa" },
+  { text: "📍 Fewer than 20 priority slots left near you",      color: "#f87171" },
+  { text: "🚀 Early access now open across the UK",             color: "#34d399" },
 ];
 
 function FomoBar() {
-  const [idx, setIdx]   = useState(0);
+  const [idx,  setIdx]  = useState(0);
   const [exit, setExit] = useState(false);
 
   useEffect(() => {
     const iv = setInterval(() => {
       setExit(true);
       setTimeout(() => {
-        setIdx(i => (i+1) % FOMO_PHRASES.length);
+        setIdx(i => (i + 1) % FOMO_PHRASES.length);
         setExit(false);
-      }, 300);
+      }, 280);
     }, 5000);
     return () => clearInterval(iv);
   }, []);
@@ -212,367 +223,652 @@ function FomoBar() {
 
   return (
     <div className="fomo-bar">
-      <div style={{ width:8, height:8, borderRadius:"50%", background:"#22c55e", flexShrink:0,
-        animation:"pulse 2s infinite", boxShadow:"0 0 0 0 rgba(34,197,94,.4)" }} />
-      <span className={`fomo-text ${exit?"exit":""}`} style={{ color:phrase.color }}>
+      <div style={{
+        width: 7, height: 7, borderRadius: "50%", background: "#22c55e", flexShrink: 0,
+        boxShadow: "0 0 0 0 rgba(34,197,94,.4)",
+        animation: "pulse 2s infinite",
+      }} />
+      <span className={`fomo-text ${exit ? "exit" : ""}`} style={{ color: phrase.color }}>
         {phrase.text}
       </span>
     </div>
   );
 }
 
-/* ── LOGO ── */
-function Logo() {
+/* ─── LOGO ─── */
+function Logo({ size = 36 }) {
   return (
-    <a href="/" style={{ display:"flex", alignItems:"center", gap:10, textDecoration:"none" }}>
-      <div style={{ width:36, height:36, borderRadius:10, background:P, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", animation:"pulse 3s infinite" }}>
-        <div style={{ position:"absolute", right:-5, top:"50%", transform:"translateY(-50%)", width:12, height:12, borderRadius:"50%", background:W }} />
-        <span style={{ color:W, fontWeight:900, fontSize:18 }}>S</span>
-      </div>
-      <span style={{ fontWeight:900, fontSize:20, color:P }}>SubSeat</span>
-    </a>
+    <div style={{ width: size, height: size, borderRadius: size * .27, background: P, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", animation: "pulse 3.5s infinite", flexShrink: 0 }}>
+      <div style={{ position: "absolute", right: -size * .15, top: "50%", transform: "translateY(-50%)", width: size * .3, height: size * .3, borderRadius: "50%", background: W }} />
+      <span style={{ color: W, fontWeight: 900, fontSize: size * .54, fontFamily: "Poppins", zIndex: 1 }}>S</span>
+    </div>
   );
 }
 
-/* ── HOMEPAGE ── */
-export default function HomePage() {
-  const [mobileMenu, setMobileMenu] = useState(false);
-
+/* ─── NAV ─── */
+function Nav({ scrolled }) {
   return (
-    <>
-      <style>{css}</style>
-      <FomoBar />
-
-      {/* NAV */}
-      <nav>
-        <Logo />
-        <div style={{ display:"flex", alignItems:"center", gap:24 }}>
-          <a href="/discover" style={{ fontSize:14, fontWeight:600, color:C, textDecoration:"none" }}>Find Professionals</a>
-          <a href="#pricing"  style={{ fontSize:14, fontWeight:600, color:C, textDecoration:"none" }}>Pricing</a>
-          <a href="/auth"     style={{ fontSize:14, fontWeight:600, color:"#888", textDecoration:"none" }}>Sign In</a>
-          <a href="/auth" className="btn-hero-primary" style={{ padding:"10px 22px", fontSize:14, borderRadius:10 }}>Get Started Free</a>
-        </div>
-      </nav>
-
-      {/* HERO */}
-      <div className="hero">
-        {/* FLOATING BUBBLES */}
-        <div style={{ position:"absolute", top:120, left:"8%", animation:"float 3s ease-in-out infinite" }}>
-          <div className="stat-bubble">
-            <div style={{ fontWeight:900, fontSize:24, color:P }}>✂️</div>
-            <div style={{ fontSize:11, fontWeight:700, color:"#888", marginTop:2 }}>Barbers</div>
-          </div>
-        </div>
-        <div style={{ position:"absolute", top:180, right:"8%", animation:"float 4s ease-in-out infinite .5s" }}>
-          <div className="stat-bubble">
-            <div style={{ fontWeight:900, fontSize:24, color:"#22c55e" }}>💆</div>
-            <div style={{ fontSize:11, fontWeight:700, color:"#888", marginTop:2 }}>Salons</div>
-          </div>
-        </div>
-
-        <div className="fu">
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:L, borderRadius:100, padding:"6px 16px", marginBottom:24 }}>
-            <span style={{ fontSize:12, fontWeight:800, color:P }}>🇬🇧 Now live across the UK</span>
-          </div>
-        </div>
-
-        <h1 className="hero-headline fu d1">
-          Your seat,<br /><span>your subscription.</span>
-        </h1>
-
-        <p className="hero-sub fu d2">
-          Book barbers, salons and beauty professionals instantly — or subscribe and secure your spot every month.
-        </p>
-
-        <div className="btn-row fu d3" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-          <a href="/discover" className="btn-hero-primary">Find and Book Now →</a>
-          <a href="/auth" className="btn-hero-secondary">Earn Monthly with SubSeat</a>
-        </div>
-
-        <div className="trust-line fu d4">
-          {["Free to join","No setup fees","Cancel anytime"].map((t,i)=>(
-            <div key={i} className="trust-item">
-              <span style={{ color:"#22c55e", fontSize:16 }}>✓</span>{t}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* SPLIT PATH */}
-      <section style={{ background:G }}>
-        <div style={{ textAlign:"center", marginBottom:48 }}>
-          <div className="section-label fu">Who is SubSeat for?</div>
-          <h2 className="section-title fu d1">Two journeys. One platform.</h2>
-          <p style={{ fontSize:16, color:"#666", maxWidth:480, margin:"0 auto" }} className="fu d2">
-            Whether you're booking your next cut or growing a loyal client base — SubSeat works for you.
-          </p>
-        </div>
-        <div className="two-col fu d2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24, maxWidth:900, margin:"0 auto" }}>
-          <div className="path-card">
-            <div className="icon">👤</div>
-            <h3>For Customers</h3>
-            <p>Book instantly or subscribe for priority access, better value and guaranteed time slots every month.</p>
-            <a href="/discover" className="btn-hero-primary" style={{ fontSize:14, padding:"13px 24px", borderRadius:12 }}>Find a Professional</a>
-          </div>
-          <div className="path-card" style={{ borderColor:P, background:L }}>
-            <div className="icon">🏪</div>
-            <h3>For Businesses</h3>
-            <p>Turn one-off bookings into predictable monthly income with memberships, loyal customers and no hidden fees.</p>
-            <a href="/auth" className="btn-hero-primary" style={{ fontSize:14, padding:"13px 24px", borderRadius:12 }}>Start Earning Monthly</a>
-          </div>
-        </div>
-      </section>
-
-      {/* PROOF STRIP */}
-      <div className="proof-strip">
-        <p style={{ fontSize:16, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:20 }}>
-          Built for barbers, salons and self-care professionals across the UK
-        </p>
-        <div style={{ display:"flex", justifyContent:"center", gap:32, flexWrap:"wrap" }}>
+    <header style={{ position: "fixed", top: 38, left: 0, right: 0, zIndex: 500, background: scrolled ? "rgba(255,255,255,.97)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${L}` : "none", transition: "all .3s ease" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 5%", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <a href="#hero" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <Logo size={36} />
+          <span style={{ fontWeight: 800, fontSize: 20, color: P, letterSpacing: "-.5px" }}>SubSeat</span>
+        </a>
+        <nav className="nav-center" style={{ display: "flex", gap: 32 }}>
           {[
-            { icon:"⚡", label:"Priority booking"    },
-            { icon:"💰", label:"Recurring income"    },
-            { icon:"🚫", label:"Fewer no-shows"      },
-            { icon:"🔒", label:"Secure payments"     },
-            { icon:"📱", label:"Mobile optimised"    },
-            { icon:"🇬🇧", label:"UK-based support"   },
-          ].map((p,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:8, color:W }}>
-              <span style={{ fontSize:18 }}>{p.icon}</span>
-              <span style={{ fontSize:14, fontWeight:600 }}>{p.label}</span>
-            </div>
+            ["Find Professionals", "#categories"],
+            ["For Businesses",     "#pricing"],
+            ["Marketplace",        "#marketplace"],
+            ["Finance",            "#finance"],
+            ["Insurance",          "#insurance"],
+            ["About",              "#about"],
+          ].map(([l, h]) => (
+            <a key={l} href={h} className="nav-a">{l}</a>
           ))}
+        </nav>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-ghost">Sign In</button></a>
+          <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>Get Started</button></a>
         </div>
       </div>
+    </header>
+  );
+}
 
-      {/* HOW IT WORKS */}
-      <section>
-        <div style={{ textAlign:"center", marginBottom:56 }}>
-          <div className="section-label fu">Simple by design</div>
-          <h2 className="section-title fu d1">How SubSeat works</h2>
-        </div>
-        <div className="two-col" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:48, maxWidth:960, margin:"0 auto" }}>
-          <div className="fu d1">
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>👤</div>
-              <h3 style={{ fontWeight:800, fontSize:20, color:C }}>For Customers</h3>
+/* ─── TICKER ─── */
+function Ticker({ dark = false }) {
+  const items = Array(2).fill([
+    "Priority booking for members", "Recurring income for businesses",
+    "Stripe-secured payments", "Lower cancellations",
+    "Built for self-care professionals", "Your seat, your subscription",
+    "WhatsApp alerts included", "No hidden monthly charges",
+  ]).flat();
+  return (
+    <div style={{ background: dark ? C : P, padding: "14px 0", overflow: "hidden" }}>
+      <div style={{ display: "flex", animation: "ticker 32s linear infinite", width: "max-content", whiteSpace: "nowrap" }}>
+        {items.map((t, i) => (
+          <span key={i} style={{ fontWeight: 600, fontSize: 13, color: W, marginRight: 56, opacity: .9 }}>
+            <span style={{ color: L, marginRight: 10 }}>✦</span>{t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── PHONE MOCKUP ─── */
+function PhoneMockup() {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+      <div className="phone-wrap">
+        <div className="phone-notch" />
+        <div style={{ paddingTop: 46, background: W }}>
+          <div style={{ padding: "16px 20px 12px", borderBottom: `1px solid ${G}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <span style={{ fontWeight: 700, fontSize: 18, color: C }}>SubSeat</span>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: L, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: 16 }}>👤</span>
+              </div>
             </div>
-            {[
-              { num:"1", title:"Find your professional",  desc:"Search barbers, salons and beauty pros near you"     },
-              { num:"2", title:"Book or subscribe",        desc:"One-off booking or subscribe for priority access"    },
-              { num:"3", title:"Keep your routine",        desc:"Your slot is secured every month — no more chasing"  },
-            ].map((s,i)=>(
-              <div key={i} style={{ display:"flex", gap:16, marginBottom:24 }}>
-                <div className="step-num">{s.num}</div>
+            <div style={{ background: G, borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#aaa" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+              <span style={{ fontSize: 13, color: "#aaa" }}>Search near you...</span>
+            </div>
+          </div>
+          <div style={{ margin: "14px 16px", borderRadius: 18, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,.10)" }}>
+            <div style={{ height: 100, background: `linear-gradient(135deg, ${P} 0%, #7c5cff 100%)`, position: "relative", display: "flex", alignItems: "flex-end", padding: "12px 16px" }}>
+              <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,.2)", borderRadius: 100, padding: "3px 10px" }}>
+                <span style={{ fontSize: 11, color: W, fontWeight: 600 }}>⭐ 4.9</span>
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: W }}>Marcus — The Cut Lab</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,.75)" }}>Barber · Shoreditch, London</div>
+              </div>
+            </div>
+            <div style={{ background: W, padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <div>
-                  <div style={{ fontWeight:700, fontSize:15, color:C, marginBottom:4 }}>{s.title}</div>
-                  <div style={{ fontSize:13, color:"#888", lineHeight:1.5 }}>{s.desc}</div>
+                  <div style={{ fontSize: 11, color: "#888", fontWeight: 500 }}>Monthly Membership</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: C, letterSpacing: "-1px" }}>£59<span style={{ fontSize: 13, fontWeight: 500, color: "#888" }}>/mo</span></div>
+                </div>
+                <div style={{ background: L, borderRadius: 10, padding: "6px 12px" }}>
+                  <div style={{ fontSize: 11, color: P, fontWeight: 700 }}>Priority member</div>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="fu d2">
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>🏪</div>
-              <h3 style={{ fontWeight:800, fontSize:20, color:C }}>For Businesses</h3>
+              <div style={{ background: G, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: "#888", fontWeight: 500, marginBottom: 2 }}>Next available</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C }}>Friday 14 Feb · 2:00 PM</div>
+              </div>
+              <button style={{ width: "100%", background: P, color: W, border: "none", borderRadius: 12, padding: "12px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                Subscribe & Book Now
+              </button>
             </div>
-            {[
-              { num:"1", title:"Join for free",            desc:"Set up your profile in under 10 minutes"            },
-              { num:"2", title:"Create membership plans",  desc:"Set your price, services and availability"          },
-              { num:"3", title:"Earn monthly",             desc:"Predictable income, loyal clients, fewer no-shows"  },
-            ].map((s,i)=>(
-              <div key={i} style={{ display:"flex", gap:16, marginBottom:24 }}>
-                <div className="step-num">{s.num}</div>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:15, color:C, marginBottom:4 }}>{s.title}</div>
-                  <div style={{ fontSize:13, color:"#888", lineHeight:1.5 }}>{s.desc}</div>
-                </div>
+          </div>
+          <div style={{ padding: "0 16px", display: "flex", gap: 10 }}>
+            {[{ label: "Nail Tech", price: "£45" }, { label: "Lash Artist", price: "£65" }].map((c, i) => (
+              <div key={i} style={{ flex: 1, background: G, borderRadius: 14, padding: "12px", border: `1.5px solid ${L}` }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: C, marginBottom: 2 }}>{c.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: P }}>{c.price}<span style={{ fontSize: 10, color: "#888", fontWeight: 500 }}>/mo</span></div>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  );
+}
 
-      {/* MORE THAN BOOKING — BUILT FOR GROWTH */}
-      <section style={{ background:G }}>
-        <div style={{ textAlign:"center", marginBottom:48 }}>
-          <div className="section-label fu">Platform features</div>
-          <h2 className="section-title fu d1">More than booking.<br />Built for growth.</h2>
-          <p style={{ fontSize:16, color:"#666", maxWidth:480, margin:"0 auto" }} className="fu d2">
-            SubSeat gives businesses the tools to own their customer relationships and grow recurring revenue.
-          </p>
-        </div>
-        <div className="three-col fu d2" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, maxWidth:1000, margin:"0 auto" }}>
-          {[
-            { icon:"💳", title:"Memberships",  desc:"Turn clients into recurring income. Set plans, prices and visit limits that work for your business."    },
-            { icon:"👥", title:"CRM",          desc:"Own your customer data. Track visits, spending and birthdays. Re-book inactive clients automatically."  },
-            { icon:"🔍", title:"Visibility",   desc:"Get discovered by new clients nearby. Your profile is SEO-optimised and shareable in seconds."          },
-            { icon:"📱", title:"QR Capture",   desc:"Walk-in customers scan your QR code, leave their details and get captured into your CRM instantly."     },
-            { icon:"🔔", title:"WhatsApp Alerts",desc:"Your subscribers get WhatsApp reminders, confirmations and updates — reducing no-shows automatically."},
-            { icon:"📊", title:"Analytics",    desc:"See your busiest days, top customers, monthly revenue and conversion rates in one clear dashboard."      },
-          ].map((v,i)=>(
-            <div key={i} className="value-card fu" style={{ animationDelay:`${i*.06}s` }}>
-              <div className="value-icon">{v.icon}</div>
-              <h3 style={{ fontWeight:800, fontSize:17, color:C, marginBottom:8 }}>{v.title}</h3>
-              <p style={{ fontSize:13, color:"#666", lineHeight:1.6 }}>{v.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+/* ─── LIVE COUNTER ─── */
+function LiveCounter() {
+  const [n, setN] = useState(847);
+  useEffect(() => {
+    const t = setInterval(() => setN(c => c + Math.floor(Math.random() * 2 + 1)), 4800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: L, borderRadius: 100, padding: "7px 18px", marginBottom: 28 }}>
+      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "blink 1.8s infinite" }} />
+      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>{n.toLocaleString()} customers securing priority slots now</span>
+    </div>
+  );
+}
 
-      {/* PRICING */}
-      <section id="pricing">
-        <div style={{ textAlign:"center", marginBottom:48 }}>
-          <div className="section-label fu">Transparent pricing</div>
-          <h2 className="section-title fu d1">Free to join.<br />We only earn when you earn.</h2>
-          <p style={{ fontSize:16, color:"#666", maxWidth:480, margin:"0 auto" }} className="fu d2">
-            No monthly software fee. No hidden charges. SubSeat takes a small commission only when you get paid.
+/* ─── HERO ─── */
+function Hero() {
+  return (
+    <section id="hero" style={{ minHeight: "100vh", padding: "168px 5% 80px", background: `linear-gradient(145deg, ${L} 0%, #f8f7ff 30%, ${W} 65%)`, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: `radial-gradient(circle, ${L} 0%, transparent 65%)`, opacity: .5 }} />
+      <div style={{ position: "absolute", bottom: -120, left: -120, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, ${L} 0%, transparent 65%)`, opacity: .35 }} />
+      <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", position: "relative", zIndex: 1 }} className="hero-grid section-inner">
+        <div>
+          <div className="fu d0"><LiveCounter /></div>
+          <h1 className="fu d1" style={{ fontWeight: 900, fontSize: "clamp(40px,5.5vw,72px)", lineHeight: 1.06, letterSpacing: "-2.5px", color: C, marginBottom: 24 }}>
+            Your seat,{" "}
+            <span style={{ color: P, position: "relative", display: "inline-block" }}>
+              your subscription.
+              <svg style={{ position: "absolute", bottom: -8, left: 0, width: "100%", height: 10 }} viewBox="0 0 500 10" preserveAspectRatio="none">
+                <path d="M0,8 Q125,0 250,8 Q375,16 500,8" stroke={P} strokeWidth="2.5" fill="none" opacity=".3" />
+              </svg>
+            </span>
+          </h1>
+          <p className="fu d2" style={{ fontSize: "clamp(15px,1.7vw,18px)", color: "#555", lineHeight: 1.75, maxWidth: 500, marginBottom: 40 }}>
+            The smarter way to book barbers, salons and beauty professionals — while helping businesses earn predictable monthly income through memberships.
           </p>
-        </div>
-        <div className="three-col fu d1" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, maxWidth:960, margin:"0 auto" }}>
-          {[
-            {
-              name:"Basic",
-              price:"Free",
-              sub:"Forever free to list",
-              featured:false,
-              perks:["Unlimited services","Business profile page","QR code generator","Customer CRM","Basic analytics","5% commission on subscriptions"],
-              cta:"Get Started Free",
-              href:"/auth",
-            },
-            {
-              name:"Partner Seat",
-              price:"£19",
-              sub:"/month after launch · £39.99 founding fee",
-              featured:true,
-              perks:["Everything in Basic","Priority listing","Partner badge","Advanced analytics","WhatsApp notifications","Dedicated onboarding","Lower commission rate"],
-              cta:"Join as Partner",
-              href:"/auth",
-            },
-            {
-              name:"Enterprise",
-              price:"Custom",
-              sub:"Multi-location businesses",
-              featured:false,
-              perks:["Everything in Partner","Multi-location support","API access","Custom integrations","Account manager","SLA support","Custom commission"],
-              cta:"Contact Us",
-              href:"mailto:hello@subseat.co.uk",
-            },
-          ].map((p,i)=>(
-            <div key={i} className={`price-card ${p.featured?"featured":""}`}>
-              {p.featured && (
-                <div style={{ background:P, color:W, borderRadius:8, padding:"4px 12px", fontSize:11, fontWeight:800, display:"inline-block", marginBottom:16, letterSpacing:0.5 }}>
-                  MOST POPULAR
-                </div>
-              )}
-              <h3 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:4 }}>{p.name}</h3>
-              <div style={{ fontWeight:900, fontSize:36, color:p.featured?P:C, letterSpacing:"-1px", marginBottom:4 }}>{p.price}</div>
-              <div style={{ fontSize:12, color:"#888", marginBottom:24 }}>{p.sub}</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
-                {p.perks.map((perk,j)=>(
-                  <div key={j} style={{ display:"flex", gap:10, alignItems:"flex-start" }}>
-                    <span style={{ color:"#22c55e", fontSize:14, flexShrink:0, marginTop:1 }}>✓</span>
-                    <span style={{ fontSize:13, color:"#555" }}>{perk}</span>
+          <div className="fu d3 hero-btns" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 32 }}>
+            <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-primary">Find a Professional</button></a>
+            <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-secondary">Grow My Business</button></a>
+          </div>
+          <div className="fu d4">
+            <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Trusted by professionals across London, Birmingham, Manchester and beyond.</p>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }} className="hero-benefits">
+              {["Priority booking", "Fewer no-shows", "Recurring revenue", "Secure payments"].map(b => (
+                <div key={b} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: "50%", background: L, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="10" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3 4 7-8" stroke={P} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
-                ))}
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C }}>{b}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="hero-phone fu d5"><PhoneMockup /></div>
+      </div>
+      <div className="fu d6" style={{ maxWidth: 700, margin: "56px auto 0" }}>
+        <div className="search-wrap" style={{ background: W, borderRadius: 18, padding: "6px 6px 6px 22px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 16px 60px rgba(86,59,231,.14)", border: `1.5px solid ${L}` }}>
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke={P} strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+          <input className="search-input" placeholder="Search barbers, salons, nail techs near you..." onKeyDown={e => e.key === "Enter" && (window.location.href = "/discover")} />
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-primary" style={{ padding: "13px 24px", fontSize: 14, borderRadius: 12 }}>Search</button></a>
+        </div>
+        <p style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#aaa", fontWeight: 500 }}>Free to join. No setup fee.</p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── PATH CARDS ─── */
+function PathSection() {
+  return (
+    <section style={{ padding: "100px 5%", background: G }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <span className="section-label">Get Started</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px" }}>Built for both sides of the chair.</h2>
+        </div>
+        <div className="path-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {[
+            { tag: "For Customers", title: "Discover. Subscribe. Enjoy.", body: "Discover trusted professionals near you. Book instantly, subscribe for savings, and keep your favourite time slot.", cta: "Find a Professional", href: "/discover", dark: false },
+            { tag: "For Businesses", title: "Turn bookings into income.", body: "Turn one-off bookings into predictable monthly revenue. Build loyalty, reduce gaps, and grow faster.", cta: "Join SubSeat", href: "/onboarding", dark: true },
+          ].map((c, i) => (
+            <div key={i} className="lift" style={{ background: c.dark ? P : W, border: c.dark ? "none" : `2px solid ${L}`, borderRadius: 28, padding: "48px 44px", position: "relative", overflow: "hidden" }}>
+              {c.dark && <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, borderRadius: "50%", background: "rgba(255,255,255,.06)" }} />}
+              <div style={{ display: "inline-block", background: c.dark ? "rgba(255,255,255,.15)" : L, borderRadius: 100, padding: "5px 14px", marginBottom: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: c.dark ? W : P }}>{c.tag}</span>
               </div>
-              <a href={p.href} className={p.featured?"btn-hero-primary":"btn-hero-secondary"}
-                style={{ width:"100%", justifyContent:"center", borderRadius:12, fontSize:14 }}>
-                {p.cta}
+              <h3 style={{ fontWeight: 800, fontSize: 26, color: c.dark ? W : C, marginBottom: 14, letterSpacing: "-.5px" }}>{c.title}</h3>
+              <p style={{ fontSize: 15, color: c.dark ? "rgba(255,255,255,.75)" : "#666", lineHeight: 1.7, marginBottom: 32 }}>{c.body}</p>
+              <a href={c.href} style={{ textDecoration: "none" }}>
+                <button className={c.dark ? "btn-white" : "btn-primary"}>{c.cta}</button>
               </a>
             </div>
           ))}
         </div>
-        <p style={{ textAlign:"center", fontSize:13, color:"#aaa", marginTop:24 }}>
-          No hidden fees ever. Commission only applies to subscription revenue processed through SubSeat.
-        </p>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ECOSYSTEM */}
-      <section style={{ background:G }}>
-        <div style={{ textAlign:"center", marginBottom:48 }}>
-          <div className="section-label fu">The SubSeat ecosystem</div>
-          <h2 className="section-title fu d1">Built to power your business</h2>
-          <p style={{ fontSize:16, color:"#666", maxWidth:480, margin:"0 auto" }} className="fu d2">
-            SubSeat is building the complete operating system for independent beauty and wellness professionals.
-          </p>
+/* ─── CATEGORIES ─── */
+function Categories() {
+  const cats = [
+    { label: "Barbers",      img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&q=80" },
+    { label: "Hair Salons",  img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=500&q=80" },
+    { label: "Nail Techs",   img: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=500&q=80" },
+    { label: "Brow Artists", img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=80" },
+    { label: "Lash Artists", img: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?w=500&q=80" },
+    { label: "Massage",      img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80" },
+    { label: "Skincare",     img: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=500&q=80" },
+    { label: "Wellness",     img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&q=80" },
+  ];
+  return (
+    <section id="categories" style={{ padding: "100px 5%", background: W }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <span className="section-label">Discover</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 8 }}>Find your perfect professional.</h2>
         </div>
-        <div className="three-col fu d1" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, maxWidth:900, margin:"0 auto" }}>
-          {[
-            { icon:"🛒", title:"Marketplace",  desc:"Tools, equipment and supplies for professionals. Everything you need to run your business, in one place."    },
-            { icon:"💼", title:"Finance",       desc:"Funding, growth loans and financial support tailored for independent professionals and small businesses."     },
-            { icon:"🛡️", title:"Insurance",    desc:"Simple, affordable business protection built for sole traders, freelancers and self-employed professionals."  },
-          ].map((e,i)=>(
-            <div key={i} className="eco-card">
-              <div style={{ fontSize:40, marginBottom:14 }}>{e.icon}</div>
-              <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:8 }}>{e.title}</h3>
-              <p style={{ fontSize:13, color:"#666", lineHeight:1.6 }}>{e.desc}</p>
-              <div style={{ marginTop:16, fontSize:12, fontWeight:700, color:P }}>Coming soon →</div>
+        <div className="cat-grid reveal" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
+          {cats.map((c, i) => (
+            <a key={i} href={`/discover?category=${c.label.toLowerCase().replace(/\s+/g, "-")}`} style={{ textDecoration: "none" }}>
+              <div className="lift-sm" style={{ position: "relative", borderRadius: 20, overflow: "hidden", height: 210 }}>
+                <img src={c.img} alt={c.label} className="cat-img" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(23,23,23,.85) 0%, rgba(23,23,23,.05) 55%, transparent 100%)" }} />
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 18px" }}>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: W }}>{c.label}</div>
+                </div>
+                <div style={{ position: "absolute", top: 12, right: 12, background: P, borderRadius: 100, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: W }}>View</div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div style={{ textAlign: "center", marginTop: 40 }}>
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-secondary">Explore All Categories</button></a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── HOW IT WORKS ─── */
+function HowItWorks() {
+  const cols = [
+    { side: "For Customers", dark: false, steps: [
+      { n: "01", title: "Find your professional",  body: "Search by location, category and availability. Browse real profiles and reviews." },
+      { n: "02", title: "Book or subscribe",        body: "Choose a one-off booking or a monthly membership plan that suits your routine." },
+      { n: "03", title: "Keep your routine",        body: "Priority slots, WhatsApp reminders and seamless repeat bookings — every time." },
+    ]},
+    { side: "For Businesses", dark: true, steps: [
+      { n: "01", title: "Join for free",            body: "Create your profile and list services in under 10 minutes. Your QR code is ready instantly." },
+      { n: "02", title: "Launch memberships",       body: "Offer monthly plans your customers love. Set your own prices and policies." },
+      { n: "03", title: "Earn monthly",             body: "Build predictable recurring income. Better retention, fewer gaps, more growth." },
+    ]},
+  ];
+  return (
+    <section id="how-it-works" style={{ padding: "100px 5%", background: G }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 70 }}>
+          <span className="section-label">How It Works</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px" }}>Simple for everyone.</h2>
+        </div>
+        <div className="hiw-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64 }}>
+          {cols.map((col, ci) => (
+            <div key={ci}>
+              <div style={{ display: "inline-block", background: col.dark ? C : L, borderRadius: 100, padding: "7px 22px", marginBottom: 40 }}>
+                <span style={{ fontWeight: 700, fontSize: 13, color: col.dark ? W : P }}>{col.side}</span>
+              </div>
+              {col.steps.map((s, i) => (
+                <div key={i} className="hiw-step" style={{ display: "flex", gap: 20, marginBottom: 36, alignItems: "flex-start" }}>
+                  <div className="hiw-num" style={{ minWidth: 56, height: 56, borderRadius: 16, background: col.dark ? C : P, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: col.dark ? "none" : "0 4px 16px rgba(86,59,231,.28)" }}>
+                    <span style={{ fontWeight: 900, fontSize: 15, color: W }}>{s.n}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 17, color: C, marginBottom: 6 }}>{s.title}</div>
+                    <div style={{ fontSize: 14, color: "#666", lineHeight: 1.65 }}>{s.body}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <div className="cta-section">
-        <div className="section-label fu" style={{ color:"rgba(255,255,255,.7)" }}>Ready?</div>
-        <h2 className="fu d1" style={{ fontSize:"clamp(32px,5vw,56px)", fontWeight:900, color:W, letterSpacing:"-1px", marginBottom:16 }}>
-          Ready to take control<br />of your bookings?
-        </h2>
-        <p className="fu d2" style={{ fontSize:17, color:"rgba(255,255,255,.8)", marginBottom:36, maxWidth:440, margin:"0 auto 36px" }}>
-          Join early. Build your routine. Secure your spot.
-        </p>
-        <div className="btn-row fu d3" style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
-          <a href="/discover" style={{ display:"inline-flex", alignItems:"center", gap:8, background:W, color:P, border:"none", padding:"16px 32px", borderRadius:14, fontFamily:"Poppins", fontWeight:800, fontSize:16, cursor:"pointer", textDecoration:"none", boxShadow:"0 8px 32px rgba(0,0,0,.2)" }}>
-            Book Now
-          </a>
-          <a href="/auth" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,.15)", color:W, border:"2px solid rgba(255,255,255,.4)", padding:"15px 32px", borderRadius:14, fontFamily:"Poppins", fontWeight:800, fontSize:16, cursor:"pointer", textDecoration:"none" }}>
-            Grow My Business
-          </a>
-        </div>
-        <p className="fu d4" style={{ color:"rgba(255,255,255,.6)", fontSize:13, marginTop:20 }}>
-          Free to join · No setup fees · Cancel anytime
-        </p>
       </div>
+    </section>
+  );
+}
 
-      {/* FOOTER */}
-      <footer>
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:48 }} className="four-col">
-          <div>
-            <Logo />
-            <p style={{ color:"rgba(255,255,255,.5)", fontSize:13, marginTop:14, lineHeight:1.7, maxWidth:260 }}>
-              The UK's subscription booking platform for barbers, salons and beauty professionals.
-            </p>
-            <div style={{ display:"flex", gap:12, marginTop:20 }}>
-              {["Instagram","TikTok","WhatsApp"].map(s=>(
-                <div key={s} style={{ background:"rgba(255,255,255,.1)", borderRadius:8, padding:"7px 12px", fontSize:11, fontWeight:700, color:"rgba(255,255,255,.6)", cursor:"pointer" }}>{s}</div>
+/* ─── BUSINESS GROWTH (DARK) ─── */
+function BusinessGrowth() {
+  return (
+    <section style={{ padding: "100px 5%", background: C, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -150, right: -150, width: 500, height: 500, borderRadius: "50%", background: `radial-gradient(circle, ${P}22 0%, transparent 65%)` }} />
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", gap: 80, alignItems: "center", flexWrap: "wrap" }} className="growth-flex">
+        <div style={{ flex: 1, minWidth: 280 }}>
+          <span className="section-label" style={{ background: "rgba(86,59,231,.25)", color: L }}>For Businesses</span>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4vw,52px)", color: W, letterSpacing: "-2px", marginBottom: 20, lineHeight: 1.08 }}>Turn bookings into predictable income.</h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,.6)", lineHeight: 1.75, marginBottom: 36, maxWidth: 440 }}>
+            SubSeat helps barbers, salons and beauty professionals create monthly recurring revenue through memberships — not just one-off appointments.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 40 }}>
+            {["Increase repeat visits", "Reduce no-show gaps", "Build customer loyalty", "Grow with confidence"].map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${P}44`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="10" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3 4 7-8" stroke={L} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </div>
+                <span style={{ fontSize: 14, color: "rgba(255,255,255,.7)", fontWeight: 500 }}>{s}</span>
+              </div>
+            ))}
+          </div>
+          <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-white">Grow My Business</button></a>
+        </div>
+        <div style={{ flex: 1, minWidth: 300, display: "flex", justifyContent: "center" }}>
+          <div className="growth-dash" style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 24, padding: 28, backdropFilter: "blur(12px)", maxWidth: 520, width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginBottom: 4 }}>Good morning, Marcus</div>
+                <div style={{ fontWeight: 800, fontSize: 20, color: W }}>Your Dashboard</div>
+              </div>
+              <div style={{ background: "#22c55e", borderRadius: 100, padding: "5px 14px", fontSize: 12, fontWeight: 700, color: W }}>Live</div>
+            </div>
+            <div className="dash-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+              {[
+                { label: "Active Subscribers", val: "127", delta: "+12 this month" },
+                { label: "Monthly Revenue",    val: "£7,493", delta: "+18% vs last month" },
+                { label: "Upcoming Today",     val: "14",    delta: "Next: 10:00 AM" },
+                { label: "Retention Rate",     val: "91%",   delta: "↑ Excellent" },
+              ].map((s, i) => (
+                <div key={i} className="dash-card">
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", marginBottom: 8 }}>{s.label}</div>
+                  <div style={{ fontSize: 26, fontWeight: 900, color: W, letterSpacing: "-1px", marginBottom: 4 }}>{s.val}</div>
+                  <div style={{ fontSize: 11, color: "#22c55e", fontWeight: 600 }}>{s.delta}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: "rgba(255,255,255,.06)", borderRadius: 14, padding: "14px 18px", border: "1px solid rgba(255,255,255,.08)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.5)", marginBottom: 12, letterSpacing: 1 }}>TODAY'S APPOINTMENTS</div>
+              {[{ name: "Jordan M.", time: "10:00 AM", svc: "Fade & Line Up" }, { name: "Alex T.", time: "11:30 AM", svc: "Cut & Beard Trim" }, { name: "Ryan K.", time: "1:00 PM", svc: "Monthly Trim" }].map((a, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: W }}>{a.name}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)" }}>{a.svc}</div>
+                  </div>
+                  <div style={{ background: "rgba(86,59,231,.3)", borderRadius: 8, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: L }}>{a.time}</div>
+                </div>
               ))}
             </div>
           </div>
-          {[
-            { title:"Platform",  links:["Find Professionals","List Your Business","Pricing","How It Works"]  },
-            { title:"Company",   links:["About","Blog","Careers","Press"]                                    },
-            { title:"Support",   links:["Help Centre","Contact Us","Privacy Policy","Terms of Service"]      },
-          ].map((col,i)=>(
-            <div key={i}>
-              <div style={{ fontWeight:800, fontSize:13, color:W, marginBottom:16, textTransform:"uppercase", letterSpacing:0.5 }}>{col.title}</div>
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {col.links.map(l=>(
-                  <a key={l} href="#" style={{ fontSize:13, color:"rgba(255,255,255,.5)", textDecoration:"none", transition:"color .2s" }}
-                    onMouseEnter={e=>e.target.style.color=W}
-                    onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.5)"}>
-                    {l}
-                  </a>
-                ))}
-              </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── WHY SUBSEAT ─── */
+function WhySubSeat() {
+  const rows = [
+    { f: "Revenue model",         us: "Membership-based — predictable",   ind: "Per-appointment, volatile" },
+    { f: "Cancellation impact",   us: "Subscription already paid",         ind: "Revenue lost per no-show" },
+    { f: "Platform fee",          us: "Simple 5% platform fee",            ind: "Up to 35% on some platforms" },
+    { f: "Hidden charges",        us: "No hidden monthly charges",         ind: "Fees can change anytime" },
+    { f: "Visibility",            us: "Equal for all businesses",          ind: "Pay-to-boost common" },
+    { f: "Notifications",         us: "WhatsApp + email",                  ind: "Email only — standard" },
+    { f: "Ecosystem tools",       us: "Marketplace, finance, insurance",   ind: "Booking only" },
+  ];
+  return (
+    <section id="why" style={{ padding: "100px 5%", background: W }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <div style={{ maxWidth: 640, marginBottom: 56 }}>
+          <span className="section-label">Why SubSeat</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 16 }}>Built differently. On purpose.</h2>
+          <p style={{ fontSize: 16, color: "#666", lineHeight: 1.7 }}>Traditional booking platforms were built for transactions. SubSeat was built for relationships, loyalty and recurring revenue.</p>
+        </div>
+        <div className="reveal" style={{ border: `1.5px solid ${L}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 4px 32px rgba(86,59,231,.08)" }}>
+          <div className="compare-head" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: P, padding: "16px 28px" }}>
+            {["Feature", "SubSeat", "Industry Standard"].map((h, i) => (
+              <span key={i} className={i === 2 ? "compare-col3" : ""} style={{ fontWeight: 700, fontSize: 13, color: W, opacity: i === 0 ? .65 : 1 }}>{h}</span>
+            ))}
+          </div>
+          {rows.map((r, i) => (
+            <div key={i} className="compare-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", padding: "16px 28px", background: i % 2 === 0 ? W : G, borderTop: `1px solid ${L}`, alignItems: "center" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: C }}>{r.f}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: P }}>{r.us}</span>
+              <span className="compare-col3" style={{ fontSize: 13, color: "#999" }}>{r.ind}</span>
             </div>
           ))}
         </div>
-        <div style={{ borderTop:"1px solid rgba(255,255,255,.08)", paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>© 2025 SubSeat Ltd. All rights reserved. Registered in England & Wales.</div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>hello@subseat.co.uk</div>
+        <p style={{ fontSize: 11, color: "#ccc", marginTop: 14, textAlign: "center" }}>Industry comparisons based on publicly available platform data as of 2025. SubSeat is independently operated.</p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── PRICING ─── */
+function Pricing() {
+  const tiers = [
+    {
+      name: "Basic Seat", price: "Free", sub: "No monthly fee — ever", hi: false, badge: null,
+      features: ["Up to 3 services listed", "Full booking calendar", "Email & WhatsApp alerts", "QR code for walk-in conversion", "Your own SubSeat profile page", "Stripe-secured payouts"],
+      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
+      cta: "Start Free",
+    },
+    {
+      name: "Partner Seat", price: "£39.99", sub: "One-time founding price", hi: true, badge: "Pre-Launch Price",
+      features: ["Everything in Basic", "Partner badge on profile", "Advanced revenue analytics", "Priority WhatsApp support", "Early access to new features", "Staff & commission tracking", "Unlimited service listings"],
+      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
+      cta: "Claim Founding Access",
+    },
+    {
+      name: "Enterprise", price: "Custom", sub: "Multi-site & growing brands", hi: false, badge: null,
+      features: ["Everything in Partner", "Multi-location dashboard", "Dedicated account manager", "Custom API integrations", "SLA support guarantee", "Bespoke onboarding"],
+      note: "Get in touch and we'll build the right plan for your business.",
+      cta: "Contact Us",
+    },
+  ];
+  return (
+    <section id="pricing" style={{ padding: "100px 5%", background: G }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 70 }}>
+          <span className="section-label">For Businesses</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 10 }}>Honest pricing. No surprises.</h2>
+          <p style={{ fontSize: 16, color: "#666" }}>Free to join. We only earn when you earn. 5% platform fee + VAT applies.</p>
         </div>
-      </footer>
+        <div className="pri-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, alignItems: "start" }}>
+          {tiers.map((t, i) => (
+            <div key={i} className={`lift ${t.hi ? "pri-featured" : ""}`} style={{ background: t.hi ? P : W, border: t.hi ? "none" : `2px solid ${L}`, borderRadius: 24, padding: "40px 32px", position: "relative", boxShadow: t.hi ? "0 32px 80px rgba(86,59,231,.38)" : "0 2px 16px rgba(86,59,231,.06)", transform: t.hi ? "scale(1.04)" : "scale(1)" }}>
+              {t.badge && <div style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,.2)", borderRadius: 100, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: W }}>{t.badge}</div>}
+              <div style={{ fontWeight: 700, fontSize: 13, color: t.hi ? "rgba(255,255,255,.6)" : "#888", marginBottom: 14 }}>{t.name}</div>
+              <div style={{ fontWeight: 900, fontSize: 48, color: t.hi ? W : C, letterSpacing: "-2.5px", marginBottom: 4 }}>{t.price}</div>
+              <div style={{ fontSize: 13, color: t.hi ? "rgba(255,255,255,.5)" : "#bbb", marginBottom: 32 }}>{t.sub}</div>
+              <div style={{ borderTop: `1px solid ${t.hi ? "rgba(255,255,255,.16)" : L}`, paddingTop: 28, marginBottom: 20 }}>
+                {t.features.map((f, j) => (
+                  <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 13 }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: 2, flexShrink: 0 }}><circle cx="8" cy="8" r="8" fill={t.hi ? "rgba(255,255,255,.2)" : L} /><path d="M5 8l2 2 4-4" stroke={t.hi ? W : P} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <span style={{ fontSize: 14, color: t.hi ? "rgba(255,255,255,.82)" : "#555", lineHeight: 1.5 }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: t.hi ? "rgba(255,255,255,.4)" : "#ccc", marginBottom: 24, lineHeight: 1.55 }}>{t.note}</p>
+              <a href="/auth" style={{ textDecoration: "none" }}>
+                <button style={{ width: "100%", padding: 16, borderRadius: 12, fontWeight: 700, fontSize: 15, fontFamily: "Poppins", background: t.hi ? W : P, color: t.hi ? P : W, border: "none", cursor: "pointer", transition: "all .2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = ".88"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "translateY(0)"; }}
+                >{t.cta}</button>
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── ABOUT SUBSEAT ─── */
+function About() {
+  const cards = [
+    { icon: "👤", title: "Customers",  body: "Book trusted professionals faster. Subscribe to your favourites and never lose your slot." },
+    { icon: "📈", title: "Businesses", body: "Build recurring monthly revenue through memberships. Predictable income, better retention." },
+    { icon: "🏙️", title: "Industry",   body: "Reduce no-shows across the board. Increase loyalty and grow the self-care economy." },
+  ];
+  return (
+    <section id="about" style={{ padding: "100px 5%", background: W }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: 620, marginBottom: 64 }}>
+          <span className="section-label">About</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 20 }}>Built for the new self-care economy.</h2>
+          <p style={{ fontSize: 17, color: "#555", lineHeight: 1.8 }}>
+            SubSeat helps customers book smarter and helps professionals earn predictable monthly income through subscriptions and memberships.
+          </p>
+        </div>
+        <div className="about-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+          {cards.map((c, i) => (
+            <div key={i} className="lift" style={{ background: i === 1 ? P : G, border: i === 1 ? "none" : `1.5px solid ${L}`, borderRadius: 24, padding: "44px 36px", position: "relative", overflow: "hidden" }}>
+              {i === 1 && <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,.07)" }} />}
+              <div style={{ fontSize: 44, marginBottom: 20 }}>{c.icon}</div>
+              <h3 style={{ fontWeight: 800, fontSize: 22, color: i === 1 ? W : C, marginBottom: 12, letterSpacing: "-.5px" }}>{c.title}</h3>
+              <p style={{ fontSize: 14, color: i === 1 ? "rgba(255,255,255,.75)" : "#666", lineHeight: 1.7 }}>{c.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── ECOSYSTEM ─── */
+function Ecosystem() {
+  const cards = [
+    { id: "marketplace", icon: "🛍️", title: "Marketplace",  body: "Buy and sell chairs, tools, furniture and equipment. A trusted marketplace built for professionals." },
+    { id: "finance",     icon: "💰", title: "Finance",      body: "Funding and growth support built for salons and barbers. Simple applications, fast decisions." },
+    { id: "insurance",   icon: "🛡️", title: "Insurance",   body: "Simple cover for professionals and businesses. Get protected in minutes, not days." },
+  ];
+  return (
+    <section id="ecosystem" style={{ padding: "100px 5%", background: G }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 60 }}>
+          <span className="section-label">The SubSeat Ecosystem</span>
+          <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 10 }}>More than bookings.</h2>
+          <p style={{ fontSize: 16, color: "#666", maxWidth: 520, margin: "0 auto" }}>SubSeat is building the full operating system for self-care professionals.</p>
+        </div>
+        <div className="eco-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
+          {cards.map((c, i) => (
+            <div key={i} id={c.id} className="lift" style={{ background: W, borderRadius: 24, padding: "44px 36px", border: `1.5px solid ${L}`, position: "relative", boxShadow: "0 2px 16px rgba(86,59,231,.06)" }}>
+              <div style={{ position: "absolute", top: 20, right: 20, background: L, borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: P }}>Coming Soon</div>
+              <div style={{ fontSize: 44, marginBottom: 20 }}>{c.icon}</div>
+              <h3 style={{ fontWeight: 800, fontSize: 22, color: C, marginBottom: 12, letterSpacing: "-.5px" }}>{c.title}</h3>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7 }}>{c.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FINAL CTA ─── */
+function FinalCTA() {
+  return (
+    <section style={{ padding: "120px 5%", background: `linear-gradient(135deg, ${P} 0%, #7c5cff 50%, #4429d4 100%)`, position: "relative", overflow: "hidden", textAlign: "center" }}>
+      <div style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,.06)" }} />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 680, margin: "0 auto" }}>
+        <span style={{ display: "inline-block", background: "rgba(255,255,255,.15)", borderRadius: 100, padding: "6px 18px", fontSize: 12, fontWeight: 700, color: W, letterSpacing: 2, textTransform: "uppercase", marginBottom: 24 }}>Join the Future</span>
+        <h2 style={{ fontWeight: 900, fontSize: "clamp(32px,5vw,64px)", color: W, letterSpacing: "-2.5px", lineHeight: 1.06, marginBottom: 20 }}>Ready to join the future of self-care?</h2>
+        <p style={{ fontSize: 17, color: "rgba(255,255,255,.72)", marginBottom: 48, lineHeight: 1.7 }}>
+          Whether you're booking your next appointment or growing your business, SubSeat is where recurring self-care begins.
+        </p>
+        <div className="final-btns" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+          <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-white">Find a Professional</button></a>
+          <a href="/onboarding" style={{ textDecoration: "none" }}><button className="btn-white-outline">Grow My Business</button></a>
+        </div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,.45)", marginTop: 24 }}>Free to join. No setup fee.</p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── FOOTER ─── */
+function Footer() {
+  const cols = [
+    { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","#marketplace"]] },
+    { h: "Business",  links: [["Pricing","#pricing"],["Dashboard","#why"],["Partners","#about"]] },
+    { h: "Company",   links: [["About","#about"],["Contact","#"],["Press","#"]] },
+    { h: "Legal",     links: [["Privacy Policy","#"],["Terms of Service","#"]] },
+  ];
+  return (
+    <footer id="footer" style={{ background: C, padding: "72px 5% 40px" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 48, marginBottom: 60 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+              <Logo size={34} />
+              <span style={{ fontWeight: 800, fontSize: 20, color: W }}>SubSeat</span>
+            </div>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,.4)", lineHeight: 1.75, maxWidth: 260, marginBottom: 20 }}>
+              The subscription booking ecosystem for beauty and wellness professionals.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              {["𝕏", "in", "ig"].map((s, i) => (
+                <div key={i} className="lift-sm" style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "rgba(255,255,255,.5)", fontWeight: 700 }}>{s}</div>
+              ))}
+            </div>
+          </div>
+          {cols.map((col, i) => (
+            <div key={i}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: W, marginBottom: 20, letterSpacing: 1.5, textTransform: "uppercase" }}>{col.h}</div>
+              {col.links.map(([l, h]) => (
+                <div key={l} style={{ marginBottom: 12 }}>
+                  <a href={h} style={{ fontSize: 14, color: "rgba(255,255,255,.4)", textDecoration: "none", transition: "color .18s" }}
+                    onMouseEnter={e => e.target.style.color = W}
+                    onMouseLeave={e => e.target.style.color = "rgba(255,255,255,.4)"}
+                  >{l}</a>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,.28)" }}>© 2026 SubSeat Ltd. All rights reserved.</span>
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,.28)", fontStyle: "italic" }}>SubSeat® is a UK registered trademark.</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── ROOT ─── */
+export default function SubSeatHome() {
+  const [scrolled, setScrolled] = useState(false);
+  useReveal();
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  return (
+    <>
+      <style>{css}</style>
+      <FomoBar />
+      <Nav scrolled={scrolled} />
+      <Hero />
+      <Ticker />
+      <PathSection />
+      <Categories />
+      <HowItWorks />
+      <BusinessGrowth />
+      <WhySubSeat />
+      <Pricing />
+      <About />
+      <Ecosystem />
+      <FinalCTA />
+      <Ticker dark />
+      <Footer />
     </>
   );
 }
