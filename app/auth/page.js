@@ -78,10 +78,7 @@ export default function AuthPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: {
-          full_name: fullName,
-          role: role,
-        },
+        data: { full_name: fullName, role: role },
       },
     });
 
@@ -109,11 +106,9 @@ export default function AuthPage() {
       return;
     }
 
-    // Get role from user metadata
     const userRole = data.user?.user_metadata?.role;
 
     if (userRole === 'business') {
-      // Check if they have already completed onboarding
       const { data: business } = await supabase
         .from('businesses')
         .select('id')
@@ -121,14 +116,11 @@ export default function AuthPage() {
         .single();
 
       if (business) {
-        // Already onboarded — go to dashboard
         window.location.href = '/dashboard';
       } else {
-        // Not onboarded yet — go to onboarding
         window.location.href = '/onboarding';
       }
     } else {
-      // Customer — go to discover
       window.location.href = '/discover';
     }
 
@@ -140,7 +132,6 @@ export default function AuthPage() {
       <style>{css}</style>
       <div className="card" style={{ background: W, borderRadius: 28, padding: "40px 36px", maxWidth: 440, width: "100%", boxShadow: "0 32px 80px rgba(86,59,231,.18)" }}>
 
-        {/* LOGO */}
         <LogoMark />
         <h1 style={{ fontWeight: 900, fontSize: 26, color: C, textAlign: "center", marginBottom: 6, letterSpacing: "-.5px" }}>
           {mode === "signup" ? "Join SubSeat" : "Welcome back"}
@@ -149,17 +140,11 @@ export default function AuthPage() {
           {mode === "signup" ? "Create your free account today" : "Sign in to your account"}
         </p>
 
-        {/* TABS */}
         <div style={{ display: "flex", gap: 6, background: G, borderRadius: 12, padding: 4, marginBottom: 28 }}>
-          <button className={`tab ${mode === "signup" ? "active" : "inactive"}`} onClick={() => { setMode("signup"); setError(null); setMessage(null); }}>
-            Sign Up
-          </button>
-          <button className={`tab ${mode === "login" ? "active" : "inactive"}`} onClick={() => { setMode("login"); setError(null); setMessage(null); }}>
-            Sign In
-          </button>
+          <button className={`tab ${mode === "signup" ? "active" : "inactive"}`} onClick={() => { setMode("signup"); setError(null); setMessage(null); }}>Sign Up</button>
+          <button className={`tab ${mode === "login" ? "active" : "inactive"}`} onClick={() => { setMode("login"); setError(null); setMessage(null); }}>Sign In</button>
         </div>
 
-        {/* ROLE SELECTOR — signup only */}
         {mode === "signup" && (
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: C, marginBottom: 10 }}>I am a:</p>
@@ -178,81 +163,47 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* FORM */}
         <form onSubmit={mode === "signup" ? handleSignUp : handleLogin}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Full name — signup only */}
             {mode === "signup" && (
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Full Name</label>
-                <input
-                  className="input-field"
-                  type="text"
-                  placeholder="Your full name"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  required
-                />
+                <input className="input-field" type="text" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
               </div>
             )}
-
-            {/* Email */}
             <div>
               <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Email Address</label>
-              <input
-                className="input-field"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
+              <input className="input-field" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
-
-            {/* Password */}
             <div>
               <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Password</label>
-              <input
-                className="input-field"
-                type="password"
-                placeholder={mode === "signup" ? "Min 8 characters" : "Your password"}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
+              <input className="input-field" type="password" placeholder={mode === "signup" ? "Min 8 characters" : "Your password"} value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
             </div>
           </div>
 
-          {/* ERROR */}
           {error && (
             <div style={{ background: "#fff5f5", border: "1.5px solid #ffcccc", borderRadius: 10, padding: "12px 14px", marginTop: 16 }}>
               <p style={{ fontSize: 13, color: "#e53e3e", fontWeight: 500 }}>⚠️ {error}</p>
             </div>
           )}
 
-          {/* SUCCESS */}
           {message && (
             <div style={{ background: "#f0fff4", border: "1.5px solid #9ae6b4", borderRadius: 10, padding: "12px 14px", marginTop: 16 }}>
               <p style={{ fontSize: 13, color: "#276749", fontWeight: 500 }}>✅ {message}</p>
             </div>
           )}
 
-          {/* SUBMIT */}
           <button className="btn-primary" type="submit" disabled={loading} style={{ marginTop: 24 }}>
             {loading ? "Please wait..." : mode === "signup" ? "Create My Account" : "Sign In"}
           </button>
         </form>
 
-        {/* FOOTER NOTE */}
         <p style={{ fontSize: 12, color: "#bbb", textAlign: "center", marginTop: 20, lineHeight: 1.6 }}>
           {mode === "signup"
             ? "By signing up you agree to SubSeat's Terms of Service and Privacy Policy. Free to join."
             : "Forgot your password? Contact support@subseat.co.uk"}
         </p>
 
-        {/* BACK HOME */}
         <div style={{ textAlign: "center", marginTop: 20 }}>
           <a href="/" style={{ fontSize: 13, color: P, fontWeight: 600, textDecoration: "none" }}>← Back to SubSeat</a>
         </div>
