@@ -46,6 +46,15 @@ const css = `
   }
   .role-card.selected { border-color: ${P}; background: ${L}; }
   .role-card:hover { border-color: ${P}; }
+  .eye-btn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #aaa;
+    display: flex; align-items: center; padding: 4px;
+    transition: color .2s;
+  }
+  .eye-btn:hover { color: ${P}; }
+  .pw-wrap { position: relative; }
+  .pw-wrap .input-field { padding-right: 48px; }
 `;
 
 function LogoMark() {
@@ -57,15 +66,29 @@ function LogoMark() {
   );
 }
 
+function EyeIcon({ open }) {
+  return open ? (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+}
+
 export default function AuthPage() {
-  const [mode, setMode] = useState("signup");
-  const [role, setRole] = useState("customer");
-  const [email, setEmail] = useState("");
+  const [mode, setMode]         = useState("signup");
+  const [role, setRole]         = useState("customer");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw]     = useState(false);
   const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [message, setMessage]   = useState(null);
+  const [error, setError]       = useState(null);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -106,21 +129,27 @@ export default function AuthPage() {
       return;
     }
 
-    const userRole = data.user?.user_metadata?.role;
+    const user = data.user;
+    const userRole = user?.user_metadata?.role;
 
     if (userRole === 'business') {
+      // Check if they have already completed onboarding
+      // Use maybeSingle() to avoid error when no row found
       const { data: business } = await supabase
         .from('businesses')
-        .select('id')
-        .eq('owner_id', data.user.id)
-        .single();
+        .select('id, slug')
+        .eq('owner_id', user.id)
+        .maybeSingle();
 
       if (business) {
+        // Has a business profile — go straight to dashboard
         window.location.href = '/dashboard';
       } else {
+        // No business profile yet — go to onboarding
         window.location.href = '/onboarding';
       }
     } else {
+      // Customer — go to discover
       window.location.href = '/discover';
     }
 
@@ -140,11 +169,13 @@ export default function AuthPage() {
           {mode === "signup" ? "Create your free account today" : "Sign in to your account"}
         </p>
 
+        {/* TABS */}
         <div style={{ display: "flex", gap: 6, background: G, borderRadius: 12, padding: 4, marginBottom: 28 }}>
           <button className={`tab ${mode === "signup" ? "active" : "inactive"}`} onClick={() => { setMode("signup"); setError(null); setMessage(null); }}>Sign Up</button>
           <button className={`tab ${mode === "login" ? "active" : "inactive"}`} onClick={() => { setMode("login"); setError(null); setMessage(null); }}>Sign In</button>
         </div>
 
+        {/* ROLE SELECTOR — signup only */}
         {mode === "signup" && (
           <div style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: C, marginBottom: 10 }}>I am a:</p>
@@ -163,30 +194,52 @@ export default function AuthPage() {
           </div>
         )}
 
+        {/* FORM */}
         <form onSubmit={mode === "signup" ? handleSignUp : handleLogin}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* Full name — signup only */}
             {mode === "signup" && (
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Full Name</label>
                 <input className="input-field" type="text" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} required />
               </div>
             )}
+
+            {/* Email */}
             <div>
               <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Email Address</label>
               <input className="input-field" type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
+
+            {/* Password with eye toggle */}
             <div>
               <label style={{ fontSize: 13, fontWeight: 600, color: C, display: "block", marginBottom: 6 }}>Password</label>
-              <input className="input-field" type="password" placeholder={mode === "signup" ? "Min 8 characters" : "Your password"} value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
+              <div className="pw-wrap">
+                <input
+                  className="input-field"
+                  type={showPw ? "text" : "password"}
+                  placeholder={mode === "signup" ? "Min 8 characters" : "Your password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                <button type="button" className="eye-btn" onClick={() => setShowPw(!showPw)} tabIndex={-1}>
+                  <EyeIcon open={showPw} />
+                </button>
+              </div>
             </div>
           </div>
 
+          {/* ERROR */}
           {error && (
             <div style={{ background: "#fff5f5", border: "1.5px solid #ffcccc", borderRadius: 10, padding: "12px 14px", marginTop: 16 }}>
               <p style={{ fontSize: 13, color: "#e53e3e", fontWeight: 500 }}>⚠️ {error}</p>
             </div>
           )}
 
+          {/* SUCCESS */}
           {message && (
             <div style={{ background: "#f0fff4", border: "1.5px solid #9ae6b4", borderRadius: 10, padding: "12px 14px", marginTop: 16 }}>
               <p style={{ fontSize: 13, color: "#276749", fontWeight: 500 }}>✅ {message}</p>
