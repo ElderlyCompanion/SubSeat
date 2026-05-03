@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import StaffSystem from "../components/StaffSystem";
 
 const P = "#563BE7";
 const L = "#E9E6FF";
@@ -80,11 +81,11 @@ const css = `
     font-size:13px; font-weight:600; color:${C};
     border:1.5px solid transparent; position:relative;
   }
-  .cal-day:hover   { background:${L}; border-color:${P}; }
-  .cal-day.today   { background:${P}; color:${W}; }
+  .cal-day:hover    { background:${L}; border-color:${P}; }
+  .cal-day.today    { background:${P}; color:${W}; }
   .cal-day.has-appt { border-color:${P}; color:${P}; }
   .cal-day.selected { background:${L}; border-color:${P}; }
-  .cal-day.other   { color:#ccc; }
+  .cal-day.other    { color:#ccc; }
 
   .appt-slot {
     background:${L}; border-radius:12px; padding:14px 16px;
@@ -117,7 +118,6 @@ const css = `
   }
 `;
 
-/* ── HELPERS ── */
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const fmt    = d => new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
@@ -125,13 +125,14 @@ const fmtT   = d => new Date(d).toLocaleTimeString("en-GB",{hour:"2-digit",minut
 
 /* ── SIDEBAR ── */
 const NAV = [
-  { id:"overview",    icon:"📊", label:"Overview"       },
-  { id:"calendar",    icon:"📅", label:"Calendar"       },
-  { id:"bookings",    icon:"📋", label:"All Bookings"   },
-  { id:"services",    icon:"💼", label:"Services"       },
-  { id:"subscribers", icon:"👥", label:"Subscribers"    },
-  { id:"profile",     icon:"🏪", label:"Edit Profile"   },
-  { id:"share",       icon:"🔗", label:"Share & QR"     },
+  { id:"overview",    icon:"📊", label:"Overview"     },
+  { id:"calendar",    icon:"📅", label:"Calendar"     },
+  { id:"bookings",    icon:"📋", label:"All Bookings" },
+  { id:"services",    icon:"💼", label:"Services"     },
+  { id:"subscribers", icon:"👥", label:"Subscribers"  },
+  { id:"staff",       icon:"🧑‍🤝‍🧑", label:"Staff & Team" },
+  { id:"profile",     icon:"🏪", label:"Edit Profile" },
+  { id:"share",       icon:"🔗", label:"Share & QR"   },
 ];
 
 function Sidebar({ active, setActive, business, onSignOut }) {
@@ -164,9 +165,9 @@ function Sidebar({ active, setActive, business, onSignOut }) {
 
 /* ── OVERVIEW ── */
 function Overview({ business, subscribers, bookings, services, setActive }) {
-  const today     = bookings.filter(b => new Date(b.start_time).toDateString() === new Date().toDateString());
-  const mrr       = subscribers.reduce((a,s) => a + parseFloat(s.monthly_price||0), 0);
-  const oneOffs   = bookings.filter(b => b.booking_type === "one_off");
+  const today   = bookings.filter(b => new Date(b.start_time).toDateString() === new Date().toDateString());
+  const mrr     = subscribers.reduce((a,s) => a + parseFloat(s.monthly_price||0), 0);
+  const oneOffs = bookings.filter(b => b.booking_type === "one_off");
 
   return (
     <div>
@@ -175,13 +176,12 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
         <p style={{ fontSize:14, color:"#888", marginTop:4 }}>Here's what's happening today.</p>
       </div>
 
-      {/* STATS */}
       <div className="stats-grid fu" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:24 }}>
         {[
-          { label:"Today's Appointments", val:today.length,                        icon:"📅", color:P          },
-          { label:"Active Subscribers",   val:subscribers.length,                  icon:"👥", color:"#22c55e"  },
-          { label:"Monthly Revenue",      val:`£${mrr.toFixed(0)}`,                icon:"💰", color:"#f59e0b"  },
-          { label:"One-Off Bookings",     val:oneOffs.length,                      icon:"📋", color:"#8b5cf6"  },
+          { label:"Today's Appointments", val:today.length,             icon:"📅", color:P         },
+          { label:"Active Subscribers",   val:subscribers.length,       icon:"👥", color:"#22c55e" },
+          { label:"Monthly Revenue",      val:`£${mrr.toFixed(0)}`,     icon:"💰", color:"#f59e0b" },
+          { label:"One-Off Bookings",     val:oneOffs.length,           icon:"📋", color:"#8b5cf6" },
         ].map((s,i)=>(
           <div key={i} className="stat-card fu" style={{ animationDelay:`${i*.05}s` }}>
             <div style={{ fontSize:26, marginBottom:8 }}>{s.icon}</div>
@@ -191,7 +191,6 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
         ))}
       </div>
 
-      {/* TODAY'S APPOINTMENTS */}
       <div className="fu d1" style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:18 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
           <h3 style={{ fontWeight:700, fontSize:16, color:C }}>Today's Appointments</h3>
@@ -217,15 +216,14 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
         ))}
       </div>
 
-      {/* QUICK ACTIONS */}
       <div className="fu d2" style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:18 }}>
         <h3 style={{ fontWeight:700, fontSize:16, color:C, marginBottom:16 }}>Quick Actions</h3>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           {[
-            { label:"Add Service",      icon:"➕", action:()=>setActive("services")    },
-            { label:"View Calendar",    icon:"📅", action:()=>setActive("calendar")    },
-            { label:"Share Profile",    icon:"🔗", action:()=>setActive("share")       },
-            { label:"Edit Profile",     icon:"✏️", action:()=>setActive("profile")     },
+            { label:"Add Service",   icon:"➕", action:()=>setActive("services")  },
+            { label:"View Calendar", icon:"📅", action:()=>setActive("calendar")  },
+            { label:"Manage Staff",  icon:"👥", action:()=>setActive("staff")     },
+            { label:"Share Profile", icon:"🔗", action:()=>setActive("share")     },
           ].map((a,i)=>(
             <button key={i} onClick={a.action}
               style={{ display:"flex", alignItems:"center", gap:8, background:L, border:"none", borderRadius:10, padding:"10px 16px", fontFamily:"Poppins", fontWeight:600, fontSize:13, color:P, cursor:"pointer" }}>
@@ -235,7 +233,6 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
         </div>
       </div>
 
-      {/* PROFILE URL */}
       <div className="fu d3" style={{ background:`linear-gradient(135deg,${P} 0%,#7c5cff 100%)`, borderRadius:18, padding:24 }}>
         <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.75)", marginBottom:6 }}>🔗 Your SubSeat Profile</div>
         <div style={{ fontWeight:800, fontSize:17, color:W, marginBottom:12 }}>subseat.co.uk/{business?.category}/{business?.slug}</div>
@@ -250,18 +247,18 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
 
 /* ── CALENDAR ── */
 function Calendar({ bookings, business }) {
-  const [current, setCurrent] = useState(new Date());
-  const [selected, setSelected] = useState(null);
-  const [showAddBooking, setShowAddBooking] = useState(false);
-  const [newBooking, setNewBooking] = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
-  const [saving, setSaving] = useState(false);
-  const [localBookings, setLocalBookings] = useState(bookings);
+  const [current, setCurrent]         = useState(new Date());
+  const [selected, setSelected]       = useState(null);
+  const [showAddBooking, setShowAdd]  = useState(false);
+  const [newBooking, setNewBooking]   = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
+  const [saving, setSaving]           = useState(false);
+  const [localBookings, setLocalBkgs] = useState(bookings);
 
-  const year  = current.getFullYear();
-  const month = current.getMonth();
-  const first = new Date(year, month, 1).getDay();
+  const year        = current.getFullYear();
+  const month       = current.getMonth();
+  const first       = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  const today = new Date();
+  const today       = new Date();
 
   const getDayBookings = (day) => localBookings.filter(b => {
     const d = new Date(b.start_time);
@@ -275,8 +272,7 @@ function Calendar({ bookings, business }) {
     const startDt = new Date(year, month, selected);
     const [h,m]   = newBooking.time.split(":").map(Number);
     startDt.setHours(h, m, 0, 0);
-    const endDt   = new Date(startDt.getTime() + newBooking.duration * 60000);
-
+    const endDt = new Date(startDt.getTime() + newBooking.duration * 60000);
     const { data, error } = await supabase.from("bookings").insert({
       business_id:   business.id,
       customer_id:   null,
@@ -284,15 +280,12 @@ function Calendar({ bookings, business }) {
       end_time:      endDt.toISOString(),
       status:        "confirmed",
       booking_type:  newBooking.type,
-      payment_status: newBooking.type==="cash_walk_in" ? "cash_paid" : "pay_in_shop",
+      payment_status: newBooking.type==="cash_walk_in"?"cash_paid":"pay_in_shop",
       source:        "admin",
       notes:         newBooking.notes || newBooking.customer_name,
     }).select().single();
-
-    if (!error && data) {
-      setLocalBookings(prev => [...prev, data]);
-    }
-    setShowAddBooking(false);
+    if (!error && data) setLocalBkgs(prev=>[...prev, data]);
+    setShowAdd(false);
     setNewBooking({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
     setSaving(false);
   };
@@ -301,18 +294,15 @@ function Calendar({ bookings, business }) {
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h2 style={{ fontWeight:800, fontSize:22, color:C }}>Calendar</h2>
-        <button className="btn-p" onClick={()=>setShowAddBooking(true)}>+ Add Booking</button>
+        <button className="btn-p" onClick={()=>setShowAdd(true)}>+ Add Booking</button>
       </div>
 
-      {/* ADD BOOKING MODAL */}
       {showAddBooking && (
         <>
-          <div onClick={()=>setShowAddBooking(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", zIndex:998, backdropFilter:"blur(4px)" }} />
+          <div onClick={()=>setShowAdd(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", zIndex:998, backdropFilter:"blur(4px)" }} />
           <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:999, background:W, borderRadius:"24px 24px 0 0", padding:"28px 24px 40px", maxWidth:520, margin:"0 auto", boxShadow:"0 -8px 60px rgba(0,0,0,.2)" }}>
             <div style={{ width:40, height:4, borderRadius:4, background:"#e0e0e0", margin:"0 auto 20px" }} />
-            <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:18 }}>
-              Add Booking {selected ? `— ${months[month]} ${selected}` : ""}
-            </h3>
+            <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:18 }}>Add Booking {selected?`— ${months[month]} ${selected}`:""}</h3>
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               <div>
                 <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:4 }}>Customer Name</label>
@@ -335,11 +325,7 @@ function Calendar({ bookings, business }) {
               <div>
                 <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:4 }}>Booking Type</label>
                 <div style={{ display:"flex", gap:8 }}>
-                  {[
-                    { val:"one_off",      label:"One-Off"    },
-                    { val:"membership",   label:"Membership" },
-                    { val:"cash_walk_in", label:"Cash/Walk-In" },
-                  ].map(t=>(
+                  {[{val:"one_off",label:"One-Off"},{val:"membership",label:"Membership"},{val:"cash_walk_in",label:"Cash/Walk-In"}].map(t=>(
                     <button key={t.val} className={`type-tab ${newBooking.type===t.val?"active":""}`} onClick={()=>setNewBooking({...newBooking,type:t.val})}>{t.label}</button>
                   ))}
                 </div>
@@ -350,7 +336,7 @@ function Calendar({ bookings, business }) {
               </div>
               <div style={{ display:"flex", gap:10 }}>
                 <button className="btn-p" onClick={handleAddBooking} disabled={saving} style={{ flex:2 }}>{saving?"Saving...":"Confirm Booking"}</button>
-                <button onClick={()=>setShowAddBooking(false)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
+                <button onClick={()=>setShowAdd(false)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
               </div>
             </div>
           </div>
@@ -358,7 +344,6 @@ function Calendar({ bookings, business }) {
       )}
 
       <div className="cal-grid-col" style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:20 }}>
-        {/* CALENDAR */}
         <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
             <button onClick={()=>setCurrent(new Date(year,month-1,1))} style={{ background:G, border:"none", borderRadius:8, width:36, height:36, cursor:"pointer", fontSize:18, display:"flex", alignItems:"center", justifyContent:"center" }}>‹</button>
@@ -371,20 +356,16 @@ function Calendar({ bookings, business }) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
             {Array(first===0?6:first-1).fill(null).map((_,i)=><div key={`e${i}`} />)}
             {Array(daysInMonth).fill(null).map((_,i)=>{
-              const day      = i+1;
-              const isToday  = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();
-              const dayBkgs  = getDayBookings(day);
-              const isSel    = selected===day;
+              const day     = i+1;
+              const isToday = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();
+              const dayBkgs = getDayBookings(day);
+              const isSel   = selected===day;
               return (
-                <div key={day}
-                  className={`cal-day ${isToday?"today":""} ${dayBkgs.length>0&&!isToday?"has-appt":""} ${isSel&&!isToday?"selected":""}`}
-                  onClick={()=>setSelected(day)}>
+                <div key={day} className={`cal-day ${isToday?"today":""} ${dayBkgs.length>0&&!isToday?"has-appt":""} ${isSel&&!isToday?"selected":""}`} onClick={()=>setSelected(day)}>
                   {day}
                   {dayBkgs.length>0 && (
                     <div style={{ display:"flex", gap:2, marginTop:2 }}>
-                      {dayBkgs.slice(0,3).map((_,j)=>(
-                        <div key={j} style={{ width:4, height:4, borderRadius:"50%", background:isToday?W:P }} />
-                      ))}
+                      {dayBkgs.slice(0,3).map((_,j)=><div key={j} style={{ width:4, height:4, borderRadius:"50%", background:isToday?W:P }} />)}
                     </div>
                   )}
                 </div>
@@ -393,40 +374,28 @@ function Calendar({ bookings, business }) {
           </div>
         </div>
 
-        {/* DAY DETAIL */}
         <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-            <h3 style={{ fontWeight:700, fontSize:16, color:C }}>
-              {selected ? `${months[month]} ${selected}` : "Select a day"}
-            </h3>
-            {selected && (
-              <button className="btn-p" style={{ fontSize:12, padding:"7px 14px" }} onClick={()=>setShowAddBooking(true)}>+ Add</button>
-            )}
+            <h3 style={{ fontWeight:700, fontSize:16, color:C }}>{selected?`${months[month]} ${selected}`:"Select a day"}</h3>
+            {selected && <button className="btn-p" style={{ fontSize:12, padding:"7px 14px" }} onClick={()=>setShowAdd(true)}>+ Add</button>}
           </div>
-
           {!selected && (
             <div style={{ textAlign:"center", padding:"32px 0", color:"#aaa" }}>
               <div style={{ fontSize:36, marginBottom:8 }}>📅</div>
               <div style={{ fontSize:13 }}>Click a day to view appointments</div>
             </div>
           )}
-
           {selected && selectedBookings.length===0 && (
             <div style={{ textAlign:"center", padding:"32px 0", color:"#aaa" }}>
               <div style={{ fontSize:36, marginBottom:8 }}>✅</div>
               <div style={{ fontSize:13, marginBottom:12 }}>No appointments</div>
-              <button className="btn-p" style={{ fontSize:12 }} onClick={()=>setShowAddBooking(true)}>Add Booking</button>
+              <button className="btn-p" style={{ fontSize:12 }} onClick={()=>setShowAdd(true)}>Add Booking</button>
             </div>
           )}
-
           {selectedBookings.map((b,i)=>(
             <div key={i} className="appt-slot">
-              <div style={{ fontWeight:700, fontSize:14, color:C, marginBottom:4 }}>
-                {b.notes || `Appointment #${i+1}`}
-              </div>
-              <div style={{ fontSize:12, color:"#666", marginBottom:6 }}>
-                {fmtT(b.start_time)} — {fmtT(b.end_time)}
-              </div>
+              <div style={{ fontWeight:700, fontSize:14, color:C, marginBottom:4 }}>{b.notes||`Appointment #${i+1}`}</div>
+              <div style={{ fontSize:12, color:"#666", marginBottom:6 }}>{fmtT(b.start_time)} — {fmtT(b.end_time)}</div>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                 <span style={{ background:b.booking_type==="membership"?"#dcfce7":b.booking_type==="cash_walk_in"?"#fef3c7":"#e0e7ff", color:b.booking_type==="membership"?"#166534":b.booking_type==="cash_walk_in"?"#92400e":"#3730a3", borderRadius:100, padding:"2px 10px", fontSize:11, fontWeight:700 }}>
                   {b.booking_type==="cash_walk_in"?"Cash/Walk-In":b.booking_type==="membership"?"Membership":"One-Off"}
@@ -445,21 +414,14 @@ function Calendar({ bookings, business }) {
 function AllBookings({ bookings }) {
   const [filter, setFilter] = useState("all");
   const filtered = bookings.filter(b => filter==="all" ? true : b.booking_type===filter);
-
   return (
     <div>
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:16 }}>All Bookings</h2>
       <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
-        {[
-          { val:"all",         label:"All"         },
-          { val:"membership",  label:"Memberships" },
-          { val:"one_off",     label:"One-Off"     },
-          { val:"cash_walk_in",label:"Cash/Walk-In"},
-        ].map(f=>(
+        {[{val:"all",label:"All"},{val:"membership",label:"Memberships"},{val:"one_off",label:"One-Off"},{val:"cash_walk_in",label:"Cash/Walk-In"}].map(f=>(
           <button key={f.val} className={`type-tab ${filter===f.val?"active":""}`} onClick={()=>setFilter(f.val)}>{f.label}</button>
         ))}
       </div>
-
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
         {filtered.length===0 ? (
           <div style={{ textAlign:"center", padding:"40px 0", color:"#aaa" }}>
@@ -500,15 +462,11 @@ function AllBookings({ bookings }) {
 
 /* ── SERVICES ── */
 function Services({ services, businessId, onRefresh }) {
-  const [serviceType, setServiceType] = useState("membership");
-  const [showAdd, setShowAdd]         = useState(false);
-  const [saving, setSaving]           = useState(false);
-  const [newSvc, setNewSvc]           = useState({
-    name:"", monthly_price:"", one_off_price:"",
-    duration_minutes:45, description:"", service_type:"membership"
-  });
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving,  setSaving]  = useState(false);
+  const [newSvc,  setNewSvc]  = useState({ name:"", monthly_price:"", one_off_price:"", duration_minutes:45, description:"", service_type:"membership" });
 
-  const memberships = services.filter(s => !s.one_off_price || s.monthly_price);
+  const memberships = services.filter(s => s.monthly_price > 0);
   const oneOffs     = services.filter(s => s.one_off_price > 0);
 
   const handleAdd = async () => {
@@ -535,29 +493,20 @@ function Services({ services, businessId, onRefresh }) {
     onRefresh();
   };
 
-  const renderServiceCard = (s) => (
+  const renderCard = (s) => (
     <div key={s.id} className="service-card" style={{ marginBottom:12, opacity:s.is_active?1:.6 }}>
       <div style={{ flex:1 }}>
         <div style={{ fontWeight:700, fontSize:15, color:C, marginBottom:4 }}>{s.name}</div>
         <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:4 }}>
-          {s.monthly_price > 0 && (
-            <span style={{ fontSize:13, color:P, fontWeight:700 }}>£{parseFloat(s.monthly_price).toFixed(0)}/month</span>
-          )}
-          {s.one_off_price > 0 && (
-            <span style={{ fontSize:13, color:"#f59e0b", fontWeight:700 }}>£{parseFloat(s.one_off_price).toFixed(0)} one-off</span>
-          )}
+          {s.monthly_price > 0 && <span style={{ fontSize:13, color:P, fontWeight:700 }}>£{parseFloat(s.monthly_price).toFixed(0)}/month</span>}
+          {s.one_off_price > 0 && <span style={{ fontSize:13, color:"#f59e0b", fontWeight:700 }}>£{parseFloat(s.one_off_price).toFixed(0)} one-off</span>}
           <span style={{ fontSize:12, color:"#888" }}>⏱ {s.duration_minutes} mins</span>
         </div>
         {s.description && <div style={{ fontSize:12, color:"#aaa" }}>{s.description}</div>}
       </div>
       <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-        <span style={{ background:s.is_active?"#dcfce7":"#fee2e2", color:s.is_active?"#166534":"#991b1b", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>
-          {s.is_active?"Active":"Paused"}
-        </span>
-        <button onClick={()=>toggle(s.id, s.is_active)}
-          style={{ background:G, border:"none", borderRadius:8, padding:"7px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer" }}>
-          {s.is_active?"Pause":"Activate"}
-        </button>
+        <span style={{ background:s.is_active?"#dcfce7":"#fee2e2", color:s.is_active?"#166534":"#991b1b", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>{s.is_active?"Active":"Paused"}</span>
+        <button onClick={()=>toggle(s.id, s.is_active)} style={{ background:G, border:"none", borderRadius:8, padding:"7px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer" }}>{s.is_active?"Pause":"Activate"}</button>
       </div>
     </div>
   );
@@ -569,33 +518,27 @@ function Services({ services, businessId, onRefresh }) {
         <button className="btn-p" onClick={()=>setShowAdd(!showAdd)}>+ Add Service</button>
       </div>
 
-      {/* ADD SERVICE FORM */}
       {showAdd && (
         <div style={{ background:W, borderRadius:18, padding:24, border:`2px dashed ${P}`, marginBottom:20 }}>
           <h3 style={{ fontWeight:700, fontSize:16, color:C, marginBottom:16 }}>New Service</h3>
-
-          {/* SERVICE TYPE SELECTOR */}
           <div style={{ marginBottom:16 }}>
             <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:8 }}>Service Type</label>
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               {[
-                { val:"membership",  label:"📅 Subscription / Membership", desc:"Monthly recurring e.g. £59/month" },
-                { val:"one_off",     label:"💈 One-Off Service",            desc:"Single visit e.g. Skin Fade £25"  },
-                { val:"both",        label:"🔄 Both",                       desc:"Has both monthly and one-off price"},
+                { val:"membership", label:"📅 Subscription / Membership", desc:"Monthly recurring" },
+                { val:"one_off",    label:"💈 One-Off Service",            desc:"Single visit"     },
+                { val:"both",       label:"🔄 Both",                       desc:"Monthly + one-off"},
               ].map(t=>(
-                <button key={t.val}
-                  onClick={()=>setNewSvc({...newSvc,service_type:t.val})}
-                  style={{ flex:1, minWidth:140, padding:"12px 14px", borderRadius:12, border:`2px solid ${newSvc.service_type===t.val?P:"#eee"}`, background:newSvc.service_type===t.val?L:W, cursor:"pointer", textAlign:"left", transition:"all .2s" }}>
+                <button key={t.val} onClick={()=>setNewSvc({...newSvc,service_type:t.val})}
+                  style={{ flex:1, minWidth:130, padding:"12px 14px", borderRadius:12, border:`2px solid ${newSvc.service_type===t.val?P:"#eee"}`, background:newSvc.service_type===t.val?L:W, cursor:"pointer", textAlign:"left", transition:"all .2s" }}>
                   <div style={{ fontWeight:700, fontSize:13, color:newSvc.service_type===t.val?P:C, marginBottom:2 }}>{t.label}</div>
                   <div style={{ fontSize:11, color:"#888" }}>{t.desc}</div>
                 </button>
               ))}
             </div>
           </div>
-
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-            <input className="inp" placeholder="Service name (e.g. Skin Fade, Unlimited Cuts)" value={newSvc.name} onChange={e=>setNewSvc({...newSvc,name:e.target.value})} />
-
+            <input className="inp" placeholder="Service name" value={newSvc.name} onChange={e=>setNewSvc({...newSvc,name:e.target.value})} />
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}>
               {(newSvc.service_type==="membership"||newSvc.service_type==="both") && (
                 <div>
@@ -614,19 +557,7 @@ function Services({ services, businessId, onRefresh }) {
                 <input className="inp" type="number" placeholder="45" value={newSvc.duration_minutes} onChange={e=>setNewSvc({...newSvc,duration_minutes:e.target.value})} />
               </div>
             </div>
-
             <input className="inp" placeholder="Description (optional)" value={newSvc.description} onChange={e=>setNewSvc({...newSvc,description:e.target.value})} />
-
-            {/* UPSELL NOTE for one-off */}
-            {newSvc.service_type==="one_off" && (
-              <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:10, padding:"12px 14px" }}>
-                <div style={{ fontSize:12, fontWeight:700, color:"#166534", marginBottom:3 }}>💡 Conversion Tip</div>
-                <div style={{ fontSize:12, color:"#166534" }}>
-                  One-off customers will automatically receive a Day 7 upsell email showing how much they'd save with a monthly subscription.
-                </div>
-              </div>
-            )}
-
             <div style={{ display:"flex", gap:10 }}>
               <button className="btn-p" onClick={handleAdd} disabled={saving||!newSvc.name} style={{ flex:1 }}>{saving?"Saving...":"Add Service"}</button>
               <button onClick={()=>setShowAdd(false)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
@@ -635,35 +566,23 @@ function Services({ services, businessId, onRefresh }) {
         </div>
       )}
 
-      {/* MEMBERSHIP PLANS */}
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
           <span style={{ fontSize:20 }}>📅</span>
           <h3 style={{ fontWeight:700, fontSize:16, color:C }}>Subscription Plans</h3>
           <span style={{ background:L, borderRadius:100, padding:"2px 10px", fontSize:11, fontWeight:700, color:P }}>{memberships.length}</span>
         </div>
-        {memberships.length===0 ? (
-          <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa", fontSize:13 }}>
-            No subscription plans yet — add one above
-          </div>
-        ) : memberships.map(renderServiceCard)}
+        {memberships.length===0 ? <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa", fontSize:13 }}>No subscription plans yet</div> : memberships.map(renderCard)}
       </div>
 
-      {/* ONE-OFF SERVICES */}
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
           <span style={{ fontSize:20 }}>💈</span>
           <h3 style={{ fontWeight:700, fontSize:16, color:C }}>One-Off Services</h3>
           <span style={{ background:"#fef3c7", borderRadius:100, padding:"2px 10px", fontSize:11, fontWeight:700, color:"#92400e" }}>{oneOffs.length}</span>
         </div>
-        <p style={{ fontSize:12, color:"#888", marginBottom:16 }}>
-          Capture walk-in and cash customers. No SubSeat fee on one-off services. Day 7 upsell email sent automatically to convert them to subscribers.
-        </p>
-        {oneOffs.length===0 ? (
-          <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa", fontSize:13 }}>
-            No one-off services yet — add one above to capture cash customers
-          </div>
-        ) : oneOffs.map(renderServiceCard)}
+        <p style={{ fontSize:12, color:"#888", marginBottom:16 }}>No SubSeat fee on one-off services. Day 7 upsell email sent automatically.</p>
+        {oneOffs.length===0 ? <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa", fontSize:13 }}>No one-off services yet</div> : oneOffs.map(renderCard)}
       </div>
     </div>
   );
@@ -680,7 +599,6 @@ function Subscribers({ subscribers }) {
             <div style={{ fontSize:48, marginBottom:12 }}>👥</div>
             <h3 style={{ fontWeight:700, fontSize:18, color:C, marginBottom:8 }}>No subscribers yet</h3>
             <p style={{ fontSize:14, maxWidth:300, margin:"0 auto 20px" }}>Share your SubSeat profile link to start getting subscribers.</p>
-            <button className="btn-p" onClick={()=>navigator.clipboard.writeText(window.location.origin)}>Copy Profile Link</button>
           </div>
         ) : subscribers.map((s,i)=>(
           <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 0", borderBottom:i<subscribers.length-1?"1px solid #f0f0f0":"none" }}>
@@ -702,14 +620,14 @@ function Subscribers({ subscribers }) {
 /* ── PROFILE EDITOR ── */
 function ProfileEditor({ business, onRefresh }) {
   const [form, setForm] = useState({
-    business_name: business?.business_name||"",
-    description:   business?.description||"",
-    phone:         business?.phone||"",
-    email:         business?.email||"",
-    whatsapp_number: business?.whatsapp_number||"",
-    address:       business?.address||"",
-    city:          business?.city||"",
-    postcode:      business?.postcode||"",
+    business_name:   business?.business_name   || "",
+    description:     business?.description     || "",
+    phone:           business?.phone           || "",
+    email:           business?.email           || "",
+    whatsapp_number: business?.whatsapp_number || "",
+    address:         business?.address         || "",
+    city:            business?.city            || "",
+    postcode:        business?.postcode        || "",
   });
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -728,11 +646,11 @@ function ProfileEditor({ business, onRefresh }) {
       <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee" }}>
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
           {[
-            { label:"Business Name",  key:"business_name",   placeholder:"Your business name"      },
-            { label:"Phone",          key:"phone",            placeholder:"07700 000000"            },
-            { label:"Business Email", key:"email",            placeholder:"hello@yourbusiness.com"  },
-            { label:"WhatsApp",       key:"whatsapp_number",  placeholder:"07700 000000"            },
-            { label:"Street Address", key:"address",          placeholder:"14 Brick Lane"           },
+            { label:"Business Name",  key:"business_name",   placeholder:"Your business name"     },
+            { label:"Phone",          key:"phone",            placeholder:"07700 000000"           },
+            { label:"Business Email", key:"email",            placeholder:"hello@yourbusiness.com" },
+            { label:"WhatsApp",       key:"whatsapp_number",  placeholder:"07700 000000"           },
+            { label:"Street Address", key:"address",          placeholder:"14 Brick Lane"          },
           ].map(f=>(
             <div key={f.key}>
               <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>{f.label}</label>
@@ -766,45 +684,36 @@ function ProfileEditor({ business, onRefresh }) {
 function Share({ business }) {
   const [copied, setCopied] = useState(false);
   const url = `https://subseat.co.uk/${business?.category}/${business?.slug}`;
-
-  const copy = () => {
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(()=>setCopied(false), 2000);
-  };
-
   return (
     <div>
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:20 }}>Share & QR Code</h2>
-
       <div style={{ background:`linear-gradient(135deg,${P} 0%,#7c5cff 100%)`, borderRadius:20, padding:28, marginBottom:20 }}>
         <div style={{ fontSize:14, fontWeight:700, color:"rgba(255,255,255,.75)", marginBottom:8 }}>🔗 Your Profile URL</div>
         <div style={{ fontWeight:800, fontSize:18, color:W, marginBottom:16, wordBreak:"break-all" }}>{url}</div>
-        <button onClick={copy}
+        <button onClick={()=>{navigator.clipboard.writeText(url);setCopied(true);setTimeout(()=>setCopied(false),2000);}}
           style={{ background:"rgba(255,255,255,.2)", color:W, border:"1px solid rgba(255,255,255,.3)", borderRadius:10, padding:"12px 24px", fontFamily:"Poppins", fontWeight:700, fontSize:14, cursor:"pointer" }}>
           {copied?"✅ Copied!":"Copy Link"}
         </button>
       </div>
-
       <div className="two-col" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
         {[
-          { icon:"📸", platform:"Instagram",  tip:`Add to your Instagram bio: "${url}"` },
-          { icon:"💬", platform:"WhatsApp",   tip:"Share your link in your WhatsApp status or broadcast list" },
-          { icon:"🎵", platform:"TikTok",     tip:`Add to your TikTok bio: "${url}"` },
-          { icon:"📱", platform:"QR Code",    tip:"Download your QR code to print in your shop, on receipts or business cards" },
+          { icon:"📸", platform:"Instagram", tip:`Add to your Instagram bio: "${url}"` },
+          { icon:"💬", platform:"WhatsApp",  tip:"Share your link in your WhatsApp status or broadcast list" },
+          { icon:"🎵", platform:"TikTok",    tip:`Add to your TikTok bio: "${url}"` },
+          { icon:"📱", platform:"QR Code",   tip:"Download your QR code to print in your shop or on business cards" },
         ].map((s,i)=>(
           <div key={i} style={{ background:W, borderRadius:16, padding:20, border:"1.5px solid #eee" }}>
             <div style={{ fontSize:28, marginBottom:10 }}>{s.icon}</div>
             <div style={{ fontWeight:700, fontSize:15, color:C, marginBottom:6 }}>{s.platform}</div>
             <div style={{ fontSize:12, color:"#888", lineHeight:1.5 }}>{s.tip}</div>
             {s.platform==="WhatsApp" && (
-              <button onClick={()=>window.open(`https://wa.me/?text=Book with me on SubSeat: ${url}`, "_blank")}
+              <button onClick={()=>window.open(`https://wa.me/?text=Book with me on SubSeat: ${url}`,"_blank")}
                 style={{ marginTop:12, background:"#22c55e", color:W, border:"none", borderRadius:8, padding:"8px 16px", fontFamily:"Poppins", fontWeight:700, fontSize:12, cursor:"pointer" }}>
                 Share on WhatsApp
               </button>
             )}
             {s.platform==="QR Code" && (
-              <button onClick={()=>window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`, "_blank")}
+              <button onClick={()=>window.open(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`,"_blank")}
                 style={{ marginTop:12, background:P, color:W, border:"none", borderRadius:8, padding:"8px 16px", fontFamily:"Poppins", fontWeight:700, fontSize:12, cursor:"pointer" }}>
                 Download QR Code
               </button>
@@ -818,13 +727,13 @@ function Share({ business }) {
 
 /* ── ROOT ── */
 export default function DashboardPage() {
-  const [user,         setUser]        = useState(null);
-  const [business,     setBusiness]    = useState(null);
-  const [services,     setServices]    = useState([]);
-  const [subscribers,  setSubscribers] = useState([]);
-  const [bookings,     setBookings]    = useState([]);
-  const [loading,      setLoading]     = useState(true);
-  const [activeSection,setActive]      = useState("overview");
+  const [user,          setUser]    = useState(null);
+  const [business,      setBusiness]= useState(null);
+  const [services,      setServices]= useState([]);
+  const [subscribers,   setSubs]    = useState([]);
+  const [bookings,      setBookings]= useState([]);
+  const [loading,       setLoading] = useState(true);
+  const [activeSection, setActive]  = useState("overview");
 
   useEffect(()=>{ loadData(); },[]);
 
@@ -845,7 +754,7 @@ export default function DashboardPage() {
     ]);
 
     setServices(svcs||[]);
-    setSubscribers(subs||[]);
+    setSubs(subs||[]);
     setBookings(bkgs||[]);
     setLoading(false);
   };
@@ -898,6 +807,7 @@ export default function DashboardPage() {
           {activeSection==="bookings"    && <AllBookings {...props} />}
           {activeSection==="services"    && <Services    {...props} businessId={business?.id} />}
           {activeSection==="subscribers" && <Subscribers {...props} />}
+          {activeSection==="staff"       && <StaffSystem business={business} bookings={bookings} subscriptions={subscribers} isOwner={true} />}
           {activeSection==="profile"     && <ProfileEditor business={business} onRefresh={loadData} />}
           {activeSection==="share"       && <Share       business={business} />}
         </div>
