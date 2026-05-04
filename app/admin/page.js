@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import ProspectsCRM from "../components/ProspectsCRM";
 
 const P = "#563BE7";
 const W = "#ffffff";
@@ -105,39 +106,52 @@ const css = `
   .mobile-nav {
     display:none; position:fixed; bottom:0; left:0; right:0;
     background:#13131f; border-top:1px solid rgba(255,255,255,.08);
-    padding:8px 4px 12px; z-index:100; overflow-x:auto;
+    padding:6px 4px env(safe-area-inset-bottom,12px); z-index:100; overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .mobile-nav-inner { display:flex; gap:2px; min-width:max-content; margin:0 auto; padding:0 4px; }
   .mob-btn {
     display:flex; flex-direction:column; align-items:center; gap:3px;
-    padding:6px 10px; border-radius:10px; border:none; background:transparent;
+    padding:8px 12px; border-radius:10px; border:none; background:transparent;
     font-family:'Poppins',sans-serif; font-size:9px; font-weight:600;
     color:rgba(255,255,255,.45); cursor:pointer; transition:all .18s; white-space:nowrap;
+    min-height:44px; min-width:44px;
   }
   .mob-btn.active { background:${P}; color:${W}; }
-  .mob-btn .icon  { font-size:18px; }
+  .mob-btn .icon  { font-size:20px; }
+
+  /* MOBILE BUSINESS CARD */
+  .biz-card-mob {
+    background:#1a1a2e; border-radius:14px; padding:16px;
+    border:1px solid rgba(255,255,255,.08); margin-bottom:10px;
+  }
 
   /* LAYOUT */
   @media(min-width:901px) {
-    .sidebar-wrap { display:block !important; }
-    .mobile-nav   { display:none !important; }
-    .main-wrap    { padding-bottom:28px !important; }
+    .sidebar-wrap  { display:block !important; }
+    .mobile-nav    { display:none !important; }
+    .main-wrap     { padding-bottom:28px !important; }
+    .mob-only      { display:none !important; }
   }
   @media(max-width:900px) {
-    .admin-grid   { grid-template-columns:1fr !important; }
-    .sidebar-wrap { display:none !important; }
-    .mobile-nav   { display:flex !important; }
-    .main-wrap    { padding-bottom:90px !important; }
-    .stats-4      { grid-template-columns:1fr 1fr !important; }
-    .stats-3      { grid-template-columns:1fr 1fr !important; }
-    .two-col      { grid-template-columns:1fr !important; }
-    .trow         { padding:10px 12px; }
-    .hide-mob     { display:none !important; }
+    .admin-grid    { grid-template-columns:1fr !important; }
+    .sidebar-wrap  { display:none !important; }
+    .mobile-nav    { display:flex !important; }
+    .main-wrap     { padding-bottom:100px !important; }
+    .stats-4       { grid-template-columns:1fr 1fr !important; }
+    .stats-3       { grid-template-columns:1fr 1fr !important; }
+    .two-col       { grid-template-columns:1fr !important; }
+    .trow          { padding:10px 12px; }
+    .hide-mob      { display:none !important; }
+    .desk-only     { display:none !important; }
+    .btn           { min-height:40px; padding:9px 14px; }
+    .inp           { min-height:44px; font-size:16px !important; }
+    select.inp     { min-height:44px; }
   }
   @media(max-width:480px) {
-    .stats-4 { grid-template-columns:1fr 1fr !important; }
-    .card    { padding:16px; }
-    .stat-card { padding:16px; }
+    .stats-4   { grid-template-columns:1fr 1fr !important; }
+    .card      { padding:14px; }
+    .stat-card { padding:14px; }
   }
 `;
 
@@ -170,6 +184,7 @@ function Modal({ title, message, sub, confirmLabel="Confirm", danger=false, onCo
 /* ── SIDEBAR ── */
 const NAV = [
   { id:"overview",   icon:"📊", label:"Overview"    },
+  { id:"prospects",  icon:"🎯", label:"Pipeline"    },
   { id:"businesses", icon:"🏪", label:"Businesses"  },
   { id:"customers",  icon:"👥", label:"Customers"   },
   { id:"finance",    icon:"💰", label:"Finance"     },
@@ -177,11 +192,11 @@ const NAV = [
   { id:"disputes",   icon:"⚠️",  label:"Disputes"    },
   { id:"waitlist",   icon:"📝", label:"Waitlist"    },
   { id:"messages",   icon:"💬", label:"Messages"    },
-  { id:"promos",     icon:"🏷️", label:"Promo Codes" },
-  { id:"partners",   icon:"🎯", label:"Partners"    },
+  { id:"promos",     icon:"🏷️", label:"Promos"      },
+  { id:"partners",   icon:"🤝", label:"Partners"    },
   { id:"alerts",     icon:"🔔", label:"Alerts"      },
   { id:"audit",      icon:"📋", label:"Audit Log"   },
-  { id:"settings",   icon:"🌍", label:"Settings"    },
+  { id:"settings",   icon:"⚙️", label:"Settings"    },
 ];
 
 function Sidebar({ active, setActive }) {
@@ -365,49 +380,58 @@ function Businesses({ businesses, onRefresh, addAudit }) {
 
       <input className="inp" placeholder="Search by name, city or category..." value={search} onChange={e=>setSearch(e.target.value)} style={{ marginBottom:16 }} />
 
-      <div style={{ background:"#1a1a2e", borderRadius:14, border:"1px solid rgba(255,255,255,.08)", overflow:"hidden" }}>
-        <div className="trow" style={{ gridTemplateColumns:"2fr 1fr 1fr auto", background:"rgba(255,255,255,.04)" }}>
-          {["Business","Category / City","Status","Actions"].map(h=>(
-            <div key={h} style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,.35)", textTransform:"uppercase", letterSpacing:0.5 }}>{h}</div>
-          ))}
-        </div>
+      {list.length===0 && <div className="card" style={{ textAlign:"center", padding:"32px 0", color:"rgba(255,255,255,.3)", fontSize:13 }}>No businesses found</div>}
 
-        {list.length===0 && <div style={{ textAlign:"center", padding:"32px 0", color:"rgba(255,255,255,.3)", fontSize:13 }}>No businesses found</div>}
-
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
         {list.map(b=>(
-          <div key={b.id} className="trow" style={{ gridTemplateColumns:"2fr 1fr 1fr auto", opacity:isRemoved(b)?.55:1 }}>
-            <div>
-              <div style={{ fontWeight:700, fontSize:13, color:W }}>{b.business_name}</div>
-              <div style={{ fontSize:10, color:"rgba(255,255,255,.3)" }}>{b.slug}</div>
+          <div key={b.id} className="biz-card-mob" style={{ opacity:isRemoved(b)?.6:1 }}>
+            {/* TOP ROW */}
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10, gap:8 }}>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontWeight:700, fontSize:14, color:W, marginBottom:3 }}>{b.business_name}</div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:11, color:"rgba(255,255,255,.45)", textTransform:"capitalize" }}>{b.category?.replace(/-/g," ")}</span>
+                  {b.city && <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>· {b.city}</span>}
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:5, flexShrink:0, flexWrap:"wrap" }}>
+                {isRemoved(b)
+                  ? <span className="badge br">Removed</span>
+                  : <span className={`badge ${b.is_active?"bg":"br"}`}>{b.is_active?"Active":"Suspended"}</span>
+                }
+                {b.is_verified && !isRemoved(b) && <span className="badge bp">✓</span>}
+                {b.tier==="partner" && <span className="badge bp">Partner</span>}
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", textTransform:"capitalize" }}>{b.category?.replace(/-/g," ")}</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>{b.city||"—"}</div>
-            </div>
-            <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
-              {isRemoved(b)
-                ? <span className="badge br">Removed</span>
-                : <span className={`badge ${b.is_active?"bg":"br"}`}>{b.is_active?"Active":"Suspended"}</span>
-              }
-              {b.is_verified && !isRemoved(b) && <span className="badge bp hide-mob">✓</span>}
-            </div>
-            <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
+
+            {/* TIER SELECTOR */}
+            {!isRemoved(b) && (
+              <div style={{ marginBottom:10 }}>
+                <select value={b.tier||"basic"} onChange={e=>setTier(b.id,e.target.value,b.business_name)}
+                  style={{ width:"100%", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:8, padding:"9px 12px", color:W, fontFamily:"Poppins", fontSize:13, cursor:"pointer", outline:"none" }}>
+                  <option value="basic">Basic Tier</option>
+                  <option value="partner">Partner Tier</option>
+                  <option value="enterprise">Enterprise Tier</option>
+                </select>
+              </div>
+            )}
+
+            {/* ACTIONS */}
+            <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
               {isRemoved(b) ? (
-                <button className="btn btn-g" onClick={()=>restore(b)} disabled={busy===b.id}>Restore</button>
+                <button className="btn btn-g" onClick={()=>restore(b)} disabled={busy===b.id} style={{ flex:1, padding:"10px" }}>Restore</button>
               ) : (
                 <>
-                  <select value={b.tier||"basic"} onChange={e=>setTier(b.id,e.target.value,b.business_name)} className="hide-mob"
-                    style={{ background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.1)", borderRadius:7, padding:"5px 7px", color:W, fontFamily:"Poppins", fontSize:11, cursor:"pointer" }}>
-                    <option value="basic">Basic</option>
-                    <option value="partner">Partner</option>
-                    <option value="enterprise">Enterprise</option>
-                  </select>
-                  <button className="btn btn-w" onClick={()=>toggleActive(b)} disabled={busy===b.id} style={{ fontSize:11 }}>{b.is_active?"Suspend":"Activate"}</button>
-                  <button className="btn btn-pu hide-mob" onClick={()=>toggleVerified(b)} disabled={busy===b.id} style={{ fontSize:11 }}>{b.is_verified?"Unverify":"Verify"}</button>
-                  <a href={`/${b.category}/${b.slug}`} target="_blank" style={{ textDecoration:"none" }} className="hide-mob">
-                    <button className="btn btn-w" style={{ fontSize:11 }}>View</button>
+                  <button className="btn btn-w" onClick={()=>toggleActive(b)} disabled={busy===b.id} style={{ flex:1, padding:"10px" }}>
+                    {b.is_active?"Suspend":"Activate"}
+                  </button>
+                  <button className="btn btn-pu" onClick={()=>toggleVerified(b)} disabled={busy===b.id} style={{ flex:1, padding:"10px" }}>
+                    {b.is_verified?"Unverify":"Verify ✓"}
+                  </button>
+                  <a href={`/${b.category}/${b.slug}`} target="_blank" style={{ textDecoration:"none", flex:1 }}>
+                    <button className="btn btn-w" style={{ width:"100%", padding:"10px" }}>View</button>
                   </a>
-                  <button className="btn btn-r" onClick={()=>setConfirm({id:b.id,name:b.business_name})} disabled={busy===b.id} style={{ fontSize:11 }}>Remove</button>
+                  <button className="btn btn-r" onClick={()=>setConfirm({id:b.id,name:b.business_name})} disabled={busy===b.id} style={{ flex:1, padding:"10px" }}>Remove</button>
                 </>
               )}
             </div>
@@ -1116,21 +1140,22 @@ export default function AdminPage() {
   const section = () => {
     const props = { businesses, profiles, subscriptions, disputes, reviews, waitlist, onRefresh:loadData, addAudit, setActive, alerts };
     switch(active) {
-      case "overview":   return <Overview   {...props} />;
-      case "businesses": return <Businesses {...props} />;
-      case "customers":  return <Customers  {...props} />;
-      case "finance":    return <Finance    {...props} />;
-      case "reviews":    return <Reviews    {...props} />;
-      case "disputes":   return <Disputes   {...props} />;
-      case "waitlist":   return <Waitlist   {...props} />;
-      case "messages":   return <Messages   {...props} />;
-      case "promos":     return <Promos     {...props} />;
-      case "partners":   return <Partners   {...props} />;
-      case "alerts":     return <Alerts     alerts={alerts} />;
-      case "audit":      return <AuditLog   log={auditLog} />;
-      case "settings":   return <Settings   {...props} />;
-      case "analytics":  return <Analytics  {...props} />;
-      default:           return <Overview   {...props} />;
+      case "overview":   return <Overview    {...props} />;
+      case "prospects":  return <ProspectsCRM />;
+      case "businesses": return <Businesses  {...props} />;
+      case "customers":  return <Customers   {...props} />;
+      case "finance":    return <Finance     {...props} />;
+      case "reviews":    return <Reviews     {...props} />;
+      case "disputes":   return <Disputes    {...props} />;
+      case "waitlist":   return <Waitlist    {...props} />;
+      case "messages":   return <Messages    {...props} />;
+      case "promos":     return <Promos      {...props} />;
+      case "partners":   return <Partners    {...props} />;
+      case "alerts":     return <Alerts      alerts={alerts} />;
+      case "audit":      return <AuditLog    log={auditLog} />;
+      case "settings":   return <Settings    {...props} />;
+      case "analytics":  return <Analytics   {...props} />;
+      default:           return <Overview    {...props} />;
     }
   };
 
@@ -1139,24 +1164,27 @@ export default function AdminPage() {
       <style>{css}</style>
 
       {/* TOP NAV */}
-      <nav style={{ background:"#13131f", borderBottom:"1px solid rgba(255,255,255,.06)", padding:"0 16px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:30, height:30, borderRadius:8, background:P, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <nav style={{ background:"#13131f", borderBottom:"1px solid rgba(255,255,255,.06)", padding:"0 16px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ width:30, height:30, borderRadius:8, background:P, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", flexShrink:0 }}>
+            <div style={{ position:"absolute", right:-3, top:"50%", transform:"translateY(-50%)", width:8, height:8, borderRadius:"50%", background:W }} />
             <span style={{ color:W, fontWeight:900, fontSize:15 }}>S</span>
           </div>
-          <span style={{ fontWeight:800, fontSize:15, color:W }}>SubSeat</span>
-          <div style={{ background:"rgba(86,59,231,.3)", borderRadius:5, padding:"2px 7px", fontSize:9, fontWeight:700, color:"#a78bfa", letterSpacing:1 }}>ADMIN</div>
+          <span style={{ fontWeight:800, fontSize:14, color:W }}>SubSeat</span>
+          <div style={{ background:"rgba(86,59,231,.3)", borderRadius:5, padding:"2px 6px", fontSize:9, fontWeight:700, color:"#a78bfa", letterSpacing:1 }}>ADMIN</div>
           {alerts.length>0 && (
-            <div style={{ background:RED, borderRadius:"50%", width:18, height:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:W }}>
+            <button onClick={()=>setActive("alerts")} style={{ background:"#e53e3e", border:"none", borderRadius:"50%", width:20, height:20, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:W, cursor:"pointer" }}>
               {alerts.length}
-            </div>
+            </button>
           )}
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <div className="live-dot" style={{ width:6, height:6 }} />
-          <span style={{ fontSize:11, color:"#4ade80", fontWeight:600 }}>Live</span>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+            <div className="live-dot" style={{ width:6, height:6 }} />
+            <span style={{ fontSize:11, color:"#4ade80", fontWeight:600 }}>Live</span>
+          </div>
+          <button className="btn btn-w" style={{ fontSize:11, padding:"8px 14px", minHeight:36 }} onClick={loadData}>↻</button>
         </div>
-        <button className="btn btn-w" style={{ fontSize:11 }} onClick={loadData}>↻ Refresh</button>
       </nav>
 
       {/* LAYOUT */}
@@ -1178,4 +1206,4 @@ export default function AdminPage() {
       </div>
     </>
   );
-  }
+}
