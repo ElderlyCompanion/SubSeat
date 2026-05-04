@@ -1,0 +1,17 @@
+{
+  "name": "SubSeat",
+  "short_name": "SubSeat",
+  "description": "Subscription booking for barbers and salons",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#563BE7",
+  "theme_color": "#563BE7",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

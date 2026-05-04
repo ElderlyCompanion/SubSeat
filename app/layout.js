@@ -31,13 +31,13 @@ export const metadata = {
     "beauty subscription UK",
     "membership booking platform",
   ],
-  authors: [{ name: "SubSeat Ltd", url: "https://subseat.com" }],
+  authors: [{ name: "SubSeat Ltd", url: "https://subseat.co.uk" }],
   creator: "SubSeat Ltd",
   publisher: "SubSeat Ltd",
   category: "Beauty & Wellness Technology",
 
   /* CANONICAL */
-  metadataBase: new URL("https://subseat.com"),
+  metadataBase: new URL("https://subseat.co.uk"),
   alternates: {
     canonical: "/",
   },
@@ -46,7 +46,7 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "en_GB",
-    url: "https://subseat.com",
+    url: "https://subseat.co.uk",
     siteName: "SubSeat",
     title: "SubSeat — Your Seat, Your Subscription",
     description:
@@ -94,18 +94,21 @@ export const metadata = {
     title: "SubSeat",
   },
 
-  /* VERIFICATION — add your codes once you have them */
+  /* VERIFICATION */
   verification: {
-    google: "ADD_YOUR_GOOGLE_SEARCH_CONSOLE_CODE_HERE",
-    // bing: "ADD_BING_CODE_HERE",
+    google: "5pvbnbVURc5qCI8wf-gA6B6m8RuCyPlex7pIhbWWxBs",
   },
 
-  /* ICONS */
+  /* ICONS — updated to include SVG favicon */
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/favicon.svg",
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
 };
 
 /* ── AEO STRUCTURED DATA (Schema.org JSON-LD) ──
@@ -118,12 +121,12 @@ const structuredData = {
     /* 1. ORGANISATION */
     {
       "@type": "Organization",
-      "@id": "https://subseat.com/#organization",
+      "@id": "https://subseat.co.uk/#organization",
       name: "SubSeat",
-      url: "https://subseat.com",
+      url: "https://subseat.co.uk",
       logo: {
         "@type": "ImageObject",
-        url: "https://subseat.com/logo.png",
+        url: "https://subseat.co.uk/logo.png",
         width: 200,
         height: 200,
       },
@@ -144,11 +147,11 @@ const structuredData = {
     /* 2. SOFTWARE APPLICATION */
     {
       "@type": "SoftwareApplication",
-      "@id": "https://subseat.com/#software",
+      "@id": "https://subseat.co.uk/#software",
       name: "SubSeat",
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web, iOS, Android",
-      url: "https://subseat.com",
+      url: "https://subseat.co.uk",
       description:
         "SubSeat is a subscription booking SaaS platform that enables beauty and wellness professionals to offer monthly membership plans to their customers, replacing one-off appointments with predictable recurring revenue.",
       offers: [
@@ -157,7 +160,7 @@ const structuredData = {
           name: "Basic Seat",
           price: "0",
           priceCurrency: "GBP",
-          description: "Free to join. 5% platform fee on subscription revenue only.",
+          description: "Free to join. 6% platform fee on subscription revenue only.",
         },
         {
           "@type": "Offer",
@@ -178,16 +181,16 @@ const structuredData = {
     /* 3. WEBSITE */
     {
       "@type": "WebSite",
-      "@id": "https://subseat.com/#website",
-      url: "https://subseat.com",
+      "@id": "https://subseat.co.uk/#website",
+      url: "https://subseat.co.uk",
       name: "SubSeat",
       description: "The subscription booking platform for beauty and wellness professionals in the UK.",
-      publisher: { "@id": "https://subseat.com/#organization" },
+      publisher: { "@id": "https://subseat.co.uk/#organization" },
       potentialAction: {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: "https://subseat.com/search?q={search_term_string}",
+          urlTemplate: "https://subseat.co.uk/search?q={search_term_string}",
         },
         "query-input": "required name=search_term_string",
       },
@@ -196,16 +199,16 @@ const structuredData = {
     /* 4. SERVICE */
     {
       "@type": "Service",
-      "@id": "https://subseat.com/#service",
+      "@id": "https://subseat.co.uk/#service",
       name: "SubSeat Subscription Booking Platform",
-      provider: { "@id": "https://subseat.com/#organization" },
+      provider: { "@id": "https://subseat.co.uk/#organization" },
       serviceType: "Subscription Booking Platform",
       areaServed: {
         "@type": "Country",
         name: "United Kingdom",
       },
       description:
-        "SubSeat enables barbers, hair salons, nail technicians, lash artists, brow artists and wellness professionals to offer subscription membership plans. Customers pay monthly for unlimited or priority access. SubSeat charges a 5% platform fee on subscription revenue.",
+        "SubSeat enables barbers, hair salons, nail technicians, lash artists, brow artists and wellness professionals to offer subscription membership plans. Customers pay monthly for unlimited or priority access. SubSeat charges a simple 6% platform fee on subscription revenue.",
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "SubSeat Service Categories",
@@ -228,7 +231,7 @@ const structuredData = {
     */
     {
       "@type": "FAQPage",
-      "@id": "https://subseat.com/#faq",
+      "@id": "https://subseat.co.uk/#faq",
       mainEntity: [
         {
           "@type": "Question",
@@ -251,7 +254,7 @@ const structuredData = {
           name: "How does SubSeat work for businesses?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Businesses create a free profile on SubSeat in under 10 minutes, list their services and set monthly subscription prices. Customers subscribe and pay monthly. SubSeat charges a simple 5% platform fee on subscription revenue — there are no hidden monthly charges.",
+            text: "Businesses create a free profile on SubSeat in under 10 minutes, list their services and set monthly subscription prices. Customers subscribe and pay monthly. SubSeat charges a simple 6% platform fee on subscription revenue — there are no hidden monthly charges.",
           },
         },
         {
@@ -259,7 +262,7 @@ const structuredData = {
           name: "How much does SubSeat cost for businesses?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "SubSeat is free to join. The platform charges a simple 5% fee only on subscription revenue earned. There are no monthly fees, no setup costs and no hidden charges. A Partner Seat founding plan is available for a one-time fee of £39.99.",
+            text: "SubSeat is free to join. The platform charges a simple 6% fee only on subscription revenue earned. There are no monthly fees, no setup costs and no hidden charges. A Partner Seat founding plan is available for a one-time fee of £39.99.",
           },
         },
         {
@@ -275,7 +278,7 @@ const structuredData = {
           name: "What makes SubSeat different from Booksy, Fresha and Treatwell?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "SubSeat uses a subscription model rather than per-appointment booking, giving businesses predictable monthly income. SubSeat charges a simple 5% platform fee with no hidden charges, compared to up to 35% commission on other platforms. SubSeat also includes WhatsApp notifications, two-way calendar sync, and equal visibility for all businesses without pay-to-boost features.",
+            text: "SubSeat uses a subscription model rather than per-appointment booking, giving businesses predictable monthly income. SubSeat charges a simple 6% platform fee with no hidden charges, compared to up to 35% commission on other platforms. SubSeat also includes WhatsApp notifications, two-way calendar sync, and equal visibility for all businesses without pay-to-boost features.",
           },
         },
         {
