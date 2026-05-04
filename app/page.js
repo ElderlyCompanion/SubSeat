@@ -798,8 +798,8 @@ function Footer() {
   const cols = [
     { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","#marketplace"]] },
     { h: "Business",  links: [["Pricing","#pricing"],["Dashboard","#why"],["Partners","#about"]] },
-    { h: "Company",   links: [["About","#about"],["Contact","#"],["Press","#"]] },
-    { h: "Legal",     links: [["Privacy Policy","#"],["Terms of Service","#"]] },
+    { h: "Company",   links: [["About","/about"],["Contact","/contact"],["Press","/contact"]] },
+    { h: "Legal",     links: [["Privacy Policy","/privacy"],["Terms of Service","/terms"]] },
   ];
   return (
     <footer id="footer" style={{ background: C, padding: "72px 5% 40px" }}>
