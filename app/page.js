@@ -590,35 +590,6 @@ function SimpleCalculator() {
     </section>
   );
 }
-  return (
-    <section style={{ padding: "80px 5%", background: C, position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, ${P}30 0%, transparent 65%)` }} />
-      <div style={{ position: "absolute", bottom: -80, left: -80, width: 300, height: 300, borderRadius: "50%", background: `radial-gradient(circle, ${P}20 0%, transparent 65%)` }} />
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 64, alignItems: "center", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
-        {/* LEFT */}
-        <div style={{ flex: 1, minWidth: 280 }}>
-          <span style={{ display: "inline-block", background: "rgba(86,59,231,.3)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#a78bfa", letterSpacing: 2, textTransform: "uppercase", marginBottom: 18 }}>
-            For Businesses
-          </span>
-          <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4vw,48px)", color: W, letterSpacing: "-1.5px", lineHeight: 1.08, marginBottom: 16 }}>
-            See what your shop could earn.
-          </h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,.6)", lineHeight: 1.75, marginBottom: 32, maxWidth: 420 }}>
-            Use our free revenue calculator to see exactly how much recurring monthly income you could generate with SubSeat subscriptions — based on your own numbers.
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <a href="/business/revenue-calculator" style={{ textDecoration: "none" }}>
-              <button className="btn-white">Calculate My Revenue →</button>
-            </a>
-            <a href="/onboarding" style={{ textDecoration: "none" }}>
-              <button className="btn-white-outline">Join SubSeat Free</button>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ─── CATEGORIES ─── */
 function Categories() {
