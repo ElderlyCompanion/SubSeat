@@ -144,6 +144,7 @@ function Sidebar({ active, setActive, business, onSignOut }) {
         </div>
         <div style={{ fontWeight:800, fontSize:14, color:C, marginBottom:2 }}>{business?.business_name||"Your Business"}</div>
         <div style={{ fontSize:12, color:"#888" }}>{business?.city||""}</div>
+        {business?.is_mobile && <div style={{ display:"inline-block", background:"#f0fdf4", borderRadius:100, padding:"2px 10px", fontSize:10, fontWeight:700, color:"#166534", marginTop:4 }}>🚐 Mobile Pro</div>}
         {business?.tier==="partner" && <div style={{ display:"inline-block", background:P, borderRadius:100, padding:"2px 10px", fontSize:10, fontWeight:700, color:W, marginTop:6 }}>Partner ✓</div>}
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
@@ -158,6 +159,53 @@ function Sidebar({ active, setActive, business, onSignOut }) {
           </a>
           <button className="nav-item" onClick={onSignOut} style={{ color:"#e53e3e" }}><span>🚪</span>Sign Out</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── JOURNEY LINKS — for mobile barbers ── */
+function JourneyLinks({ booking }) {
+  if (!booking?.customer_address) return null;
+
+  const address   = `${booking.customer_address}${booking.customer_postcode ? ", " + booking.customer_postcode : ""}`;
+  const encoded   = encodeURIComponent(address);
+  const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${encoded}`;
+  const appleUrl  = `https://maps.apple.com/?daddr=${encoded}&dirflg=d`;
+  const wazeUrl   = `https://waze.com/ul?q=${encoded}&navigate=yes`;
+  const fmtTime   = booking.start_time
+    ? new Date(booking.start_time).toLocaleString("en-GB",{ weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })
+    : "";
+
+  return (
+    <div style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:14, padding:18, marginTop:12 }}>
+      <div style={{ marginBottom:12 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.65)", marginBottom:4, letterSpacing:1 }}>📍 JOURNEY TO CUSTOMER</div>
+        <div style={{ fontSize:14, fontWeight:800, color:W }}>{address}</div>
+        {fmtTime && <div style={{ fontSize:12, color:"rgba(255,255,255,.65)", marginTop:2 }}>🕐 {fmtTime}</div>}
+      </div>
+      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+        {[
+          { label:"🗺️ Google Maps", url:googleUrl, bg:W,                       color:P  },
+          { label:"🍎 Apple Maps",  url:appleUrl,  bg:"rgba(255,255,255,.15)", color:W  },
+          { label:"🔵 Waze",        url:wazeUrl,   bg:"rgba(255,255,255,.15)", color:W  },
+        ].map((btn,i) => (
+          <a key={i} href={btn.url} target="_blank" rel="noopener noreferrer"
+            style={{
+              flex:1, minWidth:100, display:"flex", alignItems:"center", justifyContent:"center",
+              gap:5, background:btn.bg, color:btn.color,
+              border: i > 0 ? "1px solid rgba(255,255,255,.3)" : "none",
+              borderRadius:9, padding:"10px 12px",
+              fontFamily:"Poppins,sans-serif", fontWeight:700, fontSize:12,
+              textDecoration:"none",
+            }}
+          >
+            {btn.label}
+          </a>
+        ))}
+      </div>
+      <div style={{ fontSize:11, color:"rgba(255,255,255,.45)", marginTop:10, textAlign:"center" }}>
+        Tap to open with live traffic in your maps app
       </div>
     </div>
   );
@@ -178,10 +226,10 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
 
       <div className="stats-grid fu" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:24 }}>
         {[
-          { label:"Today's Appointments", val:today.length,             icon:"📅", color:P         },
-          { label:"Active Subscribers",   val:subscribers.length,       icon:"👥", color:"#22c55e" },
-          { label:"Monthly Revenue",      val:`£${mrr.toFixed(0)}`,     icon:"💰", color:"#f59e0b" },
-          { label:"One-Off Bookings",     val:oneOffs.length,           icon:"📋", color:"#8b5cf6" },
+          { label:"Today's Appointments", val:today.length,         icon:"📅", color:P         },
+          { label:"Active Subscribers",   val:subscribers.length,   icon:"👥", color:"#22c55e" },
+          { label:"Monthly Revenue",      val:`£${mrr.toFixed(0)}`, icon:"💰", color:"#f59e0b" },
+          { label:"One-Off Bookings",     val:oneOffs.length,       icon:"📋", color:"#8b5cf6" },
         ].map((s,i)=>(
           <div key={i} className="stat-card fu" style={{ animationDelay:`${i*.05}s` }}>
             <div style={{ fontSize:26, marginBottom:8 }}>{s.icon}</div>
@@ -212,6 +260,8 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
                 {b.status}
               </span>
             </div>
+            {/* Journey links for mobile barbers on overview */}
+            {business?.is_mobile && <JourneyLinks booking={b} />}
           </div>
         ))}
       </div>
@@ -247,11 +297,11 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
 
 /* ── CALENDAR ── */
 function Calendar({ bookings, business }) {
-  const [current, setCurrent]         = useState(new Date());
-  const [selected, setSelected]       = useState(null);
-  const [showAddBooking, setShowAdd]  = useState(false);
-  const [newBooking, setNewBooking]   = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
-  const [saving, setSaving]           = useState(false);
+  const [current, setCurrent]       = useState(new Date());
+  const [selected, setSelected]     = useState(null);
+  const [showAddBooking, setShowAdd]= useState(false);
+  const [newBooking, setNewBooking] = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
+  const [saving, setSaving]         = useState(false);
   const [localBookings, setLocalBkgs] = useState(bookings);
 
   const year        = current.getFullYear();
@@ -274,15 +324,15 @@ function Calendar({ bookings, business }) {
     startDt.setHours(h, m, 0, 0);
     const endDt = new Date(startDt.getTime() + newBooking.duration * 60000);
     const { data, error } = await supabase.from("bookings").insert({
-      business_id:   business.id,
-      customer_id:   null,
-      start_time:    startDt.toISOString(),
-      end_time:      endDt.toISOString(),
-      status:        "confirmed",
-      booking_type:  newBooking.type,
+      business_id:    business.id,
+      customer_id:    null,
+      start_time:     startDt.toISOString(),
+      end_time:       endDt.toISOString(),
+      status:         "confirmed",
+      booking_type:   newBooking.type,
       payment_status: newBooking.type==="cash_walk_in"?"cash_paid":"pay_in_shop",
-      source:        "admin",
-      notes:         newBooking.notes || newBooking.customer_name,
+      source:         "admin",
+      notes:          newBooking.notes || newBooking.customer_name,
     }).select().single();
     if (!error && data) setLocalBkgs(prev=>[...prev, data]);
     setShowAdd(false);
@@ -374,6 +424,7 @@ function Calendar({ bookings, business }) {
           </div>
         </div>
 
+        {/* DAY DETAIL — with journey links for mobile barbers */}
         <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
             <h3 style={{ fontWeight:700, fontSize:16, color:C }}>{selected?`${months[month]} ${selected}`:"Select a day"}</h3>
@@ -402,6 +453,8 @@ function Calendar({ bookings, business }) {
                 </span>
                 <span style={{ background:"#f0fdf4", color:"#166534", borderRadius:100, padding:"2px 10px", fontSize:11, fontWeight:700 }}>{b.status}</span>
               </div>
+              {/* 🚐 JOURNEY LINKS — only shows for mobile barbers when customer address exists */}
+              {business?.is_mobile && <JourneyLinks booking={b} />}
             </div>
           ))}
         </div>
@@ -411,7 +464,7 @@ function Calendar({ bookings, business }) {
 }
 
 /* ── ALL BOOKINGS ── */
-function AllBookings({ bookings }) {
+function AllBookings({ bookings, business }) {
   const [filter, setFilter] = useState("all");
   const filtered = bookings.filter(b => filter==="all" ? true : b.booking_type===filter);
   return (
@@ -436,21 +489,28 @@ function AllBookings({ bookings }) {
               ))}
             </div>
             {filtered.map((b,i)=>(
-              <div key={b.id||i} className="booking-row" style={{ gridTemplateColumns:"2fr 1fr 1fr 1fr" }}>
-                <div>
-                  <div style={{ fontWeight:700, fontSize:13, color:C }}>{b.notes||"Appointment"}</div>
-                  <div style={{ fontSize:11, color:"#aaa" }}>{b.payment_status}</div>
+              <div key={b.id||i}>
+                <div className="booking-row" style={{ gridTemplateColumns:"2fr 1fr 1fr 1fr" }}>
+                  <div>
+                    <div style={{ fontWeight:700, fontSize:13, color:C }}>{b.notes||"Appointment"}</div>
+                    <div style={{ fontSize:11, color:"#aaa" }}>{b.payment_status}</div>
+                    {b.customer_address && <div style={{ fontSize:11, color:"#888", marginTop:2 }}>📍 {b.customer_address}</div>}
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, color:C }}>{fmt(b.start_time)}</div>
+                    <div style={{ fontSize:11, color:"#888" }}>{fmtT(b.start_time)}</div>
+                  </div>
+                  <span style={{ background:b.booking_type==="membership"?"#dcfce7":b.booking_type==="cash_walk_in"?"#fef3c7":"#e0e7ff", color:b.booking_type==="membership"?"#166534":b.booking_type==="cash_walk_in"?"#92400e":"#3730a3", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700, width:"fit-content" }}>
+                    {b.booking_type==="cash_walk_in"?"Cash":b.booking_type==="membership"?"Member":"One-Off"}
+                  </span>
+                  <span style={{ background:b.status==="confirmed"?"#dcfce7":"#fef3c7", color:b.status==="confirmed"?"#166534":"#92400e", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700, width:"fit-content" }}>
+                    {b.status}
+                  </span>
                 </div>
-                <div>
-                  <div style={{ fontSize:13, color:C }}>{fmt(b.start_time)}</div>
-                  <div style={{ fontSize:11, color:"#888" }}>{fmtT(b.start_time)}</div>
-                </div>
-                <span style={{ background:b.booking_type==="membership"?"#dcfce7":b.booking_type==="cash_walk_in"?"#fef3c7":"#e0e7ff", color:b.booking_type==="membership"?"#166534":b.booking_type==="cash_walk_in"?"#92400e":"#3730a3", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700, width:"fit-content" }}>
-                  {b.booking_type==="cash_walk_in"?"Cash":b.booking_type==="membership"?"Member":"One-Off"}
-                </span>
-                <span style={{ background:b.status==="confirmed"?"#dcfce7":"#fef3c7", color:b.status==="confirmed"?"#166534":"#92400e", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700, width:"fit-content" }}>
-                  {b.status}
-                </span>
+                {/* Journey links in all bookings view for mobile barbers */}
+                {business?.is_mobile && b.customer_address && (
+                  <div style={{ paddingBottom:10 }}><JourneyLinks booking={b} /></div>
+                )}
               </div>
             ))}
           </>
@@ -517,7 +577,6 @@ function Services({ services, businessId, onRefresh }) {
         <h2 style={{ fontWeight:800, fontSize:22, color:C }}>Services & Pricing</h2>
         <button className="btn-p" onClick={()=>setShowAdd(!showAdd)}>+ Add Service</button>
       </div>
-
       {showAdd && (
         <div style={{ background:W, borderRadius:18, padding:24, border:`2px dashed ${P}`, marginBottom:20 }}>
           <h3 style={{ fontWeight:700, fontSize:16, color:C, marginBottom:16 }}>New Service</h3>
@@ -565,7 +624,6 @@ function Services({ services, businessId, onRefresh }) {
           </div>
         </div>
       )}
-
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
           <span style={{ fontSize:20 }}>📅</span>
@@ -574,7 +632,6 @@ function Services({ services, businessId, onRefresh }) {
         </div>
         {memberships.length===0 ? <div style={{ textAlign:"center", padding:"24px 0", color:"#aaa", fontSize:13 }}>No subscription plans yet</div> : memberships.map(renderCard)}
       </div>
-
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
           <span style={{ fontSize:20 }}>💈</span>
@@ -617,17 +674,19 @@ function Subscribers({ subscribers }) {
   );
 }
 
-/* ── PROFILE EDITOR ── */
+/* ── PROFILE EDITOR — with mobile barber toggle ── */
 function ProfileEditor({ business, onRefresh }) {
   const [form, setForm] = useState({
-    business_name:   business?.business_name   || "",
-    description:     business?.description     || "",
-    phone:           business?.phone           || "",
-    email:           business?.email           || "",
-    whatsapp_number: business?.whatsapp_number || "",
-    address:         business?.address         || "",
-    city:            business?.city            || "",
-    postcode:        business?.postcode        || "",
+    business_name:       business?.business_name       || "",
+    description:         business?.description         || "",
+    phone:               business?.phone               || "",
+    email:               business?.email               || "",
+    whatsapp_number:     business?.whatsapp_number     || "",
+    address:             business?.address             || "",
+    city:                business?.city                || "",
+    postcode:            business?.postcode            || "",
+    is_mobile:           business?.is_mobile           || false,
+    travel_radius_miles: business?.travel_radius_miles || 10,
   });
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -645,6 +704,8 @@ function ProfileEditor({ business, onRefresh }) {
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:20 }}>Edit Profile</h2>
       <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee" }}>
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+          {/* STANDARD FIELDS */}
           {[
             { label:"Business Name",  key:"business_name",   placeholder:"Your business name"     },
             { label:"Phone",          key:"phone",            placeholder:"07700 000000"           },
@@ -657,6 +718,7 @@ function ProfileEditor({ business, onRefresh }) {
               <input className="inp" placeholder={f.placeholder} value={form[f.key]} onChange={e=>setForm({...form,[f.key]:e.target.value})} />
             </div>
           ))}
+
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
             <div>
               <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>City</label>
@@ -667,10 +729,67 @@ function ProfileEditor({ business, onRefresh }) {
               <input className="inp" placeholder="E1 6RF" value={form.postcode} onChange={e=>setForm({...form,postcode:e.target.value})} />
             </div>
           </div>
+
           <div>
             <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>Description</label>
             <textarea className="inp" rows={4} placeholder="Tell customers about your business..." value={form.description} onChange={e=>setForm({...form,description:e.target.value})} style={{ resize:"vertical" }} />
           </div>
+
+          {/* ── MOBILE PROFESSIONAL TOGGLE ── */}
+          <div style={{
+            background: form.is_mobile ? "#f0fdf4" : G,
+            border: `1.5px solid ${form.is_mobile ? "#bbf7d0" : "#eee"}`,
+            borderRadius:14, padding:"18px 20px", transition:"all .2s",
+          }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: form.is_mobile ? 16 : 0 }}>
+              <div>
+                <div style={{ fontWeight:700, fontSize:15, color:C, marginBottom:3 }}>🚐 Mobile Professional</div>
+                <div style={{ fontSize:12, color:"#888" }}>I travel to customers — they book me at their location</div>
+              </div>
+              <button
+                onClick={() => setForm(f => ({ ...f, is_mobile:!f.is_mobile }))}
+                style={{
+                  width:48, height:26, borderRadius:100, border:"none",
+                  background: form.is_mobile ? P : "#e0e0e0",
+                  cursor:"pointer", position:"relative", transition:"background .2s", flexShrink:0,
+                }}
+              >
+                <div style={{
+                  position:"absolute", top:3,
+                  left: form.is_mobile ? 25 : 3,
+                  width:20, height:20, borderRadius:"50%", background:W,
+                  transition:"left .2s", boxShadow:"0 1px 4px rgba(0,0,0,.2)",
+                }} />
+              </button>
+            </div>
+
+            {form.is_mobile && (
+              <div style={{ paddingTop:16, borderTop:"1px solid #d1fae5" }}>
+                <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:8 }}>
+                  Travel radius: <strong>{form.travel_radius_miles} miles</strong>
+                </label>
+                <input
+                  type="range" min={1} max={50} step={1}
+                  value={form.travel_radius_miles}
+                  onChange={e => setForm(f => ({ ...f, travel_radius_miles:Number(e.target.value) }))}
+                  style={{ width:"100%", accentColor:P, marginBottom:8 }}
+                />
+                <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#bbb", marginBottom:14 }}>
+                  <span>1 mile</span><span>50 miles</span>
+                </div>
+                <div style={{ background:P, borderRadius:10, padding:"12px 14px", display:"flex", alignItems:"center", gap:10 }}>
+                  <span style={{ fontSize:20 }}>🗺️</span>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:W, marginBottom:2 }}>Map links sent automatically</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.75)" }}>
+                      After each booking you'll get Google Maps, Apple Maps and Waze links to your customer's location — one tap to start your journey.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <button className="btn-p" onClick={handleSave} disabled={saving} style={{ alignSelf:"flex-start", padding:"12px 28px" }}>
             {saving?"Saving...":saved?"✅ Saved!":"Save Changes"}
           </button>
@@ -780,7 +899,7 @@ export default function DashboardPage() {
     <>
       <style>{css}</style>
 
-      {/* NAV */}
+      {/* NAV — with back to homepage link */}
       <nav style={{ background:W, borderBottom:"1px solid #eee", padding:"0 5%", height:72, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100 }}>
         <a href="/" style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
           <div style={{ width:32, height:32, borderRadius:9, background:P, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", animation:"pulse 3s infinite" }}>
