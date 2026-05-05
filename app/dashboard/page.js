@@ -674,7 +674,70 @@ function Subscribers({ subscribers }) {
   );
 }
 
-/* ── PROFILE EDITOR — with mobile barber toggle ── */
+/* ── IMAGE UPLOAD BUTTON ── */
+function ImageUpload({ label, currentUrl, bucket, businessId, onUploaded, aspect="square" }) {
+  const [uploading, setUploading] = useState(false);
+  const [preview,   setPreview]   = useState(currentUrl || null);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+
+    // Preview immediately
+    const reader = new FileReader();
+    reader.onload = ev => setPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    // Upload to Supabase Storage
+    const ext  = file.name.split(".").pop();
+    const path = `${businessId}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, { upsert: true, contentType: file.type });
+
+    if (!uploadError) {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      onUploaded(data.publicUrl);
+    }
+    setUploading(false);
+  };
+
+  const isSquare = aspect === "square";
+
+  return (
+    <div>
+      <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:8 }}>{label}</label>
+      <div style={{ position:"relative", width:"100%", height: isSquare ? 140 : 180, borderRadius: isSquare ? 16 : 14, overflow:"hidden", background:G, border:`2px dashed ${preview?"transparent":P}`, cursor:"pointer", transition:"all .2s" }}>
+        {preview ? (
+          <img src={preview} alt={label} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:8 }}>
+            <div style={{ fontSize:32 }}>{isSquare ? "🏪" : "🖼️"}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:P }}>Click to upload</div>
+            <div style={{ fontSize:11, color:"#aaa" }}>JPG, PNG or WEBP · Max 5MB</div>
+          </div>
+        )}
+        {preview && (
+          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0)", display:"flex", alignItems:"center", justifyContent:"center", opacity:0, transition:"all .2s" }}
+            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,.5)"; e.currentTarget.style.opacity="1"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background="rgba(0,0,0,0)"; e.currentTarget.style.opacity="0"; }}>
+            <div style={{ color:W, fontWeight:700, fontSize:13 }}>Change image</div>
+          </div>
+        )}
+        {uploading && (
+          <div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,.9)", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:8 }}>
+            <div style={{ width:28, height:28, border:`3px solid ${L}`, borderTop:`3px solid ${P}`, borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+            <div style={{ fontSize:12, color:P, fontWeight:600 }}>Uploading...</div>
+          </div>
+        )}
+        <input type="file" accept="image/*" onChange={handleFile} style={{ position:"absolute", inset:0, opacity:0, cursor:"pointer", width:"100%", height:"100%" }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── PROFILE EDITOR — with image upload + mobile barber toggle ── */
 function ProfileEditor({ business, onRefresh }) {
   const [form, setForm] = useState({
     business_name:       business?.business_name       || "",
@@ -687,6 +750,8 @@ function ProfileEditor({ business, onRefresh }) {
     postcode:            business?.postcode            || "",
     is_mobile:           business?.is_mobile           || false,
     travel_radius_miles: business?.travel_radius_miles || 10,
+    logo_url:            business?.logo_url            || "",
+    banner_url:          business?.banner_url          || "",
   });
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -702,6 +767,71 @@ function ProfileEditor({ business, onRefresh }) {
   return (
     <div>
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:20 }}>Edit Profile</h2>
+
+      {/* ── IMAGES SECTION ── */}
+      <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee", marginBottom:20 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20 }}>
+          <span style={{ fontSize:20 }}>📸</span>
+          <div>
+            <div style={{ fontWeight:700, fontSize:16, color:C }}>Business Images</div>
+            <div style={{ fontSize:12, color:"#888" }}>These appear on your public profile and in search results</div>
+          </div>
+        </div>
+
+        {/* BANNER — full width */}
+        <div style={{ marginBottom:20 }}>
+          <ImageUpload
+            label="Shop Banner (appears at top of your profile)"
+            currentUrl={form.banner_url}
+            bucket="business-banners"
+            businessId={business.id}
+            aspect="banner"
+            onUploaded={url => {
+              setForm(f => ({ ...f, banner_url: url }));
+              supabase.from("businesses").update({ banner_url: url }).eq("id", business.id);
+            }}
+          />
+        </div>
+
+        {/* LOGO + PREVIEW side by side */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+          <ImageUpload
+            label="Business Logo"
+            currentUrl={form.logo_url}
+            bucket="business-logos"
+            businessId={business.id}
+            aspect="square"
+            onUploaded={url => {
+              setForm(f => ({ ...f, logo_url: url }));
+              supabase.from("businesses").update({ logo_url: url }).eq("id", business.id);
+            }}
+          />
+          {/* PROFILE CARD PREVIEW */}
+          <div>
+            <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:8 }}>How customers see you</label>
+            <div style={{ borderRadius:16, overflow:"hidden", border:"1.5px solid #eee", background:G }}>
+              <div style={{ height:80, background:form.banner_url?`url(${form.banner_url}) center/cover`:`linear-gradient(135deg,${P},#7c3aed)`, position:"relative" }}>
+                <div style={{ position:"absolute", bottom:-20, left:14, width:44, height:44, borderRadius:12, overflow:"hidden", border:"3px solid #fff", background:L }}>
+                  {form.logo_url
+                    ? <img src={form.logo_url} alt="logo" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                    : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>✂️</div>
+                  }
+                </div>
+              </div>
+              <div style={{ padding:"28px 14px 14px" }}>
+                <div style={{ fontWeight:800, fontSize:14, color:C }}>{form.business_name||"Your Business"}</div>
+                <div style={{ fontSize:12, color:"#888" }}>{form.city||"London"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, padding:"11px 14px", marginTop:14, fontSize:12, color:"#166534" }}>
+          ✅ Images save automatically when uploaded — no need to click Save Changes
+        </div>
+      </div>
+
+      {/* ── PROFILE DETAILS ── */}
       <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee" }}>
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
 
