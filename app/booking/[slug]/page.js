@@ -26,7 +26,7 @@ const css = `
     background:${W}; border-radius:14px; padding:18px 20px;
     border:2px solid #eee; cursor:pointer; transition:all .2s;
   }
-  .service-card:hover   { border-color:${P}; transform:translateY(-2px); }
+  .service-card:hover    { border-color:${P}; transform:translateY(-2px); }
   .service-card.selected { border-color:${P}; background:${L}; }
 
   .time-slot {
@@ -109,8 +109,6 @@ function generateTimeSlots(openTime="09:00", closeTime="18:00", duration=45, buf
   return slots;
 }
 
-const STEPS = ["Service","Date","Time","Your Details","Confirm"];
-
 export default function BookingPage({ params }) {
   const { slug, category } = use(params);
 
@@ -121,6 +119,7 @@ export default function BookingPage({ params }) {
   const [step,       setStep]       = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [confirmed,  setConfirmed]  = useState(false);
+  const [addrError,  setAddrError]  = useState("");
 
   // Booking state
   const [selectedService, setSelectedService] = useState(null);
@@ -129,6 +128,11 @@ export default function BookingPage({ params }) {
   const [selectedTime,    setSelectedTime]    = useState(null);
   const [bookingType,     setBookingType]     = useState("one_off");
   const [customerInfo,    setCustomerInfo]    = useState({ full_name:"", email:"", phone:"", notes:"" });
+
+  // Mobile barber address state
+  const [customerAddress, setCustomerAddress] = useState({
+    address:"", postcode:"", access_notes:""
+  });
 
   useEffect(() => { loadBusiness(); }, [slug]);
 
@@ -178,6 +182,33 @@ export default function BookingPage({ params }) {
     ? generateTimeSlots("09:00","18:00", selectedService.duration_minutes||45, 10)
     : [];
 
+  // Work out steps based on whether business is mobile
+  // Mobile businesses get an extra address step (step 3) before details (step 4) and confirm (step 5)
+  const isMobile = business?.is_mobile || false;
+  const STEPS = isMobile
+    ? ["Service","Date","Time","Your Address","Your Details","Confirm"]
+    : ["Service","Date","Time","Your Details","Confirm"];
+
+  // Step numbers with mobile offset
+  const STEP_TIME    = 2;
+  const STEP_ADDRESS = isMobile ? 3 : null;
+  const STEP_DETAILS = isMobile ? 4 : 3;
+  const STEP_CONFIRM = isMobile ? 5 : 4;
+
+  // Validate address step
+  const handleAddressNext = () => {
+    if (!customerAddress.address.trim()) {
+      setAddrError("Please enter your street address.");
+      return;
+    }
+    if (!customerAddress.postcode.trim()) {
+      setAddrError("Please enter your postcode.");
+      return;
+    }
+    setAddrError("");
+    setStep(STEP_DETAILS);
+  };
+
   const handleConfirmBooking = async () => {
     setSubmitting(true);
     try {
@@ -188,7 +219,6 @@ export default function BookingPage({ params }) {
       startDt.setHours(h, m, 0, 0);
       const endDt = new Date(startDt.getTime() + (selectedService.duration_minutes||45)*60000);
 
-      // Upsert customer profile if guest
       let customerId = user?.id || null;
       if (!user && customerInfo.email) {
         const { data:existingProfile } = await supabase
@@ -199,22 +229,38 @@ export default function BookingPage({ params }) {
         customerId = existingProfile?.id || null;
       }
 
-      // Create booking
-      const { data:booking, error } = await supabase.from("bookings").insert({
-        business_id:    business.id,
-        customer_id:    customerId,
-        service_id:     selectedService.id,
-        booking_type:   bookingType,
-        start_time:     startDt.toISOString(),
-        end_time:       endDt.toISOString(),
-        status:         "confirmed",
-        payment_status: bookingType==="cash_walk_in"?"cash_paid":"pay_in_shop",
-        source:         "website",
-        notes:          customerInfo.notes,
-      }).select().single();
+      // Build booking payload — include address for mobile barbers
+      const bookingPayload = {
+        business_id:      business.id,
+        customer_id:      customerId,
+        service_id:       selectedService.id,
+        booking_type:     bookingType,
+        start_time:       startDt.toISOString(),
+        end_time:         endDt.toISOString(),
+        status:           "confirmed",
+        payment_status:   bookingType==="cash_walk_in"?"cash_paid":"pay_in_shop",
+        source:           "website",
+        notes:            customerInfo.notes,
+      };
+
+      // Add address fields for mobile barbers
+      if (isMobile && customerAddress.address) {
+        bookingPayload.customer_address  = `${customerAddress.address}${customerAddress.access_notes ? " ("+customerAddress.access_notes+")" : ""}`;
+        bookingPayload.customer_postcode = customerAddress.postcode.toUpperCase();
+      }
+
+      const { data:booking, error } = await supabase
+        .from("bookings")
+        .insert(bookingPayload)
+        .select()
+        .single();
 
       if (!error && booking) {
-        // Queue confirmation notification
+        // Build mobile address line for emails
+        const addressLine = isMobile && customerAddress.address
+          ? `\nCustomer address: ${customerAddress.address}, ${customerAddress.postcode}`
+          : "";
+
         await supabase.from("notification_queue").insert([
           {
             business_id:       business.id,
@@ -234,21 +280,11 @@ export default function BookingPage({ params }) {
             notification_type: "booking_confirmation_business",
             recipient:         business.email || "",
             subject:           `New booking from ${customerInfo.full_name}`,
-            message:           `${customerInfo.full_name} booked ${selectedService.name} for ${startDt.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})} at ${selectedTime}.`,
+            message:           `${customerInfo.full_name} booked ${selectedService.name} for ${startDt.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})} at ${selectedTime}.${addressLine}`,
             status:            "pending",
             scheduled_for:     new Date().toISOString(),
           },
         ]);
-
-        // Log booking event
-        await supabase.from("booking_events").insert({
-          booking_id:        booking.id,
-          business_id:       business.id,
-          customer_id:       customerId,
-          event_type:        "booking_created",
-          event_description: `${customerInfo.full_name} booked ${selectedService.name}`,
-          metadata:          { booking_type:bookingType, service:selectedService.name, time:selectedTime },
-        });
 
         setConfirmed(true);
       }
@@ -277,7 +313,7 @@ export default function BookingPage({ params }) {
     </>
   );
 
-  // CONFIRMED STATE
+  // ── CONFIRMED STATE ──
   if (confirmed) return (
     <>
       <style>{css}</style>
@@ -288,25 +324,31 @@ export default function BookingPage({ params }) {
           <p style={{ fontSize:15, color:"#666", marginBottom:8 }}>
             <strong>{customerInfo.full_name}</strong>, your appointment with <strong>{business.business_name}</strong> is confirmed.
           </p>
-          <div style={{ background:L, borderRadius:14, padding:"16px 20px", margin:"20px 0", textAlign:"left" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-              <span style={{ fontSize:13, color:"#888" }}>Service</span>
-              <span style={{ fontSize:13, fontWeight:700, color:C }}>{selectedService?.name}</span>
+
+          {/* MOBILE — show address confirmation */}
+          {isMobile && customerAddress.address && (
+            <div style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:14, padding:"16px 18px", margin:"16px 0", textAlign:"left" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:4 }}>📍 Your barber is coming to</div>
+              <div style={{ fontSize:15, fontWeight:800, color:W }}>{customerAddress.address}, {customerAddress.postcode.toUpperCase()}</div>
+              {customerAddress.access_notes && <div style={{ fontSize:12, color:"rgba(255,255,255,.7)", marginTop:4 }}>{customerAddress.access_notes}</div>}
             </div>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-              <span style={{ fontSize:13, color:"#888" }}>Date</span>
-              <span style={{ fontSize:13, fontWeight:700, color:C }}>{selectedDate?.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"long"})}</span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-              <span style={{ fontSize:13, color:"#888" }}>Time</span>
-              <span style={{ fontSize:13, fontWeight:700, color:C }}>{selectedTime}</span>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between" }}>
-              <span style={{ fontSize:13, color:"#888" }}>Price</span>
-              <span style={{ fontSize:13, fontWeight:700, color:P }}>£{parseFloat(selectedService?.one_off_price||selectedService?.monthly_price||0).toFixed(0)}</span>
-            </div>
+          )}
+
+          <div style={{ background:L, borderRadius:14, padding:"16px 20px", margin:"16px 0", textAlign:"left" }}>
+            {[
+              { label:"Service",  val:selectedService?.name },
+              { label:"Date",     val:selectedDate?.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"long"}) },
+              { label:"Time",     val:selectedTime },
+              { label:"Price",    val:`£${parseFloat(selectedService?.one_off_price||selectedService?.monthly_price||0).toFixed(0)}` },
+            ].map((r,i)=>(
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", marginBottom:i<3?8:0 }}>
+                <span style={{ fontSize:13, color:"#888" }}>{r.label}</span>
+                <span style={{ fontSize:13, fontWeight:700, color:C }}>{r.val}</span>
+              </div>
+            ))}
           </div>
-          <p style={{ fontSize:13, color:"#888", marginBottom:24 }}>A confirmation email has been sent to {customerInfo.email}</p>
+
+          <p style={{ fontSize:13, color:"#888", marginBottom:20 }}>A confirmation email has been sent to {customerInfo.email}</p>
 
           {/* ADD TO CALENDAR */}
           <button onClick={()=>{
@@ -325,7 +367,7 @@ export default function BookingPage({ params }) {
             <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:14, padding:"16px 18px", marginBottom:16, textAlign:"left" }}>
               <div style={{ fontWeight:700, fontSize:14, color:"#166534", marginBottom:4 }}>💡 Save with a membership</div>
               <div style={{ fontSize:12, color:"#166534", marginBottom:10 }}>
-                Subscribe for £{parseFloat(selectedService.monthly_price).toFixed(0)}/month and get priority booking + better value every month.
+                Subscribe for £{parseFloat(selectedService.monthly_price).toFixed(0)}/month and get priority booking every month.
               </div>
               <a href={`/${category}/${slug}`} style={{ fontSize:12, fontWeight:700, color:"#166534", textDecoration:"underline" }}>
                 View membership plans →
@@ -334,12 +376,8 @@ export default function BookingPage({ params }) {
           )}
 
           <div style={{ display:"flex", gap:10 }}>
-            <a href="/discover" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:L, color:P, textDecoration:"none", borderRadius:12, padding:"12px", fontFamily:"Poppins", fontWeight:700, fontSize:13 }}>
-              Find More
-            </a>
-            <a href="/profile" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:P, color:W, textDecoration:"none", borderRadius:12, padding:"12px", fontFamily:"Poppins", fontWeight:700, fontSize:13 }}>
-              My Bookings
-            </a>
+            <a href="/discover" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:L, color:P, textDecoration:"none", borderRadius:12, padding:"12px", fontFamily:"Poppins", fontWeight:700, fontSize:13 }}>Find More</a>
+            <a href="/profile"  style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:P, color:W, textDecoration:"none", borderRadius:12, padding:"12px", fontFamily:"Poppins", fontWeight:700, fontSize:13 }}>My Bookings</a>
           </div>
         </div>
       </div>
@@ -386,20 +424,21 @@ export default function BookingPage({ params }) {
 
         {/* BUSINESS HEADER */}
         <div className="fu d1" style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:24, display:"flex", gap:16, alignItems:"center" }}>
-          <div style={{ width:64, height:64, borderRadius:16, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0 }}>✂️</div>
+          <div style={{ width:64, height:64, borderRadius:16, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0 }}>
+            {isMobile ? "🚐" : "✂️"}
+          </div>
           <div>
             <div style={{ fontWeight:800, fontSize:20, color:C }}>{business.business_name}</div>
             <div style={{ fontSize:14, color:"#888" }}>{business.city} · {business.category}</div>
-            {business.rating && <div style={{ fontSize:13, color:"#f59e0b", fontWeight:600, marginTop:4 }}>★ {business.rating}</div>}
+            {isMobile && <div style={{ fontSize:12, color:P, fontWeight:700, marginTop:4 }}>🚐 Mobile professional — comes to you</div>}
           </div>
         </div>
 
-        {/* STEP 0 — SERVICE */}
+        {/* ── STEP 0 — SERVICE ── */}
         {step===0 && (
           <div className="fu">
             <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Choose a service</h2>
             <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Select the service you'd like to book.</p>
-
             {services.length===0 ? (
               <div style={{ background:W, borderRadius:18, padding:"40px 24px", border:"1.5px solid #eee", textAlign:"center", color:"#888" }}>
                 No services available yet. Check back soon!
@@ -417,12 +456,8 @@ export default function BookingPage({ params }) {
                         {s.description && <div style={{ fontSize:12, color:"#aaa" }}>{s.description}</div>}
                       </div>
                       <div style={{ textAlign:"right", flexShrink:0, marginLeft:16 }}>
-                        {s.one_off_price > 0 && (
-                          <div style={{ fontWeight:800, fontSize:20, color:C }}>£{parseFloat(s.one_off_price).toFixed(0)}</div>
-                        )}
-                        {s.monthly_price > 0 && (
-                          <div style={{ fontSize:12, color:P, fontWeight:600 }}>£{parseFloat(s.monthly_price).toFixed(0)}/mo membership</div>
-                        )}
+                        {s.one_off_price > 0 && <div style={{ fontWeight:800, fontSize:20, color:C }}>£{parseFloat(s.one_off_price).toFixed(0)}</div>}
+                        {s.monthly_price > 0 && <div style={{ fontSize:12, color:P, fontWeight:600 }}>£{parseFloat(s.monthly_price).toFixed(0)}/mo membership</div>}
                       </div>
                     </div>
                     {selectedService?.id===s.id && s.one_off_price>0 && s.monthly_price>0 && (
@@ -450,7 +485,7 @@ export default function BookingPage({ params }) {
           </div>
         )}
 
-        {/* STEP 1 — DATE */}
+        {/* ── STEP 1 — DATE ── */}
         {step===1 && (
           <div className="fu">
             <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Choose a date</h2>
@@ -491,7 +526,7 @@ export default function BookingPage({ params }) {
           </div>
         )}
 
-        {/* STEP 2 — TIME */}
+        {/* ── STEP 2 — TIME ── */}
         {step===2 && (
           <div className="fu">
             <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Choose a time</h2>
@@ -513,20 +548,107 @@ export default function BookingPage({ params }) {
                 })}
               </div>
               {timeSlots.length===0 && (
-                <div style={{ textAlign:"center", padding:"32px 0", color:"#888", fontSize:14 }}>
-                  No available slots for this day.
-                </div>
+                <div style={{ textAlign:"center", padding:"32px 0", color:"#888", fontSize:14 }}>No available slots for this day.</div>
               )}
             </div>
             <div style={{ display:"flex", gap:10 }}>
               <button className="btn-s" onClick={()=>setStep(1)}>← Back</button>
-              <button className="btn-p" disabled={!selectedTime} onClick={()=>setStep(3)}>Continue → Your Details</button>
+              <button className="btn-p" disabled={!selectedTime} onClick={()=>setStep(isMobile ? STEP_ADDRESS : STEP_DETAILS)}>
+                Continue → {isMobile ? "Your Address" : "Your Details"}
+              </button>
             </div>
           </div>
         )}
 
-        {/* STEP 3 — CUSTOMER DETAILS */}
-        {step===3 && (
+        {/* ── STEP 3 — ADDRESS (mobile barbers only) ── */}
+        {isMobile && step===STEP_ADDRESS && (
+          <div className="fu">
+            {/* MOBILE BANNER */}
+            <div style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:16, padding:"18px 22px", marginBottom:24, display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ fontSize:36, flexShrink:0 }}>🚐</div>
+              <div>
+                <div style={{ fontSize:16, fontWeight:800, color:W, marginBottom:4 }}>Mobile Appointment</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.8)", lineHeight:1.5 }}>
+                  {business.business_name} will travel to you. Enter your address so they can plan their journey.
+                </div>
+              </div>
+            </div>
+
+            <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Your address</h2>
+            <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Where would you like your appointment?</p>
+
+            <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee", marginBottom:20 }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+
+                {/* STREET ADDRESS */}
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>Street Address *</label>
+                  <input className="inp" type="text"
+                    placeholder="14 Brick Lane"
+                    value={customerAddress.address}
+                    onChange={e=>setCustomerAddress({...customerAddress, address:e.target.value})}
+                    autoComplete="street-address"
+                  />
+                </div>
+
+                {/* POSTCODE */}
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>Postcode *</label>
+                  <input className="inp" type="text"
+                    placeholder="E1 6RF"
+                    value={customerAddress.postcode}
+                    onChange={e=>setCustomerAddress({...customerAddress, postcode:e.target.value.toUpperCase()})}
+                    autoComplete="postal-code"
+                    style={{ textTransform:"uppercase" }}
+                  />
+                </div>
+
+                {/* ACCESS NOTES */}
+                <div>
+                  <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:6 }}>
+                    Access notes <span style={{ fontWeight:400, color:"#aaa" }}>(optional)</span>
+                  </label>
+                  <input className="inp" type="text"
+                    placeholder="Ring doorbell, flat 3, gate code 1234..."
+                    value={customerAddress.access_notes}
+                    onChange={e=>setCustomerAddress({...customerAddress, access_notes:e.target.value})}
+                  />
+                </div>
+
+                {/* MAP PREVIEW */}
+                {customerAddress.address && customerAddress.postcode && (
+                  <button
+                    onClick={()=>window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customerAddress.address+" "+customerAddress.postcode)}`,"_blank")}
+                    style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:10, padding:"11px 16px", fontFamily:"Poppins", fontWeight:600, fontSize:13, color:"#166534", cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
+                    <span>📍</span>
+                    Preview: {customerAddress.address}, {customerAddress.postcode}
+                    <span style={{ marginLeft:"auto", fontSize:12 }}>Open Maps →</span>
+                  </button>
+                )}
+
+                {/* ERROR */}
+                {addrError && (
+                  <div style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#e53e3e", fontWeight:600 }}>
+                    ⚠️ {addrError}
+                  </div>
+                )}
+
+                {/* PRIVACY */}
+                <div style={{ background:G, borderRadius:10, padding:"11px 14px", fontSize:12, color:"#888", lineHeight:1.6 }}>
+                  🔒 Your address is only shared with <strong>{business.business_name}</strong> for this appointment. Never shared with third parties.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display:"flex", gap:10 }}>
+              <button className="btn-s" onClick={()=>setStep(STEP_TIME)}>← Back</button>
+              <button className="btn-p" onClick={handleAddressNext}>Continue → Your Details</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP — CUSTOMER DETAILS ── */}
+        {step===STEP_DETAILS && (
           <div className="fu">
             <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Your details</h2>
             <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>We'll send your confirmation to these details.</p>
@@ -545,8 +667,6 @@ export default function BookingPage({ params }) {
                   </div>
                 ))}
               </div>
-
-              {/* MARKETING CONSENT */}
               <div style={{ background:G, borderRadius:10, padding:"12px 14px", marginTop:14 }}>
                 <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer" }}>
                   <input type="checkbox" defaultChecked style={{ marginTop:2, accentColor:P, width:15, height:15 }} />
@@ -557,54 +677,56 @@ export default function BookingPage({ params }) {
               </div>
             </div>
             <div style={{ display:"flex", gap:10 }}>
-              <button className="btn-s" onClick={()=>setStep(2)}>← Back</button>
+              <button className="btn-s" onClick={()=>setStep(isMobile ? STEP_ADDRESS : STEP_TIME)}>← Back</button>
               <button className="btn-p"
                 disabled={!customerInfo.full_name||!customerInfo.email}
-                onClick={()=>setStep(4)}>
+                onClick={()=>setStep(STEP_CONFIRM)}>
                 Continue → Confirm
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 4 — CONFIRM */}
-        {step===4 && (
+        {/* ── STEP — CONFIRM ── */}
+        {step===STEP_CONFIRM && (
           <div className="fu">
             <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:6 }}>Confirm your booking</h2>
             <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Review your appointment details below.</p>
             <div style={{ background:W, borderRadius:18, padding:28, border:"1.5px solid #eee", marginBottom:20 }}>
               {[
-                { label:"Business",   val:business.business_name                                                                  },
-                { label:"Service",    val:selectedService?.name                                                                   },
-                { label:"Duration",   val:`${selectedService?.duration_minutes} mins`                                             },
-                { label:"Date",       val:selectedDate?.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})   },
-                { label:"Time",       val:selectedTime                                                                            },
-                { label:"Type",       val:bookingType==="one_off"?"One-Off Booking":"Membership Booking"                         },
-                { label:"Price",      val:`£${parseFloat(bookingType==="one_off"?(selectedService?.one_off_price||0):(selectedService?.monthly_price||0)).toFixed(0)}${bookingType==="membership"?"/mo":""}` },
-                { label:"Your Name",  val:customerInfo.full_name                                                                  },
-                { label:"Email",      val:customerInfo.email                                                                     },
-              ].map((r,i)=>(
-                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"11px 0", borderBottom:i<8?"1px solid #f0f0f0":"none" }}>
+                { label:"Business",  val:business.business_name },
+                { label:"Service",   val:selectedService?.name },
+                { label:"Duration",  val:`${selectedService?.duration_minutes} mins` },
+                { label:"Date",      val:selectedDate?.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}) },
+                { label:"Time",      val:selectedTime },
+                { label:"Type",      val:bookingType==="one_off"?"One-Off Booking":"Membership Booking" },
+                { label:"Price",     val:`£${parseFloat(bookingType==="one_off"?(selectedService?.one_off_price||0):(selectedService?.monthly_price||0)).toFixed(0)}${bookingType==="membership"?"/mo":""}` },
+                { label:"Your Name", val:customerInfo.full_name },
+                { label:"Email",     val:customerInfo.email },
+                ...(isMobile && customerAddress.address ? [{ label:"📍 Your Address", val:`${customerAddress.address}, ${customerAddress.postcode}` }] : []),
+              ].map((r,i,arr)=>(
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"11px 0", borderBottom:i<arr.length-1?"1px solid #f0f0f0":"none" }}>
                   <span style={{ fontSize:13, color:"#888", fontWeight:500 }}>{r.label}</span>
                   <span style={{ fontSize:13, fontWeight:700, color:C, textAlign:"right", maxWidth:"60%" }}>{r.val}</span>
                 </div>
               ))}
             </div>
 
-            {bookingType==="cash_walk_in"||bookingType==="one_off" ? (
+            {(bookingType==="cash_walk_in"||bookingType==="one_off") && (
               <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:12, padding:"14px 16px", marginBottom:16, fontSize:13, color:"#166534", fontWeight:500 }}>
-                💳 Payment will be taken at the venue. Please bring cash or card.
+                💳 Payment will be taken at the appointment. Please have cash or card ready.
               </div>
-            ) : null}
+            )}
 
             <div style={{ display:"flex", gap:10 }}>
-              <button className="btn-s" onClick={()=>setStep(3)}>← Back</button>
+              <button className="btn-s" onClick={()=>setStep(STEP_DETAILS)}>← Back</button>
               <button className="btn-p" disabled={submitting} onClick={handleConfirmBooking}>
                 {submitting ? "Confirming..." : "✅ Confirm Booking"}
               </button>
             </div>
           </div>
         )}
+
       </div>
     </>
   );
