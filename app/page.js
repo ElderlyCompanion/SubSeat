@@ -458,7 +458,60 @@ function PathSection() {
   );
 }
 
-/* ─── CATEGORIES ─── */
+/* ─── CALCULATOR CTA ─── */
+function CalculatorCTA() {
+  return (
+    <section style={{ padding: "80px 5%", background: C, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, ${P}30 0%, transparent 65%)` }} />
+      <div style={{ position: "absolute", bottom: -80, left: -80, width: 300, height: 300, borderRadius: "50%", background: `radial-gradient(circle, ${P}20 0%, transparent 65%)` }} />
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 64, alignItems: "center", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+        {/* LEFT */}
+        <div style={{ flex: 1, minWidth: 280 }}>
+          <span style={{ display: "inline-block", background: "rgba(86,59,231,.3)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#a78bfa", letterSpacing: 2, textTransform: "uppercase", marginBottom: 18 }}>
+            For Businesses
+          </span>
+          <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4vw,48px)", color: W, letterSpacing: "-1.5px", lineHeight: 1.08, marginBottom: 16 }}>
+            See what your shop could earn.
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,.6)", lineHeight: 1.75, marginBottom: 32, maxWidth: 420 }}>
+            Use our free revenue calculator to see exactly how much recurring monthly income you could generate with SubSeat subscriptions — based on your own numbers.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a href="/business/revenue-calculator" style={{ textDecoration: "none" }}>
+              <button className="btn-white">Calculate My Revenue →</button>
+            </a>
+            <a href="/onboarding" style={{ textDecoration: "none" }}>
+              <button className="btn-white-outline">Join SubSeat Free</button>
+            </a>
+          </div>
+        </div>
+        {/* RIGHT — STATS PREVIEW */}
+        <div style={{ flex: 1, minWidth: 280, display: "flex", justifyContent: "center" }}>
+          <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.10)", borderRadius: 22, padding: 28, backdropFilter: "blur(12px)", maxWidth: 380, width: "100%" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.45)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 20 }}>Example: 20 subscribers at £59/mo</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+              {[
+                { label: "Gross revenue",     val: "£1,180/mo", color: W          },
+                { label: "SubSeat fee (6%)",  val: "£70.80",    color: "#a78bfa"  },
+                { label: "Your net income",   val: "£1,109/mo", color: "#4ade80"  },
+                { label: "Annual increase",   val: "£13,308",   color: "#fbbf24"  },
+              ].map((s, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,.06)", borderRadius: 12, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: "-0.5px" }}>{s.val}</div>
+                </div>
+              ))}
+            </div>
+            <a href="/business/revenue-calculator" style={{ display: "block", background: P, color: W, textDecoration: "none", padding: "13px", borderRadius: 12, fontFamily: "Poppins", fontWeight: 700, fontSize: 14, textAlign: "center", boxShadow: `0 6px 20px rgba(86,59,231,.4)` }}>
+              Try With Your Numbers →
+            </a>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,.3)", textAlign: "center", marginTop: 10 }}>Free to use · No sign-up required</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 function Categories() {
   const cats = [
     { label: "Barbers",      img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&q=80" },
@@ -616,7 +669,7 @@ function WhySubSeat() {
   const rows = [
     { f: "Revenue model",         us: "Membership-based — predictable",   ind: "Per-appointment, volatile" },
     { f: "Cancellation impact",   us: "Subscription already paid",         ind: "Revenue lost per no-show" },
-    { f: "Platform fee",          us: "Simple 5% platform fee",            ind: "Up to 35% on some platforms" },
+    { f: "Platform fee",          us: "Simple 6% platform fee",            ind: "Up to 35% on some platforms" },
     { f: "Hidden charges",        us: "No hidden monthly charges",         ind: "Fees can change anytime" },
     { f: "Visibility",            us: "Equal for all businesses",          ind: "Pay-to-boost common" },
     { f: "Notifications",         us: "WhatsApp + email",                  ind: "Email only — standard" },
@@ -656,13 +709,13 @@ function Pricing() {
     {
       name: "Basic Seat", price: "Free", sub: "No monthly fee — ever", hi: false, badge: null,
       features: ["Up to 3 services listed", "Full booking calendar", "Email & WhatsApp alerts", "QR code for walk-in conversion", "Your own SubSeat profile page", "Stripe-secured payouts"],
-      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
+      note: "Free to join. Simple 6% platform fee + VAT — no hidden monthly charges.",
       cta: "Start Free",
     },
     {
       name: "Partner Seat", price: "£39.99", sub: "One-time founding price", hi: true, badge: "Pre-Launch Price",
       features: ["Everything in Basic", "Partner badge on profile", "Advanced revenue analytics", "Priority WhatsApp support", "Early access to new features", "Staff & commission tracking", "Unlimited service listings"],
-      note: "Free to join. Simple 5% platform fee + VAT — no hidden monthly charges.",
+      note: "Free to join. Simple 6% platform fee + VAT — no hidden monthly charges.",
       cta: "Claim Founding Access",
     },
     {
@@ -678,7 +731,7 @@ function Pricing() {
         <div style={{ textAlign: "center", marginBottom: 70 }}>
           <span className="section-label">For Businesses</span>
           <h2 style={{ fontWeight: 800, fontSize: "clamp(26px,3.5vw,46px)", color: C, letterSpacing: "-1.5px", marginBottom: 10 }}>Honest pricing. No surprises.</h2>
-          <p style={{ fontSize: 16, color: "#666" }}>Free to join. We only earn when you earn. 5% platform fee + VAT applies.</p>
+          <p style={{ fontSize: 16, color: "#666" }}>Free to join. We only earn when you earn. 6% platform fee + VAT applies.</p>
         </div>
         <div className="pri-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 22, alignItems: "start" }}>
           {tiers.map((t, i) => (
@@ -797,7 +850,7 @@ function FinalCTA() {
 function Footer() {
   const cols = [
     { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","#marketplace"]] },
-    { h: "Business",  links: [["Pricing","#pricing"],["Dashboard","#why"],["Partners","#about"]] },
+    { h: "Business",  links: [["Pricing","#pricing"],["Revenue Calculator","/business/revenue-calculator"],["Partners","/about"]] },
     { h: "Company",   links: [["About","/about"],["Contact","/contact"],["Press","/contact"]] },
     { h: "Legal",     links: [["Privacy Policy","/privacy"],["Terms of Service","/terms"]] },
   ];
@@ -859,6 +912,7 @@ export default function SubSeatHome() {
       <Hero />
       <Ticker />
       <PathSection />
+      <CalculatorCTA />
       <Categories />
       <HowItWorks />
       <BusinessGrowth />
