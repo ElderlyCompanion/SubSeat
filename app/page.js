@@ -911,10 +911,10 @@ export default function SubSeatHome() {
       <Nav scrolled={scrolled} />
       <Hero />
       <Ticker />
-      <PathSection />
-      <CalculatorCTA />
       <Categories />
       <HowItWorks />
+      <PathSection />
+      <CalculatorCTA />
       <BusinessGrowth />
       <WhySubSeat />
       <Pricing />
