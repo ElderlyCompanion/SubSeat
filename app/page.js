@@ -458,8 +458,138 @@ function PathSection() {
   );
 }
 
-/* ─── CALCULATOR CTA ─── */
-function CalculatorCTA() {
+/* ─── SIMPLE CALCULATOR ─── */
+function SimpleCalculator() {
+  const [servicePrice,  setServicePrice]  = useState(30);
+  const [regulars,      setRegulars]      = useState(20);
+  const [monthlyPrice,  setMonthlyPrice]  = useState(49);
+
+  const FEE       = 0.06;
+  const gross     = regulars * monthlyPrice;
+  const subSeatFee = gross * FEE;
+  const net       = gross - subSeatFee;
+  const yearly    = net * 12;
+
+  const pct = (val, min, max) => ((val - min) / (max - min)) * 100;
+
+  const SliderInput = ({ label, value, min, max, step=1, onChange, format }) => (
+    <div style={{ marginBottom:28 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
+        <span style={{ fontSize:15, fontWeight:600, color:"rgba(255,255,255,.85)" }}>{label}</span>
+        <span style={{ fontSize:22, fontWeight:900, color:W, fontFamily:"monospace" }}>{format(value)}</span>
+      </div>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={e=>onChange(Number(e.target.value))}
+        style={{
+          width:"100%", height:6, borderRadius:100, outline:"none",
+          cursor:"pointer", appearance:"none", WebkitAppearance:"none",
+          background:`linear-gradient(to right,${W} ${pct(value,min,max)}%,rgba(255,255,255,.2) ${pct(value,min,max)}%)`,
+        }}
+      />
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:5 }}>
+        <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>{format(min)}</span>
+        <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>{format(max)}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <section style={{ padding:"100px 5%", background:`linear-gradient(160deg,#0f0f1a 0%,#1a1040 50%,#0f0f1a 100%)`, position:"relative", overflow:"hidden" }}>
+      {/* BG glow */}
+      <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:600, borderRadius:"50%", background:`radial-gradient(circle,rgba(86,59,231,.2) 0%,transparent 65%)`, pointerEvents:"none" }} />
+
+      <div style={{ maxWidth:1000, margin:"0 auto", position:"relative", zIndex:1 }}>
+        {/* HEADING */}
+        <div style={{ textAlign:"center", marginBottom:56 }}>
+          <span style={{ display:"inline-block", background:"rgba(86,59,231,.3)", borderRadius:100, padding:"6px 18px", fontSize:11, fontWeight:700, color:"#a78bfa", letterSpacing:2, textTransform:"uppercase", marginBottom:16 }}>
+            For Businesses
+          </span>
+          <h2 style={{ fontWeight:900, fontSize:"clamp(28px,4.5vw,52px)", color:W, letterSpacing:"-2px", lineHeight:1.08, marginBottom:14 }}>
+            See what you could earn.
+          </h2>
+          <p style={{ fontSize:16, color:"rgba(255,255,255,.5)", maxWidth:480, margin:"0 auto" }}>
+            Drag the sliders and watch your monthly income update live.
+          </p>
+        </div>
+
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:32, alignItems:"center" }} className="cal-simple-grid">
+
+          {/* SLIDERS */}
+          <div style={{ background:"rgba(255,255,255,.06)", border:"1px solid rgba(255,255,255,.1)", borderRadius:24, padding:36, backdropFilter:"blur(12px)" }}>
+            <SliderInput
+              label="Average service price"
+              value={servicePrice}
+              min={10} max={100} step={5}
+              onChange={setServicePrice}
+              format={v=>`£${v}`}
+            />
+            <SliderInput
+              label="Number of regular customers"
+              value={regulars}
+              min={1} max={100}
+              onChange={setRegulars}
+              format={v=>`${v}`}
+            />
+            <SliderInput
+              label="Monthly subscription price"
+              value={monthlyPrice}
+              min={19} max={149} step={5}
+              onChange={setMonthlyPrice}
+              format={v=>`£${v}/mo`}
+            />
+            <div style={{ background:"rgba(255,255,255,.06)", borderRadius:12, padding:"12px 16px", fontSize:13, color:"rgba(255,255,255,.45)", lineHeight:1.55 }}>
+              💡 Industry average: barbers charge £40–£65/mo for unlimited cuts. Start lower to get subscribers, increase over time.
+            </div>
+          </div>
+
+          {/* RESULTS */}
+          <div>
+            {/* BIG NUMBER */}
+            <div style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:22, padding:"32px 28px", marginBottom:16, textAlign:"center", boxShadow:"0 20px 60px rgba(86,59,231,.4)" }}>
+              <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:8, letterSpacing:1 }}>YOUR EXTRA MONTHLY INCOME</div>
+              <div style={{ fontSize:"clamp(48px,7vw,80px)", fontWeight:900, color:W, letterSpacing:"-3px", lineHeight:1, fontFamily:"monospace" }}>
+                £{Math.round(net).toLocaleString("en-GB")}
+              </div>
+              <div style={{ fontSize:15, color:"rgba(255,255,255,.6)", marginTop:8 }}>per month, recurring</div>
+            </div>
+
+            {/* BREAKDOWN */}
+            <div style={{ background:"rgba(255,255,255,.06)", border:"1px solid rgba(255,255,255,.1)", borderRadius:18, padding:24, backdropFilter:"blur(12px)" }}>
+              {[
+                { label:"📅 Per year",          val:`£${Math.round(yearly).toLocaleString("en-GB")}`,        color:"#4ade80" },
+                { label:"💰 Gross subscriptions", val:`£${Math.round(gross).toLocaleString("en-GB")}/mo`,     color:W        },
+                { label:"SubSeat takes (6%)",    val:`£${Math.round(subSeatFee).toLocaleString("en-GB")}/mo`, color:"#a78bfa"},
+                { label:"✅ You keep",            val:`£${Math.round(net).toLocaleString("en-GB")}/mo`,        color:"#4ade80"},
+              ].map((r,i)=>(
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:i<3?"1px solid rgba(255,255,255,.08)":"none" }}>
+                  <span style={{ fontSize:13, color:"rgba(255,255,255,.55)", fontWeight:500 }}>{r.label}</span>
+                  <span style={{ fontSize:15, fontWeight:800, color:r.color, fontFamily:"monospace" }}>{r.val}</span>
+                </div>
+              ))}
+            </div>
+
+            <a href="/onboarding" style={{ display:"block", textDecoration:"none", marginTop:16 }}>
+              <button style={{ width:"100%", background:W, color:P, border:"none", borderRadius:14, padding:"16px", fontFamily:"Poppins", fontWeight:800, fontSize:16, cursor:"pointer", transition:"all .2s", boxShadow:"0 8px 24px rgba(0,0,0,.3)" }}>
+                Start Earning This →
+              </button>
+            </a>
+            <p style={{ fontSize:12, color:"rgba(255,255,255,.3)", textAlign:"center", marginTop:10 }}>Free to join · No monthly fee · 6% only on subscriptions</p>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+          background:#fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.3);
+        }
+        .cal-simple-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+        @media(max-width:768px) { .cal-simple-grid { grid-template-columns:1fr !important; } }
+      `}</style>
+    </section>
+  );
+}
   return (
     <section style={{ padding: "80px 5%", background: C, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -100, right: -100, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, ${P}30 0%, transparent 65%)` }} />
@@ -485,33 +615,12 @@ function CalculatorCTA() {
             </a>
           </div>
         </div>
-        {/* RIGHT — STATS PREVIEW */}
-        <div style={{ flex: 1, minWidth: 280, display: "flex", justifyContent: "center" }}>
-          <div style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.10)", borderRadius: 22, padding: 28, backdropFilter: "blur(12px)", maxWidth: 380, width: "100%" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.45)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 20 }}>Example: 20 subscribers at £59/mo</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
-              {[
-                { label: "Gross revenue",     val: "£1,180/mo", color: W          },
-                { label: "SubSeat fee (6%)",  val: "£70.80",    color: "#a78bfa"  },
-                { label: "Your net income",   val: "£1,109/mo", color: "#4ade80"  },
-                { label: "Annual increase",   val: "£13,308",   color: "#fbbf24"  },
-              ].map((s, i) => (
-                <div key={i} style={{ background: "rgba(255,255,255,.06)", borderRadius: 12, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 6 }}>{s.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: s.color, letterSpacing: "-0.5px" }}>{s.val}</div>
-                </div>
-              ))}
-            </div>
-            <a href="/business/revenue-calculator" style={{ display: "block", background: P, color: W, textDecoration: "none", padding: "13px", borderRadius: 12, fontFamily: "Poppins", fontWeight: 700, fontSize: 14, textAlign: "center", boxShadow: `0 6px 20px rgba(86,59,231,.4)` }}>
-              Try With Your Numbers →
-            </a>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,.3)", textAlign: "center", marginTop: 10 }}>Free to use · No sign-up required</p>
-          </div>
-        </div>
       </div>
     </section>
   );
 }
+
+/* ─── CATEGORIES ─── */
 function Categories() {
   const cats = [
     { label: "Barbers",      img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&q=80" },
@@ -914,7 +1023,7 @@ export default function SubSeatHome() {
       <Categories />
       <HowItWorks />
       <PathSection />
-      <CalculatorCTA />
+      <SimpleCalculator />
       <BusinessGrowth />
       <WhySubSeat />
       <Pricing />
