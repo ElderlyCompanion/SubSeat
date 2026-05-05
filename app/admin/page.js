@@ -147,7 +147,7 @@ const css = `
 
 const isRemoved = b => b.slug?.startsWith("removed-");
 const fmtDate   = d => new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
-const fmt£      = n => `£${Math.round(n).toLocaleString("en-GB")}`;
+const fmtGBP    = n => `£${Math.round(n).toLocaleString("en-GB")}`;
 
 function useIsMobile() {
   const [mob, setMob] = useState(false);
@@ -250,8 +250,8 @@ function Overview({ businesses, profiles, subscriptions, alerts, setActive }) {
         {[
           {label:"Active Businesses",val:active.length,icon:"🏪",color:"#a78bfa",tab:"businesses"},
           {label:"Total Customers",val:profiles.length,icon:"👥",color:"#34d399",tab:"customers"},
-          {label:"Platform MRR",val:fmt£(mrr),icon:"💰",color:"#fbbf24",tab:"finance"},
-          {label:"SubSeat Fees",val:fmt£(fee),icon:"📈",color:P,tab:"finance"},
+          {label:"Platform MRR",val:fmtGBP(mrr),icon:"💰",color:"#fbbf24",tab:"finance"},
+          {label:"SubSeat Fees",val:fmtGBP(fee),icon:"📈",color:P,tab:"finance"},
         ].map((s,i)=>(
           <div key={i} className="stat-card" onClick={()=>setActive(s.tab)}>
             <div style={{fontSize:22,marginBottom:8}}>{s.icon}</div>
@@ -264,7 +264,7 @@ function Overview({ businesses, profiles, subscriptions, alerts, setActive }) {
         {[
           {label:"Partner Businesses",val:businesses.filter(b=>b.tier==="partner").length,icon:"🤝",color:"#a78bfa",tab:"businesses"},
           {label:"Active Subscribers",val:subscriptions.length,icon:"👤",color:"#34d399",tab:"customers"},
-          {label:"Annual Run Rate",val:fmt£(mrr*12),icon:"🚀",color:"#fbbf24",tab:"finance"},
+          {label:"Annual Run Rate",val:fmtGBP(mrr*12),icon:"🚀",color:"#fbbf24",tab:"finance"},
         ].map((s,i)=>(
           <div key={i} className="stat-card" onClick={()=>setActive(s.tab)}>
             <div style={{fontSize:20,marginBottom:6}}>{s.icon}</div>
@@ -399,10 +399,10 @@ function Finance({ businesses, subscriptions }) {
       <h2 style={{fontWeight:800,fontSize:20,color:W,marginBottom:16}}>Finance</h2>
       <div className="stats-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         {[
-          {label:"Platform MRR",val:fmt£(mrr),icon:"💰",color:"#fbbf24"},
-          {label:"Fees/mo (6%)",val:fmt£(fee),icon:"📈",color:P},
-          {label:"Annual Revenue",val:fmt£(mrr*12),icon:"🚀",color:"#34d399"},
-          {label:"Annual Fees",val:fmt£(fee*12),icon:"🏦",color:"#a78bfa"},
+          {label:"Platform MRR",val:fmtGBP(mrr),icon:"💰",color:"#fbbf24"},
+          {label:"Fees/mo (6%)",val:fmtGBP(fee),icon:"📈",color:P},
+          {label:"Annual Revenue",val:fmtGBP(mrr*12),icon:"🚀",color:"#34d399"},
+          {label:"Annual Fees",val:fmtGBP(fee*12),icon:"🏦",color:"#a78bfa"},
         ].map((s,i)=>(
           <div key={i} className="stat-card">
             <div style={{fontSize:22,marginBottom:6}}>{s.icon}</div>
@@ -416,7 +416,7 @@ function Finance({ businesses, subscriptions }) {
         {byBiz.length===0?<div style={{textAlign:"center",padding:"24px 0",color:"rgba(255,255,255,.3)",fontSize:13}}>No subscription revenue yet</div>:byBiz.map((b,i)=>(
           <div key={b.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 0",borderBottom:i<byBiz.length-1?"1px solid rgba(255,255,255,.05)":"none"}}>
             <div><div style={{fontWeight:600,fontSize:13,color:W}}>{b.business_name}</div><div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{b.subs.length} subscriber{b.subs.length!==1?"s":""}</div></div>
-            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:15,color:"#fbbf24"}}>{fmt£(b.rev)}/mo</div><div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>Fee: {fmt£(b.rev*.06)}</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:800,fontSize:15,color:"#fbbf24"}}>{fmtGBP(b.rev)}/mo</div><div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>Fee: {fmtGBP(b.rev*.06)}</div></div>
           </div>
         ))}
       </div>
@@ -445,8 +445,8 @@ function Leaderboard({ businesses, subscriptions }) {
               <div style={{fontSize:11,color:"rgba(255,255,255,.4)",textTransform:"capitalize"}}>{b.category?.replace(/-/g," ")} · {b.city}</div>
             </div>
             <div style={{textAlign:"right",flexShrink:0}}>
-              <div style={{fontWeight:900,fontSize:17,color:tab==="revenue"?"#fbbf24":"#34d399"}}>{tab==="revenue"?fmt£(b.revenue)+"/mo":b.subCount+" subs"}</div>
-              {tab==="revenue"&&<div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>Fee: {fmt£(b.revenue*.06)}</div>}
+              <div style={{fontWeight:900,fontSize:17,color:tab==="revenue"?"#fbbf24":"#34d399"}}>{tab==="revenue"?fmtGBP(b.revenue)+"/mo":b.subCount+" subs"}</div>
+              {tab==="revenue"&&<div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>Fee: {fmtGBP(b.revenue*.06)}</div>}
             </div>
           </div>
         ))}
