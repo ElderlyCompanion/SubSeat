@@ -1,3 +1,4 @@
+import CookieBanner from "./components/CookieBanner";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -326,7 +327,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>
-      <body>{children}</body>
+      <body>{children}<CookieBanner /></body>
     </html>
   );
 }
