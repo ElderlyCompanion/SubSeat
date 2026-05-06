@@ -764,27 +764,27 @@ function Subscribers({ subscribers }) {
 function ImageUpload({ label, currentUrl, bucket, businessId, onUploaded, aspect="square" }) {
   const [uploading, setUploading] = useState(false);
   const [preview,   setPreview]   = useState(currentUrl || null);
+  const [error,     setError]     = useState("");
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-
-    // Preview immediately
+    if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5MB."); return; }
+    setError(""); setUploading(true);
     const reader = new FileReader();
     reader.onload = ev => setPreview(ev.target.result);
     reader.readAsDataURL(file);
-
-    // Upload to Supabase Storage
-    const ext  = file.name.split(".").pop();
-    const path = `${businessId}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, { upsert: true, contentType: file.type });
-
-    if (!uploadError) {
+    try {
+      const ext  = file.name.split(".").pop().toLowerCase() || "jpg";
+      const path = `${businessId}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from(bucket).upload(path, file, { upsert:true, contentType:file.type });
+      if (uploadError) throw uploadError;
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
       onUploaded(data.publicUrl);
+    } catch(err) {
+      setError("Upload failed. Please try again.");
+      setPreview(currentUrl || null);
     }
     setUploading(false);
   };
@@ -794,31 +794,32 @@ function ImageUpload({ label, currentUrl, bucket, businessId, onUploaded, aspect
   return (
     <div>
       <label style={{ fontSize:13, fontWeight:600, color:C, display:"block", marginBottom:8 }}>{label}</label>
-      <div style={{ position:"relative", width:"100%", height: isSquare ? 140 : 180, borderRadius: isSquare ? 16 : 14, overflow:"hidden", background:G, border:`2px dashed ${preview?"transparent":P}`, cursor:"pointer", transition:"all .2s" }}>
+      <label style={{ display:"block", position:"relative", width:"100%", height:isSquare?140:180, borderRadius:isSquare?16:14, overflow:"hidden", background:G, border:`2px dashed ${preview?"transparent":P}`, cursor:"pointer", WebkitTapHighlightColor:"transparent" }}>
         {preview ? (
-          <img src={preview} alt={label} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+          <>
+            <img src={preview} alt={label} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+            <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"rgba(0,0,0,.55)", padding:"7px", textAlign:"center" }}>
+              <span style={{ color:W, fontWeight:700, fontSize:12 }}>📷 Tap to change</span>
+            </div>
+          </>
         ) : (
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:8 }}>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"100%", gap:8, padding:12 }}>
             <div style={{ fontSize:32 }}>{isSquare ? "🏪" : "🖼️"}</div>
-            <div style={{ fontSize:13, fontWeight:600, color:P }}>Click to upload</div>
-            <div style={{ fontSize:11, color:"#aaa" }}>JPG, PNG or WEBP · Max 5MB</div>
-          </div>
-        )}
-        {preview && (
-          <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0)", display:"flex", alignItems:"center", justifyContent:"center", opacity:0, transition:"all .2s" }}
-            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(0,0,0,.5)"; e.currentTarget.style.opacity="1"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.background="rgba(0,0,0,0)"; e.currentTarget.style.opacity="0"; }}>
-            <div style={{ color:W, fontWeight:700, fontSize:13 }}>Change image</div>
+            <div style={{ fontSize:13, fontWeight:700, color:P }}>Tap to upload photo</div>
+            <div style={{ fontSize:11, color:"#aaa", textAlign:"center" }}>JPG, PNG or WEBP · Max 5MB</div>
           </div>
         )}
         {uploading && (
-          <div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,.9)", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:8 }}>
+          <div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,.92)", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:8, zIndex:2 }}>
             <div style={{ width:28, height:28, border:`3px solid ${L}`, borderTop:`3px solid ${P}`, borderRadius:"50%", animation:"spin 1s linear infinite" }} />
-            <div style={{ fontSize:12, color:P, fontWeight:600 }}>Uploading...</div>
+            <div style={{ fontSize:12, color:P, fontWeight:700 }}>Uploading...</div>
           </div>
         )}
-        <input type="file" accept="image/*" onChange={handleFile} style={{ position:"absolute", inset:0, opacity:0, cursor:"pointer", width:"100%", height:"100%" }} />
-      </div>
+        <input type="file" accept="image/*" onChange={handleFile}
+          style={{ position:"absolute", inset:0, opacity:0, width:"100%", height:"100%", cursor:"pointer" }} />
+      </label>
+      {error && <div style={{ fontSize:12, color:"#e53e3e", marginTop:6, fontWeight:600 }}>⚠️ {error}</div>}
+      {preview && !uploading && <div style={{ fontSize:11, color:"#22c55e", marginTop:6, fontWeight:600 }}>✅ Saved automatically</div>}
     </div>
   );
 }

@@ -108,7 +108,10 @@ export default function AuthPage() {
     if (error) {
       setError(error.message);
     } else {
-      setMessage("Check your email for a confirmation link to complete your sign up!");
+      setMessage(role === "business"
+        ? "Almost there! Check your email and click the confirmation link — it'll take you straight to setting up your business profile."
+        : "Almost there! Check your email and click the confirmation link to complete your sign up."
+      );
     }
     setLoading(false);
   };
@@ -195,6 +198,8 @@ export default function AuthPage() {
         )}
 
         {/* FORM */}
+        {/* FORM — hide after email sent */}
+        {!message && (
         <form onSubmit={mode === "signup" ? handleSignUp : handleLogin}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
@@ -239,10 +244,22 @@ export default function AuthPage() {
             </div>
           )}
 
-          {/* SUCCESS */}
+          {/* SUCCESS — EMAIL SENT STATE */}
           {message && (
-            <div style={{ background: "#f0fff4", border: "1.5px solid #9ae6b4", borderRadius: 10, padding: "12px 14px", marginTop: 16 }}>
-              <p style={{ fontSize: 13, color: "#276749", fontWeight: 500 }}>✅ {message}</p>
+            <div style={{ textAlign:"center", padding:"8px 0" }}>
+              <div style={{ width:64, height:64, borderRadius:"50%", background:"#f0fdf4", display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, margin:"0 auto 16px" }}>📧</div>
+              <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:8 }}>Check your email!</h3>
+              <p style={{ fontSize:13, color:"#555", lineHeight:1.7, marginBottom:16 }}>{message}</p>
+              <div style={{ background:L, borderRadius:12, padding:"12px 16px", fontSize:13, color:P, fontWeight:600, marginBottom:16 }}>
+                Sent to: {email}
+              </div>
+              <p style={{ fontSize:12, color:"#aaa", lineHeight:1.6 }}>
+                Can't find it? Check your spam folder or{" "}
+                <button type="button" onClick={()=>setMessage(null)}
+                  style={{ background:"none", border:"none", color:P, fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer", textDecoration:"underline" }}>
+                  try again
+                </button>
+              </p>
             </div>
           )}
 
@@ -250,6 +267,7 @@ export default function AuthPage() {
             {loading ? "Please wait..." : mode === "signup" ? "Create My Account" : "Sign In"}
           </button>
         </form>
+        )} {/* end !message */}
 
         <p style={{ fontSize: 12, color: "#bbb", textAlign: "center", marginTop: 20, lineHeight: 1.6 }}>
           {mode === "signup"
