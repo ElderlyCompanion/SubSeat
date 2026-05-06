@@ -211,6 +211,89 @@ function JourneyLinks({ booking }) {
   );
 }
 
+/* ── SUBSEAT SERVICES — subtle finance + insurance cards ── */
+function SubSeatServices() {
+  const [dismissed, setDismissed] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("ss_services_dismissed") || "{}"); }
+    catch { return {}; }
+  });
+
+  const dismiss = (key) => {
+    const next = { ...dismissed, [key]: true };
+    setDismissed(next);
+    try { localStorage.setItem("ss_services_dismissed", JSON.stringify(next)); } catch {}
+  };
+
+  const cards = [
+    {
+      key:   "finance",
+      icon:  "💰",
+      title: "Need funding to grow?",
+      body:  "Get up to £50,000 for your business. Fast decisions, simple application.",
+      cta:   "Apply for Funding",
+      href:  "/finance",
+      tag:   "SubSeat Finance",
+    },
+    {
+      key:   "insurance",
+      icon:  "🛡️",
+      title: "Are you insured?",
+      body:  "Public liability from £6/month. Designed for beauty and barber professionals.",
+      cta:   "Get a Quote",
+      href:  "/insurance",
+      tag:   "SubSeat Insurance",
+    },
+  ];
+
+  const visible = cards.filter(c => !dismissed[c.key]);
+  if (visible.length === 0) return null;
+
+  return (
+    <div style={{ marginTop:18 }}>
+      <div style={{ fontSize:11, fontWeight:700, color:"#bbb", letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>
+        Available to you
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:`repeat(${visible.length},1fr)`, gap:12 }}>
+        {visible.map(c => (
+          <div key={c.key} style={{ background:W, borderRadius:16, padding:"18px 18px 16px", border:"1.5px solid #eee", position:"relative", transition:"border-color .2s" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = P}
+            onMouseLeave={e => e.currentTarget.style.borderColor = "#eee"}>
+
+            {/* DISMISS */}
+            <button onClick={() => dismiss(c.key)}
+              style={{ position:"absolute", top:10, right:10, width:22, height:22, borderRadius:"50%", background:"#f4f4f4", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, color:"#aaa", fontFamily:"Poppins", fontWeight:700 }}>
+              ✕
+            </button>
+
+            {/* TAG */}
+            <div style={{ display:"inline-block", background:"#f4f4f4", borderRadius:100, padding:"2px 10px", fontSize:10, fontWeight:700, color:"#888", marginBottom:10 }}>
+              {c.tag}
+            </div>
+
+            <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:12 }}>
+              <div style={{ width:38, height:38, borderRadius:10, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>
+                {c.icon}
+              </div>
+              <div>
+                <div style={{ fontWeight:700, fontSize:14, color:C, marginBottom:4, lineHeight:1.3 }}>{c.title}</div>
+                <div style={{ fontSize:12, color:"#888", lineHeight:1.55 }}>{c.body}</div>
+              </div>
+            </div>
+
+            <a href={c.href} target="_blank" rel="noopener noreferrer" style={{ textDecoration:"none", display:"block" }}>
+              <button style={{ width:"100%", background:L, color:P, border:"none", borderRadius:9, padding:"10px", fontFamily:"Poppins", fontWeight:700, fontSize:12, cursor:"pointer", transition:"all .18s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = P; e.currentTarget.style.color = W; }}
+                onMouseLeave={e => { e.currentTarget.style.background = L; e.currentTarget.style.color = P; }}>
+                {c.cta} →
+              </button>
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── OVERVIEW ── */
 function Overview({ business, subscribers, bookings, services, setActive }) {
   const today   = bookings.filter(b => new Date(b.start_time).toDateString() === new Date().toDateString());
@@ -291,6 +374,9 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
           Copy Link
         </button>
       </div>
+
+      {/* ── FINANCE + INSURANCE SUBTLE CARDS ── */}
+      <SubSeatServices />
     </div>
   );
 }
