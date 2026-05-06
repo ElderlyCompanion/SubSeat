@@ -108,6 +108,13 @@ export default function AuthPage() {
     if (error) {
       setError(error.message);
     } else {
+      // Fire welcome email (non-blocking)
+      fetch("/api/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: fullName, email, role }),
+      }).catch(() => {}); // silently ignore if fails
+
       setMessage(role === "business"
         ? "Almost there! Check your email and click the confirmation link — it'll take you straight to setting up your business profile."
         : "Almost there! Check your email and click the confirmation link to complete your sign up."
