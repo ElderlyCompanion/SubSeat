@@ -260,7 +260,7 @@ function Nav({ scrolled }) {
             ["For Businesses",     "#pricing"],
             ["Marketplace",        "/marketplace"],
             ["Finance",            "/finance"],
-            ["Insurance",          "#insurance"],
+            ["Insurance",          "/insurance"],
             ["About",              "#about"],
           ].map(([l, h]) => (
             <a key={l} href={h} className="nav-a">{l}</a>
@@ -900,8 +900,10 @@ function Ecosystem() {
       id: "insurance",
       icon: "🛡️",
       title: "Insurance",
-      body: "Simple cover for professionals and businesses. Get protected in minutes, not days.",
-      live: false,
+      body: "Simple cover for barbers, salons and beauty professionals. Public liability, equipment cover and more from £6/month.",
+      live: true,
+      cta: "Get a Quote",
+      href: "/insurance",
     },
   ];
   return (
