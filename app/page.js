@@ -259,7 +259,7 @@ function Nav({ scrolled }) {
             ["Find Professionals", "#categories"],
             ["For Businesses",     "#pricing"],
             ["Marketplace",        "#marketplace"],
-            ["Finance",            "#finance"],
+            ["Finance",            "/finance"],
             ["Insurance",          "#insurance"],
             ["About",              "#about"],
           ].map(([l, h]) => (
@@ -878,9 +878,29 @@ function About() {
 /* ─── ECOSYSTEM ─── */
 function Ecosystem() {
   const cards = [
-    { id: "marketplace", icon: "🛍️", title: "Marketplace",  body: "Buy and sell chairs, tools, furniture and equipment. A trusted marketplace built for professionals." },
-    { id: "finance",     icon: "💰", title: "Finance",      body: "Funding and growth support built for salons and barbers. Simple applications, fast decisions." },
-    { id: "insurance",   icon: "🛡️", title: "Insurance",   body: "Simple cover for professionals and businesses. Get protected in minutes, not days." },
+    {
+      id: "finance",
+      icon: "💰",
+      title: "Finance",
+      body: "Funding and growth support built for barbers and beauty businesses. Apply in minutes, hear back in 48 hours.",
+      live: true,
+      cta: "Apply for Funding",
+      href: "/finance",
+    },
+    {
+      id: "marketplace",
+      icon: "🛍️",
+      title: "Marketplace",
+      body: "Buy and sell chairs, tools, furniture and equipment. A trusted marketplace built for professionals.",
+      live: false,
+    },
+    {
+      id: "insurance",
+      icon: "🛡️",
+      title: "Insurance",
+      body: "Simple cover for professionals and businesses. Get protected in minutes, not days.",
+      live: false,
+    },
   ];
   return (
     <section id="ecosystem" style={{ padding: "100px 5%", background: G }}>
@@ -892,11 +912,23 @@ function Ecosystem() {
         </div>
         <div className="eco-grid reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24 }}>
           {cards.map((c, i) => (
-            <div key={i} id={c.id} className="lift" style={{ background: W, borderRadius: 24, padding: "44px 36px", border: `1.5px solid ${L}`, position: "relative", boxShadow: "0 2px 16px rgba(86,59,231,.06)" }}>
-              <div style={{ position: "absolute", top: 20, right: 20, background: L, borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: P }}>Coming Soon</div>
+            <div key={i} id={c.id} className="lift" style={{ background: c.live ? `linear-gradient(135deg,${P} 0%,#7c3aed 100%)` : W, borderRadius: 24, padding: "44px 36px", border: c.live ? "none" : `1.5px solid ${L}`, position: "relative", boxShadow: c.live ? "0 20px 60px rgba(86,59,231,.35)" : "0 2px 16px rgba(86,59,231,.06)" }}>
+              {/* BADGE */}
+              <div style={{ position: "absolute", top: 20, right: 20, background: c.live ? "rgba(255,255,255,.2)" : L, borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: c.live ? W : P }}>
+                {c.live ? "Live Now" : "Coming Soon"}
+              </div>
               <div style={{ fontSize: 44, marginBottom: 20 }}>{c.icon}</div>
-              <h3 style={{ fontWeight: 800, fontSize: 22, color: C, marginBottom: 12, letterSpacing: "-.5px" }}>{c.title}</h3>
-              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7 }}>{c.body}</p>
+              <h3 style={{ fontWeight: 800, fontSize: 22, color: c.live ? W : C, marginBottom: 12, letterSpacing: "-.5px" }}>{c.title}</h3>
+              <p style={{ fontSize: 14, color: c.live ? "rgba(255,255,255,.8)" : "#666", lineHeight: 1.7, marginBottom: c.live ? 28 : 0 }}>{c.body}</p>
+              {c.live && (
+                <a href={c.href} style={{ textDecoration: "none", display: "inline-block" }}>
+                  <button style={{ background: W, color: P, border: "none", borderRadius: 12, padding: "13px 24px", fontFamily: "Poppins", fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all .2s", boxShadow: "0 4px 16px rgba(0,0,0,.15)" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,.2)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,.15)"; }}>
+                    {c.cta} →
+                  </button>
+                </a>
+              )}
             </div>
           ))}
         </div>
@@ -930,7 +962,7 @@ function FinalCTA() {
 function Footer() {
   const cols = [
     { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","#marketplace"]] },
-    { h: "Business",  links: [["Pricing","#pricing"],["Revenue Calculator","/business/revenue-calculator"],["Partners","/about"]] },
+    { h: "Business",  links: [["Pricing","#pricing"],["Revenue Calculator","/business/revenue-calculator"],["Finance","/finance"]] },
     { h: "Company",   links: [["About","/about"],["Contact","/contact"],["Press","/contact"]] },
     { h: "Legal",     links: [["Privacy Policy","/privacy"],["Terms of Service","/terms"]] },
   ];
