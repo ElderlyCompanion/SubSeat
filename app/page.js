@@ -258,7 +258,7 @@ function Nav({ scrolled }) {
           {[
             ["Find Professionals", "#categories"],
             ["For Businesses",     "#pricing"],
-            ["Marketplace",        "#marketplace"],
+            ["Marketplace",        "/marketplace"],
             ["Finance",            "/finance"],
             ["Insurance",          "#insurance"],
             ["About",              "#about"],
@@ -879,6 +879,15 @@ function About() {
 function Ecosystem() {
   const cards = [
     {
+      id: "marketplace",
+      icon: "🛍️",
+      title: "Marketplace",
+      body: "Buy and sell chairs, clippers, furniture and equipment. Trusted by professionals across the UK. Only 1% platform fee.",
+      live: true,
+      cta: "Browse Marketplace",
+      href: "/marketplace",
+    },
+    {
       id: "finance",
       icon: "💰",
       title: "Finance",
@@ -886,13 +895,6 @@ function Ecosystem() {
       live: true,
       cta: "Apply for Funding",
       href: "/finance",
-    },
-    {
-      id: "marketplace",
-      icon: "🛍️",
-      title: "Marketplace",
-      body: "Buy and sell chairs, tools, furniture and equipment. A trusted marketplace built for professionals.",
-      live: false,
     },
     {
       id: "insurance",
@@ -961,7 +963,7 @@ function FinalCTA() {
 /* ─── FOOTER ─── */
 function Footer() {
   const cols = [
-    { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","#marketplace"]] },
+    { h: "Platform", links: [["Find Professionals","#categories"],["For Businesses","#pricing"],["Marketplace","/marketplace"]] },
     { h: "Business",  links: [["Pricing","#pricing"],["Revenue Calculator","/business/revenue-calculator"],["Finance","/finance"]] },
     { h: "Company",   links: [["About","/about"],["Contact","/contact"],["Press","/contact"]] },
     { h: "Legal",     links: [["Privacy Policy","/privacy"],["Terms of Service","/terms"]] },
