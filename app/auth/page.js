@@ -278,7 +278,7 @@ export default function AuthPage() {
 
         <p style={{ fontSize: 12, color: "#bbb", textAlign: "center", marginTop: 20, lineHeight: 1.6 }}>
           {mode === "signup"
-            ? "By signing up you agree to SubSeat's Terms of Service and Privacy Policy. Free to join."
+            ? <>By signing up you agree to SubSeat's <a href="/terms" style={{ color: P, textDecoration: "underline" }}>Terms of Service</a> and <a href="/privacy" style={{ color: P, textDecoration: "underline" }}>Privacy Policy</a>. Free to join.</>
             : "Forgot your password? Contact support@subseat.co.uk"}
         </p>
 
