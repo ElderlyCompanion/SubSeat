@@ -321,7 +321,7 @@ function PhoneMockup() {
                 <span style={{ fontSize: 11, color: W, fontWeight: 600 }}>⭐ 4.9</span>
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 16, color: W }}>Marcus — The Cut Lab</div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: W }}>Marcus, The Cut Lab</div>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.75)" }}>Barber · Shoreditch, London</div>
               </div>
             </div>
@@ -392,7 +392,7 @@ function Hero() {
             </span>
           </h1>
           <p className="fu d2" style={{ fontSize: "clamp(15px,1.7vw,18px)", color: "#555", lineHeight: 1.75, maxWidth: 500, marginBottom: 40 }}>
-            The smarter way to book barbers, salons and beauty professionals — while helping businesses earn predictable monthly income through memberships.
+            The smarter way to book barbers, salons and beauty professionals. Businesses earn predictable monthly income through memberships.
           </p>
           <div className="fu d3 hero-btns" style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 32 }}>
             <a href="/discover" style={{ textDecoration: "none" }}><button className="btn-primary">Find a Professional</button></a>
@@ -539,7 +539,7 @@ function SimpleCalculator() {
               format={v=>`£${v}/mo`}
             />
             <div style={{ background:"rgba(255,255,255,.06)", borderRadius:12, padding:"12px 16px", fontSize:13, color:"rgba(255,255,255,.45)", lineHeight:1.55 }}>
-              💡 Industry average: barbers charge £40–£65/mo for unlimited cuts. Start lower to get subscribers, increase over time.
+              💡 Industry average: barbers charge £40 to £65/mo for unlimited cuts. Start lower to get subscribers, then increase over time.
             </div>
           </div>
 
@@ -638,7 +638,7 @@ function HowItWorks() {
     { side: "For Customers", dark: false, steps: [
       { n: "01", title: "Find your professional",  body: "Search by location, category and availability. Browse real profiles and reviews." },
       { n: "02", title: "Book or subscribe",        body: "Choose a one-off booking or a monthly membership plan that suits your routine." },
-      { n: "03", title: "Keep your routine",        body: "Priority slots, WhatsApp reminders and seamless repeat bookings — every time." },
+      { n: "03", title: "Keep your routine",        body: "Priority slots, WhatsApp reminders and seamless repeat bookings every time." },
     ]},
     { side: "For Businesses", dark: true, steps: [
       { n: "01", title: "Join for free",            body: "Create your profile and list services in under 10 minutes. Your QR code is ready instantly." },
@@ -688,7 +688,7 @@ function BusinessGrowth() {
           <span className="section-label" style={{ background: "rgba(86,59,231,.25)", color: L }}>For Businesses</span>
           <h2 style={{ fontWeight: 900, fontSize: "clamp(28px,4vw,52px)", color: W, letterSpacing: "-2px", marginBottom: 20, lineHeight: 1.08 }}>Turn bookings into predictable income.</h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,.6)", lineHeight: 1.75, marginBottom: 36, maxWidth: 440 }}>
-            SubSeat helps barbers, salons and beauty professionals create monthly recurring revenue through memberships — not just one-off appointments.
+            SubSeat helps barbers, salons and beauty professionals create monthly recurring revenue through memberships, not just one-off appointments.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 40 }}>
             {["Increase repeat visits", "Reduce no-show gaps", "Build customer loyalty", "Grow with confidence"].map((s, i) => (
@@ -747,12 +747,12 @@ function BusinessGrowth() {
 /* ─── WHY SUBSEAT ─── */
 function WhySubSeat() {
   const rows = [
-    { f: "Revenue model",         us: "Membership-based — predictable",   ind: "Per-appointment, volatile" },
+    { f: "Revenue model",         us: "Membership-based, predictable",   ind: "Per-appointment, volatile" },
     { f: "Cancellation impact",   us: "Subscription already paid",         ind: "Revenue lost per no-show" },
     { f: "Platform fee",          us: "Simple 6% platform fee",            ind: "Up to 35% on some platforms" },
     { f: "Hidden charges",        us: "No hidden monthly charges",         ind: "Fees can change anytime" },
     { f: "Visibility",            us: "Equal for all businesses",          ind: "Pay-to-boost common" },
-    { f: "Notifications",         us: "WhatsApp + email",                  ind: "Email only — standard" },
+    { f: "Notifications",         us: "WhatsApp + email",                  ind: "Email only" },
     { f: "Ecosystem tools",       us: "Marketplace, finance, insurance",   ind: "Booking only" },
   ];
   return (
@@ -787,15 +787,15 @@ function WhySubSeat() {
 function Pricing() {
   const tiers = [
     {
-      name: "Basic Seat", price: "Free", sub: "No monthly fee — ever", hi: false, badge: null,
+      name: "Basic Seat", price: "Free", sub: "No monthly fee, ever", hi: false, badge: null,
       features: ["Up to 3 services listed", "Full booking calendar", "Email & WhatsApp alerts", "QR code for walk-in conversion", "Your own SubSeat profile page", "Stripe-secured payouts"],
-      note: "Free to join. Simple 6% platform fee + VAT — no hidden monthly charges.",
+      note: "Free to join. Simple 6% platform fee + VAT with no hidden monthly charges.",
       cta: "Start Free",
     },
     {
       name: "Partner Seat", price: "£39.99", sub: "One-time founding price", hi: true, badge: "Pre-Launch Price",
       features: ["Everything in Basic", "Partner badge on profile", "Advanced revenue analytics", "Priority WhatsApp support", "Early access to new features", "Staff & commission tracking", "Unlimited service listings"],
-      note: "Free to join. Simple 6% platform fee + VAT — no hidden monthly charges.",
+      note: "Free to join. Simple 6% platform fee + VAT with no hidden monthly charges.",
       cta: "Claim Founding Access",
     },
     {
