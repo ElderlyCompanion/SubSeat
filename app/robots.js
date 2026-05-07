@@ -4,7 +4,18 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/_next/"],
+        disallow: [
+          "/api/",
+          "/_next/",
+          "/dashboard",
+          "/dashboard/",
+          "/admin",
+          "/admin/",
+          "/onboarding",
+          "/onboarding/",
+          "/auth",
+          "/auth/",
+        ],
       },
       /* Allow AI crawlers explicitly for AEO */
       { userAgent: "GPTBot",        allow: "/" },
@@ -13,7 +24,7 @@ export default function robots() {
       { userAgent: "ClaudeBot",     allow: "/" },
       { userAgent: "Googlebot",     allow: "/" },
     ],
-    sitemap: "https://subseat.com/sitemap.xml",
-    host: "https://subseat.com",
+    sitemap: "https://subseat.co.uk/sitemap.xml",
+    host:    "https://subseat.co.uk",
   };
 }
