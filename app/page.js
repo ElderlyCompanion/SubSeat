@@ -359,16 +359,36 @@ function PhoneMockup() {
 }
 
 /* ─── LIVE COUNTER ─── */
+const HERO_PHRASES = [
+  { text: "Early access. Founding businesses join free today.", color: P },
+  { text: "Finance. Insurance. Marketplace. All in one place.", color: P },
+  { text: "Now onboarding founding businesses across the UK",   color: P },
+  { text: "Founding Partner pricing. Limited availability.",    color: P },
+];
+
 function LiveCounter() {
-  const [n, setN] = useState(847);
+  const [idx,  setIdx]  = useState(0);
+  const [exit, setExit] = useState(false);
+
   useEffect(() => {
-    const t = setInterval(() => setN(c => c + Math.floor(Math.random() * 2 + 1)), 4800);
+    const t = setInterval(() => {
+      setExit(true);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % HERO_PHRASES.length);
+        setExit(false);
+      }, 280);
+    }, 4500);
     return () => clearInterval(t);
   }, []);
+
+  const phrase = HERO_PHRASES[idx];
+
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: L, borderRadius: 100, padding: "7px 18px", marginBottom: 28 }}>
-      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "blink 1.8s infinite" }} />
-      <span style={{ fontSize: 13, fontWeight: 600, color: P }}>{n.toLocaleString()} customers securing priority slots now</span>
+      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", animation: "blink 1.8s infinite", flexShrink: 0 }} />
+      <span className={`fomo-text ${exit ? "exit" : ""}`} style={{ fontSize: 13, fontWeight: 600, color: phrase.color }}>
+        {phrase.text}
+      </span>
     </div>
   );
 }
