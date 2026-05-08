@@ -603,6 +603,19 @@ export default function OnboardingPage() {
 
       if (bizError) throw bizError;
 
+      // Fire onboarding complete email
+      fetch("/api/onboarding-complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name:         user.user_metadata?.full_name || data.businessName,
+          email:        data.email,
+          businessName: data.businessName,
+          slug,
+          category:     data.category,
+        }),
+      }).catch(() => {});
+
       if (data.services.length > 0) {
         await supabase.from("services").insert(
           data.services.map(s => ({

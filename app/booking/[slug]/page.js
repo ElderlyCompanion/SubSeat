@@ -256,11 +256,38 @@ export default function BookingPage({ params }) {
         .single();
 
       if (!error && booking) {
-        // Build mobile address line for emails
-        const addressLine = isMobile && customerAddress.address
-          ? `\nCustomer address: ${customerAddress.address}, ${customerAddress.postcode}`
-          : "";
+        const dateStr = startDt.toLocaleDateString("en-GB",{ weekday:"long", day:"numeric", month:"long" });
 
+        // 1. Notify business (email + dashboard notification)
+        fetch("/api/notify-business", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "booking",
+            business: { id: business.id, business_name: business.business_name, owner_email: business.email },
+            customer: { name: customerInfo.full_name, email: customerInfo.email, phone: customerInfo.phone },
+            booking:  { service_name: selectedService.name, start_time: startDt.toISOString(), customer_address: bookingPayload.customer_address || null },
+          }),
+        }).catch(() => {});
+
+        // 2. Send customer confirmation email
+        fetch("/api/booking-confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName:  customerInfo.full_name,
+            customerEmail: customerInfo.email,
+            businessName:  business.business_name,
+            businessPhone: business.phone,
+            serviceName:   selectedService.name,
+            dateStr,
+            time:          selectedTime,
+            address:       bookingPayload.customer_address || null,
+            isMobile,
+          }),
+        }).catch(() => {});
+
+        // 3. Queue for cron backup
         await supabase.from("notification_queue").insert([
           {
             business_id:       business.id,
@@ -269,19 +296,8 @@ export default function BookingPage({ params }) {
             notification_type: "booking_confirmation_customer",
             recipient:         customerInfo.email,
             subject:           `Booking confirmed with ${business.business_name}`,
-            message:           `Hi ${customerInfo.full_name}, your appointment with ${business.business_name} is confirmed for ${startDt.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})} at ${selectedTime}.`,
-            status:            "pending",
-            scheduled_for:     new Date().toISOString(),
-          },
-          {
-            business_id:       business.id,
-            booking_id:        booking.id,
-            channel:           "email",
-            notification_type: "booking_confirmation_business",
-            recipient:         business.email || "",
-            subject:           `New booking from ${customerInfo.full_name}`,
-            message:           `${customerInfo.full_name} booked ${selectedService.name} for ${startDt.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})} at ${selectedTime}.${addressLine}`,
-            status:            "pending",
+            message:           `Hi ${customerInfo.full_name}, your appointment is confirmed for ${dateStr} at ${selectedTime}.`,
+            status:            "sent",
             scheduled_for:     new Date().toISOString(),
           },
         ]);
