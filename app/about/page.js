@@ -101,6 +101,20 @@ export default function AboutPage() {
 
       {/* FOOTER */}
       <footer style={{ background:C, padding:"32px 5%", textAlign:"center" }}>
+        <div style={{ display:"flex", justifyContent:"center", gap:12, marginBottom:16 }}>
+          {[
+            { href:"https://x.com/subseatuk",                    label:"X",         bg:"#000" },
+            { href:"https://uk.linkedin.com/company/subseat",    label:"LinkedIn",   bg:"#0077b5" },
+            { href:"https://www.instagram.com/subseatuk",        label:"Instagram",  bg:"#e1306c" },
+          ].map((s,i)=>(
+            <a key={i} href={s.href} target="_blank" rel="noopener noreferrer"
+              style={{ display:"inline-block", background:"rgba(255,255,255,.1)", color:W, textDecoration:"none", padding:"8px 18px", borderRadius:10, fontSize:13, fontWeight:700, fontFamily:"Poppins,sans-serif", transition:"all .18s" }}
+              onMouseEnter={e=>e.currentTarget.style.background=s.bg}
+              onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,.1)"}>
+              {s.label}
+            </a>
+          ))}
+        </div>
         <p style={{ fontSize:13, color:"rgba(255,255,255,.3)" }}>© 2026 SubSeat Ltd. All rights reserved. SubSeat® is a UK registered trademark.</p>
       </footer>
     </>
