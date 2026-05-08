@@ -1070,6 +1070,8 @@ export default function DashboardPage() {
   const [bookings,      setBookings]= useState([]);
   const [loading,       setLoading] = useState(true);
   const [activeSection, setActive]  = useState("overview");
+  const [notifs,        setNotifs]  = useState([]);
+  const [showNotifs,    setShowNotifs] = useState(false);
 
   useEffect(()=>{ loadData(); },[]);
 
@@ -1083,16 +1085,24 @@ export default function DashboardPage() {
     if (!biz) { window.location.href="/onboarding"; return; }
     setBusiness(biz);
 
-    const [{ data:svcs },{ data:subs },{ data:bkgs }] = await Promise.all([
+    const [{ data:svcs },{ data:subs },{ data:bkgs },{ data:nfs }] = await Promise.all([
       supabase.from("services").select("*").eq("business_id",biz.id).order("created_at",{ ascending:false }),
       supabase.from("subscriptions").select("*").eq("business_id",biz.id).eq("status","active"),
       supabase.from("bookings").select("*").eq("business_id",biz.id).order("start_time",{ ascending:true }),
+      supabase.from("business_notifications").select("*").eq("business_id",biz.id).order("created_at",{ ascending:false }).limit(20),
     ]);
 
     setServices(svcs||[]);
     setSubs(subs||[]);
     setBookings(bkgs||[]);
+    setNotifs(nfs||[]);
     setLoading(false);
+  };
+
+  const markAllRead = async () => {
+    if (!business) return;
+    await supabase.from("business_notifications").update({ read:true }).eq("business_id",business.id).eq("read",false);
+    setNotifs(prev => prev.map(n => ({ ...n, read:true })));
   };
 
   const handleSignOut = async () => {
@@ -1127,7 +1137,56 @@ export default function DashboardPage() {
         </a>
         <span style={{ fontSize:14, fontWeight:600, color:"#888" }}>Business Dashboard</span>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:13, color:"#888" }}>{user?.email}</span>
+
+          {/* NOTIFICATION BELL */}
+          <div style={{ position:"relative" }}>
+            <button onClick={()=>{ setShowNotifs(!showNotifs); if(!showNotifs) markAllRead(); }}
+              style={{ position:"relative", width:42, height:42, borderRadius:10, background:notifs.filter(n=>!n.read).length>0?L:G, border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, transition:"all .18s" }}>
+              🔔
+              {notifs.filter(n=>!n.read).length > 0 && (
+                <div style={{ position:"absolute", top:6, right:6, width:16, height:16, borderRadius:"50%", background:"#e53e3e", color:W, fontSize:9, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"Poppins" }}>
+                  {notifs.filter(n=>!n.read).length > 9 ? "9+" : notifs.filter(n=>!n.read).length}
+                </div>
+              )}
+            </button>
+
+            {/* DROPDOWN */}
+            {showNotifs && (
+              <>
+                <div onClick={()=>setShowNotifs(false)} style={{ position:"fixed", inset:0, zIndex:199 }} />
+                <div style={{ position:"absolute", top:50, right:0, width:320, background:W, borderRadius:16, border:"1.5px solid #eee", boxShadow:"0 16px 48px rgba(0,0,0,.12)", zIndex:200, overflow:"hidden" }}>
+                  <div style={{ padding:"14px 16px", borderBottom:"1px solid #f0f0f0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontWeight:800, fontSize:14, color:C }}>Notifications</span>
+                    {notifs.length > 0 && <button onClick={markAllRead} style={{ background:"none", border:"none", fontSize:11, color:P, fontFamily:"Poppins", fontWeight:600, cursor:"pointer" }}>Mark all read</button>}
+                  </div>
+                  <div style={{ maxHeight:360, overflowY:"auto" }}>
+                    {notifs.length === 0 ? (
+                      <div style={{ padding:"32px 16px", textAlign:"center" }}>
+                        <div style={{ fontSize:32, marginBottom:8 }}>🔔</div>
+                        <div style={{ fontSize:13, color:"#aaa" }}>No notifications yet</div>
+                      </div>
+                    ) : notifs.map((n,i) => (
+                      <div key={n.id} style={{ padding:"12px 16px", borderBottom:i<notifs.length-1?"1px solid #f9f9f9":"none", background:n.read?"transparent":"#faf8ff", display:"flex", gap:12, alignItems:"flex-start" }}>
+                        <div style={{ width:36, height:36, borderRadius:10, background:n.type==="subscriber"?"#f0fdf4":n.type==="booking"?L:n.type==="cancellation"?"#fff5f5":"#f9f9f9", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>
+                          {n.type==="subscriber"?"👤":n.type==="booking"?"📅":n.type==="cancellation"?"❌":"🔔"}
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontWeight:700, fontSize:13, color:C, marginBottom:2 }}>{n.title}</div>
+                          <div style={{ fontSize:12, color:"#888", lineHeight:1.5 }}>{n.message}</div>
+                          <div style={{ fontSize:11, color:"#bbb", marginTop:4 }}>
+                            {new Date(n.created_at).toLocaleDateString("en-GB",{ day:"numeric", month:"short" })} at {new Date(n.created_at).toLocaleTimeString("en-GB",{ hour:"2-digit", minute:"2-digit" })}
+                          </div>
+                        </div>
+                        {!n.read && <div style={{ width:7, height:7, borderRadius:"50%", background:P, flexShrink:0, marginTop:4 }} />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <span style={{ fontSize:13, color:"#888" }} className="hide-mob">{user?.email}</span>
           <button onClick={handleSignOut} style={{ background:G, border:"none", borderRadius:8, padding:"8px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer", color:"#e53e3e" }}>Sign Out</button>
         </div>
       </nav>
