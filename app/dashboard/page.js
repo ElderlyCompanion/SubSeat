@@ -615,23 +615,36 @@ function Services({ services, businessId, onRefresh }) {
   const memberships = services.filter(s => s.monthly_price > 0);
   const oneOffs     = services.filter(s => s.one_off_price > 0);
 
+  const [saveError, setSaveError] = useState("");
+  const [saved,     setSaved]     = useState(false);
+
   const handleAdd = async () => {
     if (!newSvc.name) return;
-    setSaving(true);
-    await supabase.from("services").insert({
+    if (!businessId) { setSaveError("Business ID missing. Please refresh."); return; }
+    setSaving(true); setSaveError(""); setSaved(false);
+
+    const { error } = await supabase.from("services").insert({
       business_id:      businessId,
       name:             newSvc.name,
       description:      newSvc.description,
-      monthly_price:    newSvc.monthly_price || 0,
-      one_off_price:    newSvc.one_off_price || null,
-      duration_minutes: parseInt(newSvc.duration_minutes),
+      monthly_price:    parseFloat(newSvc.monthly_price) || 0,
+      one_off_price:    parseFloat(newSvc.one_off_price) || null,
+      duration_minutes: parseInt(newSvc.duration_minutes) || 45,
       buffer_minutes:   10,
       is_active:        true,
     });
-    setNewSvc({ name:"", monthly_price:"", one_off_price:"", duration_minutes:45, description:"", service_type:"membership" });
-    setShowAdd(false);
+
+    if (error) {
+      console.error("Service save error:", error);
+      setSaveError(`Failed to save: ${error.message}`);
+    } else {
+      setNewSvc({ name:"", monthly_price:"", one_off_price:"", duration_minutes:45, description:"", service_type:"membership" });
+      setShowAdd(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      onRefresh();
+    }
     setSaving(false);
-    onRefresh();
   };
 
   const toggle = async (id, current) => {
@@ -705,11 +718,13 @@ function Services({ services, businessId, onRefresh }) {
             <input className="inp" placeholder="Description (optional)" value={newSvc.description} onChange={e=>setNewSvc({...newSvc,description:e.target.value})} />
             <div style={{ display:"flex", gap:10 }}>
               <button className="btn-p" onClick={handleAdd} disabled={saving||!newSvc.name} style={{ flex:1 }}>{saving?"Saving...":"Add Service"}</button>
-              <button onClick={()=>setShowAdd(false)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
+              <button onClick={()=>{ setShowAdd(false); setSaveError(""); }} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
             </div>
+            {saveError && <div style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#e53e3e", fontWeight:600 }}>⚠️ {saveError}</div>}
           </div>
         </div>
       )}
+      {saved && <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#166534", fontWeight:600, marginBottom:12 }}>✅ Service saved successfully!</div>}
       <div style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
           <span style={{ fontSize:20 }}>📅</span>

@@ -306,11 +306,61 @@ function Businesses({ businesses, onRefresh, addAudit }) {
   const [busy,setBusy]=useState(null);
   const [showRemoved,setShowRemoved]=useState(false);
   const list=businesses.filter(b=>showRemoved?true:!isRemoved(b)).filter(b=>b.business_name?.toLowerCase().includes(search.toLowerCase())||b.city?.toLowerCase().includes(search.toLowerCase())||b.category?.toLowerCase().includes(search.toLowerCase()));
-  const softRemove=async()=>{setBusy(confirm.id);await supabase.from("businesses").update({is_active:false,slug:`removed-${confirm.id.slice(0,8)}`}).eq("id",confirm.id);addAudit(`Removed: ${confirm.name}`);setConfirm(null);setBusy(null);onRefresh();};
-  const restore=async b=>{setBusy(b.id);const slug=b.business_name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");await supabase.from("businesses").update({is_active:true,slug}).eq("id",b.id);addAudit(`Restored: ${b.business_name}`);setBusy(null);onRefresh();};
-  const toggleActive=async b=>{setBusy(b.id);await supabase.from("businesses").update({is_active:!b.is_active}).eq("id",b.id);addAudit(`${b.is_active?"Suspended":"Activated"}: ${b.business_name}`);setBusy(null);onRefresh();};
-  const toggleVerified=async b=>{setBusy(b.id);await supabase.from("businesses").update({is_verified:!b.is_verified}).eq("id",b.id);addAudit(`${b.is_verified?"Unverified":"Verified"}: ${b.business_name}`);setBusy(null);onRefresh();};
-  const setTier=async(id,tier,name)=>{await supabase.from("businesses").update({tier}).eq("id",id);addAudit(`Tier → ${tier}: ${name}`);onRefresh();};
+  const adminAction = async (action, businessId, data={}) => {
+    const { data:{ user } } = await supabase.auth.getUser();
+    const res = await fetch("/api/admin-action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, businessId, data, adminEmail: user?.email }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+  };
+
+  const softRemove = async () => {
+    setBusy(confirm.id);
+    try {
+      await adminAction("soft_remove", confirm.id);
+      addAudit(`Removed: ${confirm.name}`);
+    } catch(e) { console.error(e); }
+    setConfirm(null); setBusy(null); onRefresh();
+  };
+
+  const restore = async b => {
+    setBusy(b.id);
+    const slug = b.business_name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+    try {
+      await adminAction("restore", b.id, { slug });
+      addAudit(`Restored: ${b.business_name}`);
+    } catch(e) { console.error(e); }
+    setBusy(null); onRefresh();
+  };
+
+  const toggleActive = async b => {
+    setBusy(b.id);
+    try {
+      await adminAction("toggle_active", b.id, { is_active: !b.is_active });
+      addAudit(`${b.is_active?"Suspended":"Activated"}: ${b.business_name}`);
+    } catch(e) { console.error(e); }
+    setBusy(null); onRefresh();
+  };
+
+  const toggleVerified = async b => {
+    setBusy(b.id);
+    try {
+      await adminAction("toggle_verified", b.id, { is_verified: !b.is_verified });
+      addAudit(`${b.is_verified?"Unverified":"Verified"}: ${b.business_name}`);
+    } catch(e) { console.error(e); }
+    setBusy(null); onRefresh();
+  };
+
+  const setTier = async (id, tier, name) => {
+    try {
+      await adminAction("set_tier", id, { tier });
+      addAudit(`Tier → ${tier}: ${name}`);
+    } catch(e) { console.error(e); }
+    onRefresh();
+  };
   return (
     <div>
       {confirm&&<ConfirmModal title="Remove Business?" message={`"${confirm.name}" will be hidden from SubSeat.`} sub="All data stays in the database and can be restored." confirmLabel="Yes, Remove" danger onConfirm={softRemove} onCancel={()=>setConfirm(null)}/>}
