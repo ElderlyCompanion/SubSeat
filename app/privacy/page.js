@@ -143,26 +143,51 @@ export default function PrivacyPage() {
               <li><strong>Right to object</strong> — object to processing based on legitimate interests</li>
               <li><strong>Right to withdraw consent</strong> — for marketing at any time</li>
             </ul>
-            <p>To exercise any of these rights, email us at <a href="mailto:hello@subseat.co.uk" style={{ color:P }}>hello@subseat.co.uk</a>. We will respond within 30 days.</p>
+            <p>To exercise any of these rights, email us at <a href="mailto:privacy@subseat.co.uk" style={{ color:P }}>privacy@subseat.co.uk</a>. We will respond within 30 days.</p>
           </div>
 
           <div className="legal-section">
-            <h2>8. Cookies</h2>
+            <h2>8. Account & Data Deletion</h2>
+            <p>You have the right to request full deletion of your SubSeat account and personal data at any time.</p>
+            <h3>How to request deletion</h3>
+            <ul>
+              <li>Email <a href="mailto:privacy@subseat.co.uk" style={{ color:P }}>privacy@subseat.co.uk</a> with the subject line <strong>"Account Deletion Request"</strong></li>
+              <li>Include your registered email address and full name</li>
+              <li>We will confirm receipt within 48 hours</li>
+              <li>Deletion will be completed within 30 days of your request</li>
+            </ul>
+            <h3>What gets deleted</h3>
+            <ul>
+              <li>Your account credentials and profile information</li>
+              <li>Your booking history and subscription records</li>
+              <li>Any uploaded images or business content</li>
+              <li>Your contact preferences and notification settings</li>
+            </ul>
+            <h3>What we must retain</h3>
+            <ul>
+              <li>Financial transaction records for up to 6 years as required by UK law</li>
+              <li>Records required for ongoing legal disputes or chargebacks</li>
+            </ul>
+            <p>Please note: active subscriptions must be cancelled before account deletion can be completed. Deleted accounts cannot be recovered.</p>
+          </div>
+
+          <div className="legal-section">
+            <h2>9. Cookies</h2>
             <p>SubSeat uses essential cookies to keep you logged in and operate the platform. We do not use advertising or tracking cookies. You can disable cookies in your browser settings, though this may affect platform functionality.</p>
           </div>
 
           <div className="legal-section">
-            <h2>9. Security</h2>
+            <h2>10. Security</h2>
             <p>We take security seriously. All data is encrypted in transit (HTTPS) and at rest. Passwords are hashed and never stored in plain text. Payment data is handled entirely by Stripe and never stored on our servers.</p>
           </div>
 
           <div className="legal-section">
-            <h2>10. Changes to This Policy</h2>
+            <h2>11. Changes to This Policy</h2>
             <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by email or via a notice on the platform. The date at the top of this page shows when it was last updated.</p>
           </div>
 
           <div className="legal-section">
-            <h2>11. Contact & Complaints</h2>
+            <h2>12. Contact & Complaints</h2>
             <p>If you have concerns about how we handle your data, please contact us first at <a href="mailto:hello@subseat.co.uk" style={{ color:P }}>hello@subseat.co.uk</a>. If you remain unsatisfied, you have the right to lodge a complaint with the Information Commissioner's Office (ICO) at <a href="https://ico.org.uk" style={{ color:P }} target="_blank">ico.org.uk</a>.</p>
           </div>
 

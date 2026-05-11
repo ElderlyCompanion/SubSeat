@@ -384,6 +384,7 @@ function Businesses({ businesses, onRefresh, addAudit }) {
               <div style={{display:"flex",gap:4,flexWrap:"wrap",flexShrink:0}}>
                 {isRemoved(b)?<span className="badge br">Removed</span>:<span className={`badge ${b.is_active?"bg":"br"}`}>{b.is_active?"Active":"Suspended"}</span>}
                 {b.is_verified&&!isRemoved(b)&&<span className="badge bp">✓</span>}
+                {b.tier==="founding"&&<span className="badge bo">🌟 Founding</span>}
                 {b.tier==="partner"&&<span className="badge bp">Partner</span>}
               </div>
             </div>
@@ -391,6 +392,7 @@ function Businesses({ businesses, onRefresh, addAudit }) {
               <select value={b.tier||"basic"} onChange={e=>setTier(b.id,e.target.value,b.business_name)}
                 style={{width:"100%",background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",borderRadius:8,padding:"10px 12px",color:W,fontFamily:"Poppins",fontSize:14,cursor:"pointer",outline:"none",marginBottom:10,minHeight:44}}>
                 <option value="basic">Basic Tier</option>
+                <option value="founding">Founding Business</option>
                 <option value="partner">Partner Tier</option>
                 <option value="enterprise">Enterprise Tier</option>
               </select>

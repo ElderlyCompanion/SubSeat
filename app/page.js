@@ -267,7 +267,7 @@ function Nav({ scrolled }) {
           ))}
         </nav>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-ghost">Sign In</button></a>
+          <a href="mailto:hello@subseat.co.uk?subject=SubSeat Demo Request" style={{ textDecoration: "none" }}><button className="btn-ghost">Book a Demo</button></a>
           <a href="/auth" style={{ textDecoration: "none" }}><button className="btn-primary" style={{ padding: "10px 22px", fontSize: 14 }}>Get Started</button></a>
         </div>
       </div>

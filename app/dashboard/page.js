@@ -158,6 +158,9 @@ function Sidebar({ active, setActive, business, onSignOut }) {
             <button className="nav-item"><span>👁️</span>View My Profile</button>
           </a>
           <button className="nav-item" onClick={onSignOut} style={{ color:"#e53e3e" }}><span>🚪</span>Sign Out</button>
+          <a href="mailto:privacy@subseat.co.uk?subject=Account Deletion Request" style={{ textDecoration:"none", width:"100%" }}>
+            <button className="nav-item" style={{ color:"#aaa", fontSize:11 }}><span>🗑️</span>Delete Account</button>
+          </a>
         </div>
       </div>
     </div>
@@ -298,6 +301,7 @@ function SubSeatServices() {
 function Overview({ business, subscribers, bookings, services, setActive }) {
   const today   = bookings.filter(b => new Date(b.start_time).toDateString() === new Date().toDateString());
   const mrr     = subscribers.reduce((a,s) => a + parseFloat(s.monthly_price||0), 0);
+  const arr     = mrr * 12;
   const oneOffs = bookings.filter(b => b.booking_type === "one_off");
 
   return (
@@ -307,7 +311,7 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
         <p style={{ fontSize:14, color:"#888", marginTop:4 }}>Here's what's happening today.</p>
       </div>
 
-      <div className="stats-grid fu" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:24 }}>
+      <div className="stats-grid fu" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:16 }}>
         {[
           { label:"Today's Appointments", val:today.length,         icon:"📅", color:P         },
           { label:"Active Subscribers",   val:subscribers.length,   icon:"👥", color:"#22c55e" },
@@ -321,6 +325,20 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
           </div>
         ))}
       </div>
+
+      {/* PROJECTED ANNUAL REVENUE BANNER */}
+      {mrr > 0 && (
+        <div className="fu" style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:14, padding:"16px 22px", marginBottom:18, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
+          <div>
+            <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:2 }}>Projected Annual Revenue</div>
+            <div style={{ fontSize:26, fontWeight:900, color:W, letterSpacing:"-1px" }}>£{arr.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,",")} /year</div>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,.6)", marginBottom:2 }}>SubSeat fee (6%)</div>
+            <div style={{ fontSize:16, fontWeight:700, color:"rgba(255,255,255,.8)" }}>£{(mrr * 0.06).toFixed(2)}/mo</div>
+          </div>
+        </div>
+      )}
 
       <div className="fu d1" style={{ background:W, borderRadius:18, padding:24, border:"1.5px solid #eee", marginBottom:18 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
