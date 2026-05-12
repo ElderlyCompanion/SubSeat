@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const P = "#563BE7";
@@ -7,7 +7,7 @@ const C = "#171717";
 const W = "#ffffff";
 const G = "#F4F4F4";
 
-export default function SubscribeSuccessPage() {
+function SuccessContent() {
   const params   = useSearchParams();
   const business = params.get("business");
   const category = params.get("category");
@@ -34,7 +34,6 @@ export default function SubscribeSuccessPage() {
         {/* SUCCESS CARD */}
         <div style={{ background:W, borderRadius:24, padding:"48px 36px", boxShadow:"0 24px 80px rgba(86,59,231,.4)" }}>
 
-          {/* ANIMATED TICK */}
           <div style={{ width:80, height:80, borderRadius:"50%", background:"#f0fdf4", border:"3px solid #22c55e", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 24px", fontSize:36 }}>
             ✅
           </div>
@@ -50,10 +49,10 @@ export default function SubscribeSuccessPage() {
           <div style={{ background:G, borderRadius:16, padding:"20px 24px", marginBottom:28, textAlign:"left" }}>
             <div style={{ fontSize:13, fontWeight:700, color:"#888", letterSpacing:1, textTransform:"uppercase", marginBottom:14 }}>What happens next</div>
             {[
-              ["🔒", "Your slot is locked in",       "Priority booking every month — your seat is always guaranteed."],
-              ["📧", "Check your email",             "A confirmation has been sent with your subscription details."],
-              ["📱", "You'll get reminders",         "WhatsApp and email reminders before every appointment."],
-              ["💳", "Renews automatically",         "Your subscription renews monthly — cancel anytime from your dashboard."],
+              ["🔒", "Your slot is locked in",   "Priority booking every month. Your seat is always guaranteed."],
+              ["📧", "Check your email",         "A confirmation has been sent with your subscription details."],
+              ["📱", "You'll get reminders",     "WhatsApp and email reminders before every appointment."],
+              ["💳", "Renews automatically",     "Your subscription renews monthly. Cancel anytime from your dashboard."],
             ].map(([icon, title, body], i) => (
               <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start", marginBottom: i<3 ? 14 : 0 }}>
                 <div style={{ width:36, height:36, borderRadius:10, background:W, border:"1.5px solid #eee", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>{icon}</div>
@@ -65,7 +64,6 @@ export default function SubscribeSuccessPage() {
             ))}
           </div>
 
-          {/* BUTTONS */}
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             {business && category && (
               <a href={`/${category}/${business}`} style={{ textDecoration:"none" }}>
@@ -89,5 +87,17 @@ export default function SubscribeSuccessPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function SubscribeSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight:"100vh", background:"linear-gradient(135deg,#0f0f1a,#1a1040)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:36, height:36, border:"3px solid rgba(86,59,231,.3)", borderTop:`3px solid #563BE7`, borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }
