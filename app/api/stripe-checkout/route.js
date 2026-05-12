@@ -15,6 +15,10 @@ export async function POST(req) {
       customerName,
     } = await req.json();
 
+    if (!businessId || !planName || !price || price <= 0) {
+      return Response.json({ error: "Missing required fields or invalid price" }, { status: 400 });
+    }
+
     // Create or retrieve Stripe product
     const product = await stripe.products.create({
       name:     `${planName} — ${businessName}`,
@@ -53,7 +57,6 @@ export async function POST(req) {
           planName,
           subSeatFeePercent: "6",
         },
-        application_fee_percent: 6, // SubSeat 6% fee
       },
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://subseat.co.uk"}/subscribe/success?session_id={CHECKOUT_SESSION_ID}&business=${businessSlug}&category=${businessCategory}`,
       cancel_url:  `${process.env.NEXT_PUBLIC_SITE_URL || "https://subseat.co.uk"}/${businessCategory}/${businessSlug}`,
@@ -63,7 +66,7 @@ export async function POST(req) {
 
     return Response.json({ url: session.url, sessionId: session.id });
   } catch(err) {
-    console.error("Stripe checkout error:", err);
-    return Response.json({ error: err.message }, { status: 500 });
+    console.error("Stripe checkout error:", err.message, err.type, err.code);
+    return Response.json({ error: err.message, type: err.type }, { status: 500 });
   }
 }
