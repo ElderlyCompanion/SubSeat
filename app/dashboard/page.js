@@ -400,13 +400,18 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
 }
 
 /* ── CALENDAR ── */
-function Calendar({ bookings, business }) {
-  const [current, setCurrent]       = useState(new Date());
-  const [selected, setSelected]     = useState(null);
-  const [showAddBooking, setShowAdd]= useState(false);
-  const [newBooking, setNewBooking] = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
-  const [saving, setSaving]         = useState(false);
-  const [localBookings, setLocalBkgs] = useState(bookings);
+function Calendar({ bookings, business, subscribers }) {
+  const [current, setCurrent]        = useState(new Date());
+  const [selected, setSelected]      = useState(null);
+  const [showAddBooking, setShowAdd] = useState(false);
+  const [showHoliday, setShowHoliday]= useState(false);
+  const [holiday, setHoliday]        = useState({ startDate:"", endDate:"", reason:"" });
+  const [holidayDays, setHolidayDays]= useState([]);
+  const [notifying, setNotifying]    = useState(false);
+  const [notified, setNotified]      = useState(false);
+  const [newBooking, setNewBooking]  = useState({ customer_name:"", service:"", time:"09:00", duration:45, type:"one_off", notes:"" });
+  const [saving, setSaving]          = useState(false);
+  const [localBookings, setLocalBkgs]= useState(bookings);
 
   const year        = current.getFullYear();
   const month       = current.getMonth();
@@ -418,6 +423,15 @@ function Calendar({ bookings, business }) {
     const d = new Date(b.start_time);
     return d.getDate()===day && d.getMonth()===month && d.getFullYear()===year;
   });
+
+  const isHoliday = (day) => {
+    const dt = new Date(year, month, day);
+    return holidayDays.some(h => {
+      const start = new Date(h.startDate);
+      const end   = new Date(h.endDate);
+      return dt >= start && dt <= end;
+    });
+  };
 
   const selectedBookings = selected ? getDayBookings(selected) : [];
 
@@ -444,12 +458,113 @@ function Calendar({ bookings, business }) {
     setSaving(false);
   };
 
+  const handleHolidaySubmit = async () => {
+    if (!holiday.startDate || !holiday.endDate) return;
+    setNotifying(true);
+
+    // Save holiday locally
+    const newHoliday = { ...holiday, id: Date.now() };
+    setHolidayDays(prev => [...prev, newHoliday]);
+
+    // Find affected bookings in the date range
+    const start = new Date(holiday.startDate);
+    const end   = new Date(holiday.endDate);
+    end.setHours(23,59,59);
+
+    const affected = localBookings.filter(b => {
+      const bt = new Date(b.start_time);
+      return bt >= start && bt <= end && b.status === "confirmed";
+    });
+
+    // Save blocked dates to Supabase
+    await supabase.from("business_blocked_dates").insert({
+      business_id: business.id,
+      start_date:  holiday.startDate,
+      end_date:    holiday.endDate,
+      reason:      holiday.reason || "Holiday",
+    }).catch(() => {});
+
+    // Send email notifications to affected customers
+    if (affected.length > 0) {
+      const startFmt = new Date(holiday.startDate).toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+      const endFmt   = new Date(holiday.endDate).toLocaleDateString("en-GB",   { day:"numeric", month:"long", year:"numeric" });
+
+      await fetch("/api/holiday-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business,
+          affectedBookings: affected,
+          startDate:  startFmt,
+          endDate:    endFmt,
+          reason:     holiday.reason || "Holiday / Annual Leave",
+          sameDay:    holiday.startDate === holiday.endDate,
+        }),
+      }).catch(() => {});
+    }
+
+    setNotified(true);
+    setShowHoliday(false);
+    setHoliday({ startDate:"", endDate:"", reason:"" });
+    setTimeout(() => setNotified(false), 4000);
+    setNotifying(false);
+  };
+
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <h2 style={{ fontWeight:800, fontSize:22, color:C }}>Calendar</h2>
-        <button className="btn-p" onClick={()=>setShowAdd(true)}>+ Add Booking</button>
+        <div style={{ display:"flex", gap:8 }}>
+          <button className="btn-s" onClick={()=>setShowHoliday(true)} style={{ fontSize:13 }}>🏖️ Holiday / Leave</button>
+          <button className="btn-p" onClick={()=>setShowAdd(true)}>+ Add Booking</button>
+        </div>
       </div>
+
+      {/* HOLIDAY SUCCESS */}
+      {notified && (
+        <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:12, padding:"12px 16px", marginBottom:16, fontSize:13, color:"#166534", fontWeight:600 }}>
+          ✅ Holiday saved. Customers with affected bookings have been emailed.
+        </div>
+      )}
+
+      {/* HOLIDAY MODAL */}
+      {showHoliday && (
+        <>
+          <div onClick={()=>setShowHoliday(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", zIndex:998, backdropFilter:"blur(4px)" }} />
+          <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:999, background:W, borderRadius:"24px 24px 0 0", padding:"28px 24px 40px", maxWidth:520, margin:"0 auto", boxShadow:"0 -8px 60px rgba(0,0,0,.2)" }}>
+            <div style={{ width:40, height:4, borderRadius:4, background:"#e0e0e0", margin:"0 auto 20px" }} />
+            <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:6 }}>🏖️ Block Holiday / Annual Leave</h3>
+            <p style={{ fontSize:13, color:"#888", marginBottom:20, lineHeight:1.6 }}>
+              Select your dates and we'll automatically email all customers with bookings during this period.
+            </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Start Date</label>
+                  <input className="inp" type="date" value={holiday.startDate} onChange={e=>setHoliday({...holiday,startDate:e.target.value})} min={new Date().toISOString().split("T")[0]} />
+                </div>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>End Date</label>
+                  <input className="inp" type="date" value={holiday.endDate} onChange={e=>setHoliday({...holiday,endDate:e.target.value})} min={holiday.startDate||new Date().toISOString().split("T")[0]} />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Reason (optional — shown to customers)</label>
+                <input className="inp" placeholder="e.g. Annual leave, Family holiday, Training day" value={holiday.reason} onChange={e=>setHoliday({...holiday,reason:e.target.value})} />
+              </div>
+              <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:10, padding:"12px 14px", fontSize:12, color:"#92400e", lineHeight:1.6 }}>
+                Any customers with confirmed bookings during these dates will be emailed automatically.
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button className="btn-p" onClick={handleHolidaySubmit} disabled={notifying||!holiday.startDate||!holiday.endDate} style={{ flex:2 }}>
+                  {notifying ? "Notifying customers..." : "Save & Notify Customers"}
+                </button>
+                <button onClick={()=>setShowHoliday(false)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {showAddBooking && (
         <>
@@ -510,14 +625,18 @@ function Calendar({ bookings, business }) {
           <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
             {Array(first===0?6:first-1).fill(null).map((_,i)=><div key={`e${i}`} />)}
             {Array(daysInMonth).fill(null).map((_,i)=>{
-              const day     = i+1;
-              const isToday = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();
-              const dayBkgs = getDayBookings(day);
-              const isSel   = selected===day;
+              const day      = i+1;
+              const isToday  = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();
+              const dayBkgs  = getDayBookings(day);
+              const isSel    = selected===day;
+              const isHol    = isHoliday(day);
               return (
-                <div key={day} className={`cal-day ${isToday?"today":""} ${dayBkgs.length>0&&!isToday?"has-appt":""} ${isSel&&!isToday?"selected":""}`} onClick={()=>setSelected(day)}>
+                <div key={day} className={`cal-day ${isToday?"today":""} ${dayBkgs.length>0&&!isToday&&!isHol?"has-appt":""} ${isSel&&!isToday?"selected":""}`}
+                  onClick={()=>setSelected(day)}
+                  style={isHol?{ background:"#fff7ed", borderColor:"#fed7aa", color:"#c2410c" }:{}}>
                   {day}
-                  {dayBkgs.length>0 && (
+                  {isHol && <div style={{ fontSize:8, marginTop:1 }}>🏖️</div>}
+                  {dayBkgs.length>0 && !isHol && (
                     <div style={{ display:"flex", gap:2, marginTop:2 }}>
                       {dayBkgs.slice(0,3).map((_,j)=><div key={j} style={{ width:4, height:4, borderRadius:"50%", background:isToday?W:P }} />)}
                     </div>

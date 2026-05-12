@@ -164,10 +164,42 @@ export default function BusinessProfilePage({ params }) {
     setTimeout(()=>setCopied(false), 2000);
   };
 
-  const handleSubscribe = (service, staffMember=null) => {
-    setSelectedService(service);
-    setSelectedStaff(staffMember);
-    setShowSubscribeModal(true);
+  const [subLoading, setSubLoading] = useState(false);
+  const [user,       setUser]       = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data:{ user } }) => setUser(user));
+  }, []);
+
+  const handleSubscribe = async (service, staffMember=null) => {
+    if (!service || !business) return;
+    setSubLoading(true);
+    try {
+      const res  = await fetch("/api/stripe-checkout", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          businessId:       business.id,
+          businessName:     business.business_name,
+          businessSlug:     business.slug,
+          businessCategory: business.category,
+          planName:         service.name,
+          price:            parseFloat(service.monthly_price),
+          customerEmail:    user?.email || null,
+          customerName:     user?.user_metadata?.full_name || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    } catch(err) {
+      console.error("Checkout error:", err);
+      alert("Something went wrong. Please try again.");
+    }
+    setSubLoading(false);
   };
 
   const handleBookStaff = (staffMember) => {
@@ -302,7 +334,7 @@ export default function BusinessProfilePage({ params }) {
                           </div>
                           <div style={{ fontSize:12, color:"#aaa" }}>Cancel anytime</div>
                         </div>
-                        <button className="btn-subscribe" onClick={()=>handleSubscribe(s)}>Subscribe & Book</button>
+                        <button className="btn-subscribe" onClick={()=>handleSubscribe(s)} disabled={subLoading}>{subLoading?"Processing...":"Subscribe & Book"}</button>
                       </div>
                     ))}
                   </div>
@@ -607,7 +639,7 @@ export default function BusinessProfilePage({ params }) {
               </div>
             </div>
             <a href="/auth" style={{ display:"block", background:P, color:W, textDecoration:"none", padding:"16px", borderRadius:12, fontWeight:700, fontSize:16, fontFamily:"Poppins", textAlign:"center", boxShadow:"0 6px 24px rgba(86,59,231,.32)", marginBottom:12 }}>
-              Sign Up & Subscribe
+              {subLoading ? "Processing..." : "Sign Up & Subscribe"}
             </a>
             <button onClick={()=>setShowSubscribeModal(false)} style={{ width:"100%", padding:"14px", borderRadius:12, background:"transparent", border:"2px solid #eee", fontFamily:"Poppins", fontWeight:600, fontSize:15, cursor:"pointer", color:"#888" }}>
               Maybe later
