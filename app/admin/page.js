@@ -235,9 +235,10 @@ function GlobalSearch({ businesses, profiles, onClose }) {
 }
 
 function Overview({ businesses, profiles, subscriptions, alerts, setActive }) {
-  const active=businesses.filter(b=>b.is_active&&!isRemoved(b));
-  const mrr=subscriptions.reduce((a,s)=>a+parseFloat(s.monthly_price||0),0);
-  const fee=mrr*0.06;
+  const active     = businesses.filter(b=>b.is_active&&!isRemoved(b));
+  const activeSubs = subscriptions.filter(s=>s.status==="active");
+  const mrr        = activeSubs.reduce((a,s)=>a+parseFloat(s.monthly_price||0),0);
+  const fee        = mrr*0.06;
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
