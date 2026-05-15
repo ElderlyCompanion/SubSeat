@@ -216,20 +216,21 @@ function JourneyLinks({ booking }) {
 
 /* ── STRIPE CONNECT STATUS CARD ── */
 function StripeConnectCard({ business }) {
-  const [status,     setStatus]     = useState(null);
+  const [status,     setStatus]     = useState("not_connected");
   const [connecting, setConnecting] = useState(false);
-  const [checked,    setChecked]    = useState(false);
+  const [error,      setError]      = useState("");
 
   useEffect(() => {
     if (!business?.id) return;
     fetch(`/api/stripe-connect?businessId=${business.id}`)
       .then(r => r.json())
-      .then(d => { setStatus(d.status); setChecked(true); })
-      .catch(() => setChecked(true));
+      .then(d => setStatus(d.status || "not_connected"))
+      .catch(() => setStatus("not_connected"));
   }, [business?.id]);
 
   const handleConnect = async () => {
     setConnecting(true);
+    setError("");
     try {
       const res  = await fetch("/api/stripe-connect", {
         method:  "POST",
@@ -242,58 +243,76 @@ function StripeConnectCard({ business }) {
         }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch(err) { console.error(err); }
-    setConnecting(false);
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || "Something went wrong. Please try again.");
+        setConnecting(false);
+      }
+    } catch(err) {
+      console.error(err);
+      setError("Connection failed. Please try again.");
+      setConnecting(false);
+    }
   };
 
   const handleDashboard = async () => {
-    const res  = await fetch("/api/stripe-connect", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ businessId: business.id, action: "dashboard" }),
-    });
-    const data = await res.json();
-    if (data.url) window.open(data.url, "_blank");
+    try {
+      const res  = await fetch("/api/stripe-connect", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ businessId: business.id, action: "dashboard" }),
+      });
+      const data = await res.json();
+      if (data.url) window.open(data.url, "_blank");
+    } catch(err) { console.error(err); }
   };
 
-  if (!checked) return null;
-
-  const isActive = status === "active";
+  const isActive  = status === "active";
+  const isPending = status === "pending";
 
   return (
     <div style={{ background:isActive?"#f0fdf4":W, borderRadius:16, padding:"18px 20px", border:`1.5px solid ${isActive?"#bbf7d0":"#fde68a"}`, marginBottom:16 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-        <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-          <div style={{ width:42, height:42, borderRadius:12, background:isActive?"#dcfce7":L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>
+        <div style={{ display:"flex", gap:12, alignItems:"center", flex:1, minWidth:0 }}>
+          <div style={{ width:42, height:42, borderRadius:12, background:isActive?"#dcfce7":L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>
             {isActive ? "✅" : "💳"}
           </div>
-          <div>
+          <div style={{ minWidth:0 }}>
             <div style={{ fontWeight:700, fontSize:14, color:C, marginBottom:2 }}>
-              {isActive ? "Stripe payouts connected" : "Connect Stripe to receive payments"}
+              {isActive ? "Stripe payouts connected" : isPending ? "Stripe setup in progress" : "Connect Stripe to receive payments"}
             </div>
             <div style={{ fontSize:12, color:"#888", lineHeight:1.5 }}>
               {isActive
                 ? "Customers pay you directly. SubSeat takes 6% automatically."
-                : "Connect your bank account to receive subscriber payments every week."}
+                : isPending
+                ? "Almost there — finish your Stripe setup to start receiving payments."
+                : "Connect your bank account to receive subscriber payments every Monday."}
             </div>
           </div>
         </div>
-        {isActive ? (
-          <button onClick={handleDashboard}
-            style={{ background:"#22c55e", color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-            View Payouts →
-          </button>
-        ) : (
-          <button onClick={handleConnect} disabled={connecting}
-            style={{ background:P, color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer", opacity:connecting?.6:1 }}>
-            {connecting ? "Loading..." : "Set Up Payouts →"}
-          </button>
-        )}
+        <div style={{ flexShrink:0 }}>
+          {isActive ? (
+            <button onClick={handleDashboard}
+              style={{ background:"#22c55e", color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer", minHeight:44 }}>
+              View Payouts →
+            </button>
+          ) : (
+            <button onClick={handleConnect} disabled={connecting}
+              style={{ background:P, color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer", minHeight:44, opacity:connecting ? 0.6 : 1 }}>
+              {connecting ? "Opening Stripe..." : isPending ? "Continue Setup →" : "Set Up Payouts →"}
+            </button>
+          )}
+        </div>
       </div>
-      {status === "pending" && (
+      {error && (
+        <div style={{ marginTop:10, background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:12, color:"#e53e3e", fontWeight:600 }}>
+          ⚠️ {error}
+        </div>
+      )}
+      {isPending && (
         <div style={{ marginTop:12, background:"#fffbeb", borderRadius:10, padding:"10px 14px", fontSize:12, color:"#92400e" }}>
-          ⏳ Your Stripe account is being verified. This usually takes a few minutes. Refresh this page to check the status.
+          ⏳ Complete your Stripe setup to start receiving payments automatically.
         </div>
       )}
     </div>
