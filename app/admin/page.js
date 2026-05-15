@@ -385,6 +385,7 @@ function Businesses({ businesses, onRefresh, addAudit }) {
               <div style={{display:"flex",gap:4,flexWrap:"wrap",flexShrink:0}}>
                 {isRemoved(b)?<span className="badge br">Removed</span>:<span className={`badge ${b.is_active?"bg":"br"}`}>{b.is_active?"Active":"Suspended"}</span>}
                 {b.is_verified&&!isRemoved(b)&&<span className="badge bp">✓</span>}
+                {b.stripe_account_status==="active"&&<span className="badge bg">💳 Paid</span>}
                 {b.tier==="founding"&&<span className="badge bo">🌟 Founding</span>}
                 {b.tier==="partner"&&<span className="badge bp">Partner</span>}
               </div>

@@ -37,6 +37,17 @@ export async function POST(req) {
   try {
     switch(event.type) {
 
+      case "account.updated": {
+        const account = event.data.object;
+        const status  = account.charges_enabled ? "active" : "pending";
+        await supabase
+          .from("businesses")
+          .update({ stripe_account_status: status })
+          .eq("stripe_account_id", account.id);
+        console.log("Connect account updated:", account.id, status);
+        break;
+      }
+
       case "checkout.session.completed": {
         const session = event.data.object;
         const meta    = session.metadata || {};
