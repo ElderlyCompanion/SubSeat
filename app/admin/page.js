@@ -263,7 +263,7 @@ function Overview({ businesses, profiles, subscriptions, alerts, setActive }) {
       <div className="stats-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
         {[
           {label:"Partner Businesses",val:businesses.filter(b=>b.tier==="partner").length,icon:"🤝",color:"#a78bfa",tab:"businesses"},
-          {label:"Active Subscribers",val:subscriptions.length,icon:"👤",color:"#34d399",tab:"customers"},
+          {label:"Active Subscribers",val:activeSubs.length,icon:"👤",color:"#34d399",tab:"customers"},
           {label:"Annual Run Rate",val:fmtGBP(mrr*12),icon:"🚀",color:"#fbbf24",tab:"finance"},
         ].map((s,i)=>(
           <div key={i} className="stat-card" onClick={()=>setActive(s.tab)}>
@@ -443,7 +443,8 @@ function Customers({ profiles }) {
 }
 
 function Finance({ businesses, subscriptions }) {
-  const mrr=subscriptions.reduce((a,s)=>a+parseFloat(s.monthly_price||0),0);
+  const activeSubs=subscriptions.filter(s=>s.status==="active");
+  const mrr=activeSubs.reduce((a,s)=>a+parseFloat(s.monthly_price||0),0);
   const fee=mrr*0.06;
   const byBiz=businesses.map(b=>({...b,subs:subscriptions.filter(s=>s.business_id===b.id),rev:subscriptions.filter(s=>s.business_id===b.id).reduce((a,s)=>a+parseFloat(s.monthly_price||0),0)})).filter(b=>b.subs.length>0).sort((a,b)=>b.rev-a.rev);
   return (
@@ -874,7 +875,7 @@ export default function AdminPage() {
     const [{data:biz},{data:prof},{data:sub},{data:disp},{data:rev}] = await Promise.all([
       supabase.from("businesses").select("*").order("created_at",{ascending:false}),
       supabase.from("profiles").select("*").order("created_at",{ascending:false}),
-      supabase.from("subscriptions").select("*").eq("status","active"),
+      supabase.from("subscriptions").select("*").order("created_at",{ascending:false}),
       supabase.from("disputes").select("*").order("created_at",{ascending:false}),
       supabase.from("reviews").select("*").order("created_at",{ascending:false}),
     ]);
