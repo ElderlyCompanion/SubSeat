@@ -214,6 +214,92 @@ function JourneyLinks({ booking }) {
   );
 }
 
+/* ── STRIPE CONNECT STATUS CARD ── */
+function StripeConnectCard({ business }) {
+  const [status,     setStatus]     = useState(null);
+  const [connecting, setConnecting] = useState(false);
+  const [checked,    setChecked]    = useState(false);
+
+  useEffect(() => {
+    if (!business?.id) return;
+    fetch(`/api/stripe-connect?businessId=${business.id}`)
+      .then(r => r.json())
+      .then(d => { setStatus(d.status); setChecked(true); })
+      .catch(() => setChecked(true));
+  }, [business?.id]);
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const res  = await fetch("/api/stripe-connect", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          businessId:   business.id,
+          businessName: business.business_name,
+          email:        business.email,
+          action:       "onboard",
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch(err) { console.error(err); }
+    setConnecting(false);
+  };
+
+  const handleDashboard = async () => {
+    const res  = await fetch("/api/stripe-connect", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ businessId: business.id, action: "dashboard" }),
+    });
+    const data = await res.json();
+    if (data.url) window.open(data.url, "_blank");
+  };
+
+  if (!checked) return null;
+
+  const isActive = status === "active";
+
+  return (
+    <div style={{ background:isActive?"#f0fdf4":W, borderRadius:16, padding:"18px 20px", border:`1.5px solid ${isActive?"#bbf7d0":"#fde68a"}`, marginBottom:16 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
+        <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+          <div style={{ width:42, height:42, borderRadius:12, background:isActive?"#dcfce7":L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>
+            {isActive ? "✅" : "💳"}
+          </div>
+          <div>
+            <div style={{ fontWeight:700, fontSize:14, color:C, marginBottom:2 }}>
+              {isActive ? "Stripe payouts connected" : "Connect Stripe to receive payments"}
+            </div>
+            <div style={{ fontSize:12, color:"#888", lineHeight:1.5 }}>
+              {isActive
+                ? "Customers pay you directly. SubSeat takes 6% automatically."
+                : "Connect your bank account to receive subscriber payments every week."}
+            </div>
+          </div>
+        </div>
+        {isActive ? (
+          <button onClick={handleDashboard}
+            style={{ background:"#22c55e", color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+            View Payouts →
+          </button>
+        ) : (
+          <button onClick={handleConnect} disabled={connecting}
+            style={{ background:P, color:W, border:"none", borderRadius:10, padding:"10px 18px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer", opacity:connecting?.6:1 }}>
+            {connecting ? "Loading..." : "Set Up Payouts →"}
+          </button>
+        )}
+      </div>
+      {status === "pending" && (
+        <div style={{ marginTop:12, background:"#fffbeb", borderRadius:10, padding:"10px 14px", fontSize:12, color:"#92400e" }}>
+          ⏳ Your Stripe account is being verified. This usually takes a few minutes. Refresh this page to check the status.
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── SUBSEAT SERVICES — subtle finance + insurance cards ── */
 function SubSeatServices() {
   const [dismissed, setDismissed] = useState(() => {
@@ -383,6 +469,8 @@ function Overview({ business, subscribers, bookings, services, setActive }) {
           ))}
         </div>
       </div>
+
+      <StripeConnectCard business={business} />
 
       <div className="fu d3" style={{ background:`linear-gradient(135deg,${P} 0%,#7c5cff 100%)`, borderRadius:18, padding:24 }}>
         <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.75)", marginBottom:6 }}>🔗 Your SubSeat Profile</div>
@@ -1225,7 +1313,13 @@ export default function DashboardPage() {
   const [notifs,        setNotifs]  = useState([]);
   const [showNotifs,    setShowNotifs] = useState(false);
 
-  useEffect(()=>{ loadData(); },[]);
+  useEffect(() => {
+    loadData();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("connect") === "success") {
+      window.history.replaceState({}, "", "/dashboard");
+    }
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
