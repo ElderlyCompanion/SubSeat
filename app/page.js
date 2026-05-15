@@ -154,7 +154,8 @@ const css = `
   }
   /* ── SMALL MOBILE ── */
   @media(max-width:600px){
-    .hero-grid{padding:100px 5% 60px!important}
+    .hero-grid{padding:32px 5% 40px!important}
+    #hero{padding-top:80px!important;min-height:auto!important}
     .hero-btns{flex-direction:column!important;width:100%!important}
     .hero-btns .btn-primary,
     .hero-btns .btn-secondary{width:100%!important;justify-content:center!important}
