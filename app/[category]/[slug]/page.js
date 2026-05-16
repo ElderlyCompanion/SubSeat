@@ -379,10 +379,14 @@ export default function BusinessProfilePage({ params }) {
                     {/* BENEFITS STRIP */}
                     <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
                       {[
-                        ["🔒", "Priority booking — your slot is always secured"],
-                        ["📵", "No-show protection — you pay once, you're in"],
-                        ["🔔", "Automatic reminders before every visit"],
-                        ["❌", "Cancel anytime — no long-term commitment"],
+                        ["🔒", "Priority booking. Your slot is always secured."],
+                        ["🔔", "Automatic reminders before every visit."],
+                        ["💰", "Discounted member pricing every month."],
+                        ["📅", "Guaranteed recurring appointments. Weekly, bi-weekly or monthly."],
+                        ["⚡", "Skip the wait. No queues or last minute scrambling."],
+                        ["🎁", "Loyalty rewards. Earn exclusive rewards and upgrades."],
+                        ["⭐", "Exclusive member perks. Special offers, events and giveaways."],
+                        ["🎂", "Birthday rewards. A special treat on your birthday."],
                       ].map(([icon, text]) => (
                         <div key={text} style={{ display:"flex", alignItems:"center", gap:6, background:L, borderRadius:100, padding:"5px 12px", fontSize:12, fontWeight:600, color:P }}>
                           <span>{icon}</span><span>{text}</span>
@@ -409,7 +413,7 @@ export default function BusinessProfilePage({ params }) {
                             <div style={{ marginBottom:14 }}>
                               {[
                                 `${s.visits_per_month || "Unlimited"} visit${(s.visits_per_month||0)!==1?"s":""} per month`,
-                                "Priority booking — guaranteed slot",
+                                "Priority booking. Guaranteed slot.",
                                 "WhatsApp and email reminders",
                                 "Cancel anytime, no lock-in",
                               ].map(item => (
@@ -451,7 +455,7 @@ export default function BusinessProfilePage({ params }) {
                 {services.filter(s=>s.one_off_price>0).length > 0 && (
                   <div>
                     <h2 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:6 }}>One-Off Services</h2>
-                    <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Book a single appointment — no commitment needed.</p>
+                    <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Book a single appointment. No commitment needed.</p>
                     <div className="services-grid" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
                       {services.filter(s=>s.one_off_price>0).map(s=>(
                         <div key={s.id} className="service-card">
@@ -594,7 +598,7 @@ export default function BusinessProfilePage({ params }) {
                 <ReviewForm businessId={business?.id} businessName={business?.business_name} onSubmitted={()=>window.location.reload()} />
 
                 {reviews.length===0 ? (
-                  <div style={{ textAlign:"center", padding:40, color:"#888" }}>No reviews yet — be the first!</div>
+                  <div style={{ textAlign:"center", padding:40, color:"#888" }}>No reviews yet. Be the first!</div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                     {reviews.map(r=>(
@@ -684,7 +688,7 @@ export default function BusinessProfilePage({ params }) {
               <div className="stats-row" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
                 {[
                   { val:services.filter(s=>s.monthly_price>0).length, label:"Plans"    },
-                  { val:staff.length||"—",                             label:"Team"     },
+                  { val:staff.length||"N/A",                             label:"Team"     },
                   { val:reviews.length,                                label:"Reviews"  },
                   { val:avgRating||"New",                              label:"Rating"   },
                 ].map((s,i)=>(
