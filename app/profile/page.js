@@ -764,18 +764,18 @@ function Rewards({ points, profile }) {
         <h3 style={{ fontWeight:700, fontSize:16, color:C, marginBottom:16 }}>How to Earn Points</h3>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }} className="two-col">
           {[
-            { icon:"✂️", action:"Complete an appointment",    pts:10  },
-            { icon:"💳", action:"Subscribe to a plan",        pts:50  },
-            { icon:"👤", action:"Complete your profile",      pts:25  },
-            { icon:"🎂", action:"Birthday bonus",             pts:100 },
-            { icon:"📣", action:"Refer a friend",             pts:75  },
-            { icon:"⭐", action:"Leave a review",             pts:15  },
+            { icon:"👤", action:"Complete your profile",   pts:25,  earned: !!(profile?.full_name && profile?.phone && profile?.date_of_birth) },
+            { icon:"💳", action:"Subscribe to a plan",     pts:50,  earned: points >= 50 },
+            { icon:"✂️", action:"Complete an appointment", pts:10,  earned: false },
+            { icon:"⭐", action:"Leave a review",          pts:15,  earned: false },
+            { icon:"📣", action:"Refer a friend",          pts:75,  earned: false },
+            { icon:"🎂", action:"Birthday bonus",          pts:100, earned: false },
           ].map((e,i)=>(
-            <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:G, borderRadius:12 }}>
-              <div style={{ fontSize:22 }}>{e.icon}</div>
+            <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:e.earned?"#f0fdf4":G, borderRadius:12, border:e.earned?"1.5px solid #bbf7d0":"1.5px solid transparent" }}>
+              <div style={{ fontSize:22 }}>{e.earned?"✅":e.icon}</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:12, fontWeight:600, color:C }}>{e.action}</div>
-                <div style={{ fontSize:11, color:P, fontWeight:700 }}>+{e.pts} points</div>
+                <div style={{ fontSize:11, color:e.earned?"#22c55e":P, fontWeight:700 }}>{e.earned?"Earned!":"+"+e.pts+" points"}</div>
               </div>
             </div>
           ))}
@@ -928,18 +928,37 @@ function Account({ profile, user, onRefresh }) {
     setUploading(false);
   };
 
+  const [saveError, setSaveError] = useState("");
+
   const handleSave = async () => {
-    setSaving(true);
-    const updates = { ...form, date_of_birth: dob||null };
+    setSaving(true); setSaveError("");
+    const updates = {
+      full_name:     form.full_name||null,
+      phone:         form.phone||null,
+      date_of_birth: dob||null,
+    };
 
     // Award 25 points if profile now complete
     const isComplete = form.full_name && form.phone && dob;
-    if (isComplete) updates.loyalty_points = (profile?.loyalty_points||0) < 25 ? 25 : profile?.loyalty_points||0;
+    if (isComplete) {
+      updates.loyalty_points = Math.max(profile?.loyalty_points||0, 25);
+    }
 
-    const { error } = await supabase.from("profiles").update(updates).eq("id",user.id);
-    if (error) { console.error("Save error:", error); }
-    setSaving(false); setSaved(true);
-    setTimeout(()=>setSaved(false),2500);
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id);
+
+    if (error) {
+      console.error("Save error:", error);
+      setSaveError(error.message);
+      setSaving(false);
+      return;
+    }
+
+    setSaving(false);
+    setSaved(true);
+    setTimeout(()=>setSaved(false), 2500);
     onRefresh();
   };
 
@@ -1000,6 +1019,16 @@ function Account({ profile, user, onRefresh }) {
           <button className="btn-p" onClick={handleSave} disabled={saving} style={{ alignSelf:"flex-start", padding:"12px 28px" }}>
             {saving?"Saving...":saved?"✅ Saved!":"Save Changes"}
           </button>
+          {saveError && (
+            <div style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#e53e3e" }}>
+              ⚠️ {saveError}
+            </div>
+          )}
+          {saved && (
+            <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#166534", fontWeight:600 }}>
+              ✅ Profile saved! Points updated.
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1040,17 +1069,18 @@ export default function ProfilePage() {
     setSubs(uniqueSubs);
     setBookings(bkgs||[]);
 
-    // Calculate loyalty points
+    // Calculate loyalty points based on saved profile data
     const completedVisits = (bkgs||[]).filter(b=>b.status==="completed").length;
     const subsCount       = uniqueSubs.length;
-    const profileBonus    = prof?.full_name && prof?.phone && prof?.date_of_birth ? 25 : 0;
-    const reviewBonus     = 0; // will add when reviews are linked to customer
-    const totalPoints     = completedVisits*10 + subsCount*50 + profileBonus + reviewBonus;
+    const profileBonus    = (prof?.full_name && prof?.phone && prof?.date_of_birth) ? 25 : 0;
+    const appointBonus    = completedVisits * 10;
+    const subBonus        = subsCount * 50;
+    const totalPoints     = appointBonus + subBonus + profileBonus;
     setPoints(totalPoints);
 
     // Save points to profile if changed
     if (prof && prof.loyalty_points !== totalPoints) {
-      supabase.from("profiles").update({ loyalty_points: totalPoints }).eq("id",user.id).then(()=>{});
+      await supabase.from("profiles").update({ loyalty_points: totalPoints }).eq("id", user.id);
     }
 
     setLoading(false);
