@@ -12,7 +12,7 @@ const poppins = Poppins({
 export const metadata = {
   /* BASIC */
   title: {
-    default: "SubSeat — The Subscription Booking Platform for Beauty Professionals",
+    default: "SubSeat. The Subscription Booking Platform for Beauty Professionals",
     template: "%s | SubSeat",
   },
   description:
@@ -49,7 +49,7 @@ export const metadata = {
     locale: "en_GB",
     url: "https://subseat.co.uk",
     siteName: "SubSeat",
-    title: "SubSeat — Your Seat, Your Subscription",
+    title: "SubSeat. Your Seat, Your Subscription",
     description:
       "The smarter way to book barbers, salons and beauty professionals — while helping businesses earn predictable monthly income through memberships.",
     images: [
@@ -57,7 +57,7 @@ export const metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SubSeat — The Subscription Booking Platform",
+        alt: "SubSeat. The Subscription Booking Platform",
       },
     ],
   },
@@ -65,12 +65,12 @@ export const metadata = {
   /* TWITTER / X CARD */
   twitter: {
     card: "summary_large_image",
-    title: "SubSeat — Your Seat, Your Subscription",
+    title: "SubSeat. Your Seat, Your Subscription",
     description:
       "The UK's subscription booking platform for barbers, salons, nail techs and beauty professionals.",
     images: ["/og-image.png"],
-    creator: "@SubSeat",
-    site: "@SubSeat",
+    creator: "@subseatuk",
+    site:    "@subseatuk",
   },
 
   /* ROBOTS */
@@ -139,9 +139,9 @@ const structuredData = {
       },
       areaServed: "GB",
       sameAs: [
-        "https://twitter.com/SubSeat",
-        "https://instagram.com/subseat",
-        "https://linkedin.com/company/subseat",
+        "https://x.com/subseatuk",
+        "https://www.instagram.com/subseatuk",
+        "https://uk.linkedin.com/company/subseat",
       ],
     },
 
@@ -255,7 +255,7 @@ const structuredData = {
           name: "How does SubSeat work for businesses?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Businesses create a free profile on SubSeat in under 10 minutes, list their services and set monthly subscription prices. Customers subscribe and pay monthly. SubSeat charges a simple 6% platform fee on subscription revenue — there are no hidden monthly charges.",
+            text: "Businesses create a free profile on SubSeat in under 10 minutes, list their services and set monthly subscription prices. Customers subscribe and pay monthly. SubSeat charges a simple 6% platform fee on subscription revenue. No hidden monthly charges.",
           },
         },
         {
