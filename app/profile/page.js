@@ -272,7 +272,41 @@ function Overview({ profile, subscriptions, bookings, points, setActive }) {
         ))}
       </div>
 
-      {/* SAVINGS BANNER */}
+      {/* SUBSCRIPTION UPSELL — shown when no subscriptions */}
+      {subscriptions.length === 0 && (
+        <div className="fu d3" style={{ background:`linear-gradient(135deg,#0f0f1a,#1a1040)`, borderRadius:20, padding:28, marginBottom:18, position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:-20, right:-20, width:120, height:120, borderRadius:"50%", background:"rgba(86,59,231,.2)" }} />
+          <div style={{ position:"absolute", bottom:-30, left:-10, width:80, height:80, borderRadius:"50%", background:"rgba(86,59,231,.15)" }} />
+          <div style={{ position:"relative" }}>
+            <div style={{ fontSize:36, marginBottom:12 }}>✂️</div>
+            <div style={{ fontWeight:900, fontSize:20, color:W, marginBottom:8, letterSpacing:"-0.5px" }}>
+              Never miss your regular appointment again
+            </div>
+            <div style={{ fontSize:14, color:"rgba(255,255,255,.7)", marginBottom:20, lineHeight:1.7 }}>
+              Subscribe to your favourite barber or salon. Lock in your slot every month, get automatic reminders and save money compared to one-off bookings.
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+              {[
+                ["🔒", "Priority booking. Your slot. Always guaranteed."],
+                ["💰", "Discounted member pricing every month."],
+                ["🎂", "Birthday rewards and exclusive member perks."],
+                ["🔔", "Automatic reminders so you never forget."],
+              ].map(([icon, text]) => (
+                <div key={text} style={{ display:"flex", alignItems:"center", gap:10, fontSize:13, color:"rgba(255,255,255,.85)" }}>
+                  <span style={{ fontSize:16 }}>{icon}</span><span>{text}</span>
+                </div>
+              ))}
+            </div>
+            <a href="/discover" style={{ textDecoration:"none" }}>
+              <button style={{ background:P, color:W, border:"none", borderRadius:12, padding:"13px 24px", fontFamily:"Poppins", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 6px 20px rgba(86,59,231,.5)" }}>
+                Find a Professional to Subscribe →
+              </button>
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* SAVINGS BANNER — shown when subscribed */}
       {totalSavings > 0 && (
         <div style={{ background:`linear-gradient(135deg,#22c55e,#16a34a)`, borderRadius:18, padding:24, color:W }} className="fu d3">
           <div style={{ fontSize:28, marginBottom:6 }}>💚</div>
@@ -281,13 +315,14 @@ function Overview({ profile, subscriptions, bookings, points, setActive }) {
         </div>
       )}
 
-      {totalSavings === 0 && (
+      {/* ADD MORE — shown when has subscriptions but no savings data */}
+      {subscriptions.length > 0 && totalSavings === 0 && (
         <div style={{ background:`linear-gradient(135deg,${P},#7c5cff)`, borderRadius:18, padding:24, color:W }} className="fu d3">
-          <div style={{ fontWeight:800, fontSize:18, marginBottom:6 }}>🔍 Discover professionals near you</div>
-          <div style={{ fontSize:13, opacity:.85, marginBottom:16 }}>Subscribe for priority booking and better value every month.</div>
+          <div style={{ fontWeight:800, fontSize:18, marginBottom:6 }}>✨ Add more professionals</div>
+          <div style={{ fontSize:13, opacity:.85, marginBottom:16 }}>Hair, nails, lashes, brows, massage and more. Subscribe and save across all your beauty needs.</div>
           <a href="/discover" style={{ textDecoration:"none" }}>
             <button style={{ background:"rgba(255,255,255,.2)", color:W, border:"1px solid rgba(255,255,255,.3)", borderRadius:10, padding:"10px 20px", fontFamily:"Poppins", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-              Find a Professional →
+              Discover More →
             </button>
           </a>
         </div>
@@ -320,13 +355,32 @@ function Subscriptions({ subscriptions, setActive }) {
   if (subscriptions.length===0) return (
     <div>
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:20 }}>My Subscriptions</h2>
-      <div className="card" style={{ textAlign:"center", padding:"56px 24px" }}>
-        <div style={{ fontSize:56, marginBottom:16 }}>✂️</div>
-        <h3 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:8 }}>No subscriptions yet</h3>
-        <p style={{ color:"#888", marginBottom:24, maxWidth:320, margin:"0 auto 24px" }}>
-          Find a barber, salon or beauty professional and subscribe for priority booking and better value every month.
+      <div style={{ background:`linear-gradient(135deg,#0f0f1a,#1a1040)`, borderRadius:20, padding:"40px 32px", textAlign:"center" }}>
+        <div style={{ fontSize:52, marginBottom:16 }}>✂️</div>
+        <h3 style={{ fontWeight:900, fontSize:22, color:W, marginBottom:10, letterSpacing:"-0.5px" }}>
+          Your first subscription is waiting
+        </h3>
+        <p style={{ color:"rgba(255,255,255,.65)", marginBottom:24, maxWidth:360, margin:"0 auto 24px", lineHeight:1.75, fontSize:14 }}>
+          Stop booking one visit at a time. Subscribe to your favourite professional and lock in your regular slot, every month, automatically.
         </p>
-        <a href="/discover"><button className="btn-p">Find a Professional →</button></a>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, maxWidth:400, margin:"0 auto 28px", textAlign:"left" }}>
+          {[
+            ["🔒", "Priority slot. Always secured."],
+            ["💰", "Member pricing. Save monthly."],
+            ["🔔", "Automatic reminders."],
+            ["🎂", "Birthday and loyalty rewards."],
+          ].map(([icon, text]) => (
+            <div key={text} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"rgba(255,255,255,.8)" }}>
+              <span>{icon}</span><span>{text}</span>
+            </div>
+          ))}
+        </div>
+        <a href="/discover">
+          <button style={{ background:P, color:W, border:"none", borderRadius:12, padding:"14px 28px", fontFamily:"Poppins", fontWeight:700, fontSize:15, cursor:"pointer", boxShadow:"0 6px 20px rgba(86,59,231,.5)" }}>
+            Find a Professional →
+          </button>
+        </a>
+        <p style={{ fontSize:12, color:"rgba(255,255,255,.3)", marginTop:14 }}>Free to join. Cancel anytime.</p>
       </div>
     </div>
   );
