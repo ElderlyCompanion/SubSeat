@@ -1,0 +1,22 @@
+name: Supabase Heartbeat
+
+on:
+  schedule:
+    # Runs every Sunday and Wednesday at 9am UTC
+    # Keeps well within the 7-day inactivity window
+    - cron: '0 9 * * 0'
+    - cron: '0 9 * * 3'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping SubSeat Supabase Database
+        run: |
+          curl -s \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/businesses?select=id&limit=1" \
+            -o /dev/null -w "Status: %{http_code}\n"
+          echo "Heartbeat sent to SubSeat Supabase at $(date)"
