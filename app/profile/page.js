@@ -298,6 +298,25 @@ function Overview({ profile, subscriptions, bookings, points, setActive }) {
 
 /* ── SUBSCRIPTIONS ── */
 function Subscriptions({ subscriptions, setActive }) {
+  const [cancelling, setCancelling] = useState(null);
+  const [cancelled,  setCancelled]  = useState([]);
+
+  const handleCancel = async (sub) => {
+    if (!confirm(`Cancel your subscription with ${sub.businesses?.business_name}?\n\nYou keep access until the end of your billing period.`)) return;
+    setCancelling(sub.id);
+    try {
+      const res  = await fetch("/api/cancel-subscription", {
+        method:  "POST",
+        headers: { "Content-Type":"application/json" },
+        body:    JSON.stringify({ subscriptionId: sub.id }),
+      });
+      const data = await res.json();
+      if (data.success) setCancelled(prev=>[...prev, sub.id]);
+      else alert(data.error || "Something went wrong. Please try again.");
+    } catch { alert("Something went wrong. Please try again."); }
+    setCancelling(null);
+  };
+
   if (subscriptions.length===0) return (
     <div>
       <h2 style={{ fontWeight:800, fontSize:22, color:C, marginBottom:20 }}>My Subscriptions</h2>
@@ -360,15 +379,22 @@ function Subscriptions({ subscriptions, setActive }) {
                     </div>
                   </div>
 
-                  <div style={{ display:"flex", gap:8, marginTop:14, flexWrap:"wrap" }}>
+                  <div style={{ display:"flex", gap:8, marginTop:14, flexWrap:"wrap", alignItems:"center" }}>
                     <a href={`/${s.businesses?.category}/${s.businesses?.slug}`} style={{ textDecoration:"none" }}>
                       <button style={{ background:L, border:"none", borderRadius:8, padding:"8px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, color:P, cursor:"pointer" }}>
                         View Profile
                       </button>
                     </a>
-                    <button style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:8, padding:"8px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, color:"#e53e3e", cursor:"pointer" }}>
-                      Cancel Subscription
-                    </button>
+                    {!cancelled.includes(s.id) && s.status !== "cancelling" ? (
+                      <button
+                        onClick={()=>handleCancel(s)}
+                        disabled={cancelling===s.id}
+                        style={{ background:"none", border:"none", padding:"8px 4px", fontFamily:"Poppins", fontWeight:400, fontSize:11, color:"#bbb", cursor:"pointer", textDecoration:"underline" }}>
+                        {cancelling===s.id ? "Cancelling..." : "cancel subscription"}
+                      </button>
+                    ) : (
+                      <span style={{ fontSize:11, color:"#e53e3e", padding:"8px 4px" }}>Cancellation pending</span>
+                    )}
                   </div>
                 </div>
               </div>

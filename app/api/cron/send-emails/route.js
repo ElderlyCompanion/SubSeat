@@ -39,6 +39,20 @@ function buildEmail(notif) {
 
   switch(notif.notification_type) {
 
+    case "review_request": {
+      let payload = {};
+      try { payload = JSON.parse(notif.message || "{}"); } catch {}
+      const reviewUrl = `https://subseat.co.uk/${payload.businessCategory}/${payload.businessSlug}?tab=reviews&booking=${payload.bookingId}`;
+      return {
+        subject: notif.subject || `How was your visit to ${payload.businessName}?`,
+        html: base("How was your visit? ⭐", "linear-gradient(135deg,#563BE7,#7c3aed)", `
+          <p style="font-size:15px;color:#555;line-height:1.65;margin:0 0 16px">Hi ${payload.customerName || "there"},<br/><br/>We hope your visit to <strong>${payload.businessName}</strong>${payload.serviceName ? ` for your ${payload.serviceName}` : ""} went brilliantly!</p>
+          <p style="font-size:14px;color:#555;margin:0 0 20px">Would you mind leaving a quick review? It takes less than 30 seconds and really helps ${payload.businessName} grow.</p>
+          <a href="${reviewUrl}" style="display:block;background:#563BE7;color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-weight:700;font-size:14px;text-align:center">Leave a Review ⭐</a>
+        `),
+      };
+    }
+
     case "booking_confirmation_customer":
       return {
         subject: notif.subject || "✅ Booking confirmed",
