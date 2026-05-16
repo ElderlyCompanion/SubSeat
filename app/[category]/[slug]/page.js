@@ -468,7 +468,7 @@ export default function BusinessProfilePage({ params }) {
                               <span style={{ fontSize:13, color:"#888", fontWeight:500 }}> one-off</span>
                             </div>
                           </div>
-                          <a href={`/booking/${slug}`} style={{ display:"block", textDecoration:"none" }}>
+                          <a href={`/${business?.category}/${slug}/book`} style={{ display:"block", textDecoration:"none" }}>
                             <button className="btn-subscribe" style={{ background:C }}>Book Now</button>
                           </a>
                         </div>
@@ -542,7 +542,7 @@ export default function BusinessProfilePage({ params }) {
 
                           {/* ACTIONS */}
                           <div style={{ display:"flex", gap:8 }}>
-                            <a href={`/booking/${slug}?staff=${s.id}`} style={{ flex:1, textDecoration:"none" }}>
+                            <a href={`/${business?.category}/${slug}/book?staff=${s.id}`} style={{ flex:1, textDecoration:"none" }}>
                               <button className="btn-book" style={{ width:"100%" }}>Book Now</button>
                             </a>
                             {services.filter(sv=>sv.monthly_price>0).length > 0 && (
@@ -675,7 +675,7 @@ export default function BusinessProfilePage({ params }) {
               ) : (
                 <>
                   <div style={{ fontSize:14, fontWeight:700, color:C, marginBottom:16 }}>Book an appointment</div>
-                  <a href={`/booking/${slug}`} style={{ textDecoration:"none", display:"block" }}>
+                  <a href={`/${business?.category}/${slug}/book`} style={{ textDecoration:"none", display:"block" }}>
                     <button className="btn-subscribe">Book Now</button>
                   </a>
                 </>
@@ -716,7 +716,7 @@ export default function BusinessProfilePage({ params }) {
                         <div style={{ fontWeight:700, fontSize:13, color:C }}>{s.full_name}</div>
                         <div style={{ fontSize:11, color:"#888", textTransform:"capitalize" }}>{s.role==="staff"?"Barber/Stylist":s.role}</div>
                       </div>
-                      <a href={`/booking/${slug}?staff=${s.id}`} style={{ textDecoration:"none" }}>
+                      <a href={`/${business?.category}/${slug}/book?staff=${s.id}`} style={{ textDecoration:"none" }}>
                         <button style={{ background:L, border:"none", borderRadius:8, padding:"6px 12px", fontFamily:"Poppins", fontWeight:700, fontSize:11, color:P, cursor:"pointer" }}>Book</button>
                       </a>
                     </div>

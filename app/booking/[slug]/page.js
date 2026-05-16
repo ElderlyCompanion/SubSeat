@@ -231,16 +231,18 @@ export default function BookingPage({ params }) {
 
       // Build booking payload — include address for mobile barbers
       const bookingPayload = {
-        business_id:      business.id,
-        customer_id:      customerId,
-        service_id:       selectedService.id,
-        booking_type:     bookingType,
-        start_time:       startDt.toISOString(),
-        end_time:         endDt.toISOString(),
-        status:           "confirmed",
-        payment_status:   bookingType==="cash_walk_in"?"cash_paid":"pay_in_shop",
-        source:           "website",
-        notes:            customerInfo.notes,
+        business_id:    business.id,
+        customer_id:    customerId,
+        service_id:     selectedService.id,
+        booking_type:   bookingType,
+        start_time:     startDt.toISOString(),
+        end_time:       endDt.toISOString(),
+        status:         "confirmed",
+        payment_status: bookingType==="cash_walk_in"?"cash_paid":"pay_in_shop",
+        source:         "website",
+        notes:          customerInfo.notes||null,
+        customer_name:  customerInfo.full_name||null,
+        customer_email: customerInfo.email||null,
       };
 
       // Add address fields for mobile barbers
@@ -258,19 +260,19 @@ export default function BookingPage({ params }) {
       if (!error && booking) {
         const dateStr = startDt.toLocaleDateString("en-GB",{ weekday:"long", day:"numeric", month:"long" });
 
-        // 1. Notify business (email + dashboard notification)
+        // 1. Notify business — fire and forget
         fetch("/api/notify-business", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: "booking",
+            type:     "booking",
             business: { id: business.id, business_name: business.business_name, owner_email: business.email },
             customer: { name: customerInfo.full_name, email: customerInfo.email, phone: customerInfo.phone },
             booking:  { service_name: selectedService.name, start_time: startDt.toISOString(), customer_address: bookingPayload.customer_address || null },
           }),
         }).catch(() => {});
 
-        // 2. Send customer confirmation email
+        // 2. Customer confirmation email — fire and forget
         fetch("/api/booking-confirm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -287,9 +289,9 @@ export default function BookingPage({ params }) {
           }),
         }).catch(() => {});
 
-        // 3. Queue review request email for 24hrs after appointment
+        // 3. Queue review request — non-blocking, don't let failure stop confirmation
         const reviewTime = new Date(startDt.getTime() + 24 * 60 * 60 * 1000);
-        await supabase.from("notification_queue").insert([
+        supabase.from("notification_queue").insert([
           {
             business_id:       business.id,
             booking_id:        booking.id,
@@ -320,11 +322,18 @@ export default function BookingPage({ params }) {
             status:        "pending",
             scheduled_for: reviewTime.toISOString(),
           },
-        ]);
+        ]).catch(() => {}); // non-blocking
 
+        // Always show confirmation regardless of queue status
         setConfirmed(true);
+      } else if (error) {
+        console.error("Booking insert error:", error);
+        alert(`Booking failed: ${error.message}. Please try again.`);
       }
-    } catch(err) { console.error(err); }
+    } catch(err) {
+      console.error("Booking error:", err);
+      alert(`Something went wrong: ${err.message}. Please try again.`);
+    }
     setSubmitting(false);
   };
 
@@ -353,12 +362,15 @@ export default function BookingPage({ params }) {
   if (confirmed) return (
     <>
       <style>{css}</style>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", flexDirection:"column", gap:20, textAlign:"center", padding:24, background:G }}>
-        <div style={{ background:W, borderRadius:24, padding:"48px 40px", maxWidth:480, width:"100%", boxShadow:"0 20px 60px rgba(86,59,231,.12)", border:`1.5px solid ${L}` }}>
-          <div style={{ width:80, height:80, borderRadius:"50%", background:"#dcfce7", display:"flex", alignItems:"center", justifyContent:"center", fontSize:40, margin:"0 auto 20px" }}>✅</div>
-          <h2 style={{ fontWeight:900, fontSize:26, color:C, marginBottom:8 }}>Booking Confirmed!</h2>
-          <p style={{ fontSize:15, color:"#666", marginBottom:8 }}>
-            <strong>{customerInfo.full_name}</strong>, your appointment with <strong>{business.business_name}</strong> is confirmed.
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"100vh", flexDirection:"column", gap:20, textAlign:"center", padding:24, background:`linear-gradient(135deg,#f0eeff,#fff)` }}>
+        <div style={{ background:W, borderRadius:24, padding:"48px 40px", maxWidth:480, width:"100%", boxShadow:"0 24px 80px rgba(86,59,231,.18)", border:`1.5px solid ${L}` }}>
+
+          {/* CELEBRATION ICON */}
+          <div style={{ width:90, height:90, borderRadius:"50%", background:"linear-gradient(135deg,#22c55e,#16a34a)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, margin:"0 auto 20px", boxShadow:"0 8px 32px rgba(34,197,94,.3)" }}>🎉</div>
+
+          <h2 style={{ fontWeight:900, fontSize:28, color:C, marginBottom:10, letterSpacing:"-1px" }}>You're booked in!</h2>
+          <p style={{ fontSize:15, color:"#666", marginBottom:20, lineHeight:1.7 }}>
+            <strong style={{ color:C }}>{customerInfo.full_name}</strong>, your appointment with <strong style={{ color:P }}>{business.business_name}</strong> is confirmed. See you there!
           </p>
 
           {/* MOBILE — show address confirmation */}
@@ -370,21 +382,29 @@ export default function BookingPage({ params }) {
             </div>
           )}
 
-          <div style={{ background:L, borderRadius:14, padding:"16px 20px", margin:"16px 0", textAlign:"left" }}>
+          {/* BOOKING DETAILS */}
+          <div style={{ background:L, borderRadius:14, padding:"18px 20px", margin:"16px 0", textAlign:"left" }}>
             {[
               { label:"Service",  val:selectedService?.name },
-              { label:"Date",     val:selectedDate?.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"long"}) },
+              { label:"Date",     val:selectedDate?.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}) },
               { label:"Time",     val:selectedTime },
-              { label:"Price",    val:`£${parseFloat(selectedService?.one_off_price||selectedService?.monthly_price||0).toFixed(0)}` },
+              { label:"Duration", val:`${selectedService?.duration_minutes||45} mins` },
+              { label:"Price",    val:bookingType==="one_off"?`£${parseFloat(selectedService?.one_off_price||0).toFixed(0)} (pay at appointment)`:"Subscription booking" },
             ].map((r,i)=>(
-              <div key={i} style={{ display:"flex", justifyContent:"space-between", marginBottom:i<3?8:0 }}>
-                <span style={{ fontSize:13, color:"#888" }}>{r.label}</span>
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", marginBottom:i<4?10:0, borderBottom:i<4?"1px solid rgba(86,59,231,.1)":"none", paddingBottom:i<4?10:0 }}>
+                <span style={{ fontSize:13, color:"#888", fontWeight:500 }}>{r.label}</span>
                 <span style={{ fontSize:13, fontWeight:700, color:C }}>{r.val}</span>
               </div>
             ))}
           </div>
 
-          <p style={{ fontSize:13, color:"#888", marginBottom:20 }}>A confirmation email has been sent to {customerInfo.email}</p>
+          {/* EMAIL CONFIRMATION NOTE */}
+          <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:12, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:20 }}>📧</span>
+            <p style={{ fontSize:13, color:"#166534", margin:0, textAlign:"left", lineHeight:1.5 }}>
+              A confirmation email has been sent to <strong>{customerInfo.email}</strong>
+            </p>
+          </div>
 
           {/* ADD TO CALENDAR */}
           <button onClick={()=>{
