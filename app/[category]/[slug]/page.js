@@ -96,6 +96,60 @@ const css = `
   }
 `;
 
+function ReviewForm({ businessId, businessName, onSubmitted }) {
+  const [rating,    setRating]   = useState(0);
+  const [hover,     setHover]    = useState(0);
+  const [comment,   setComment]  = useState("");
+  const [name,      setName]     = useState("");
+  const [email,     setEmail]    = useState("");
+  const [submitting,setSubmit]   = useState(false);
+  const [done,      setDone]     = useState(false);
+  const [error,     setError]    = useState("");
+
+  const handleSubmit = async () => {
+    if (!rating) { setError("Please select a star rating"); return; }
+    setSubmit(true); setError("");
+    const res  = await fetch("/api/reviews", {
+      method:  "POST",
+      headers: { "Content-Type":"application/json" },
+      body:    JSON.stringify({ businessId, customerName:name, customerEmail:email, rating, comment }),
+    });
+    const data = await res.json();
+    if (data.error) { setError(data.error); setSubmit(false); }
+    else            { setDone(true); setTimeout(()=>onSubmitted?.(), 1500); }
+  };
+
+  if (done) return (
+    <div style={{ background:"#f0fdf4", border:"1.5px solid #bbf7d0", borderRadius:16, padding:"20px 24px", marginBottom:20, textAlign:"center" }}>
+      <div style={{ fontSize:32, marginBottom:8 }}>🎉</div>
+      <div style={{ fontWeight:700, fontSize:15, color:"#166534" }}>Thank you for your review!</div>
+    </div>
+  );
+
+  return (
+    <div style={{ background:"#f8f6ff", border:"1.5px solid #ede9ff", borderRadius:16, padding:"20px 24px", marginBottom:24 }}>
+      <h3 style={{ fontWeight:700, fontSize:15, color:C, marginBottom:16 }}>Leave a review for {businessName}</h3>
+      <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+        {[1,2,3,4,5].map(i=>(
+          <button key={i} onClick={()=>setRating(i)} onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(0)}
+            style={{ fontSize:28, background:"none", border:"none", cursor:"pointer", padding:2, transform:(hover||rating)>=i?"scale(1.2)":"scale(1)", transition:"transform .15s" }}>
+            {(hover||rating)>=i?"⭐":"☆"}
+          </button>
+        ))}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+        <input className="inp" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} />
+        <input className="inp" placeholder="Your email (optional)" value={email} onChange={e=>setEmail(e.target.value)} />
+      </div>
+      <textarea className="inp" placeholder="Tell others about your experience..." value={comment} onChange={e=>setComment(e.target.value)} rows={3} style={{ width:"100%", resize:"vertical", marginBottom:10 }} />
+      {error && <div style={{ fontSize:13, color:"#e53e3e", marginBottom:10 }}>⚠️ {error}</div>}
+      <button onClick={handleSubmit} disabled={submitting||!rating} className="btn-subscribe" style={{ width:"100%", opacity:(!rating||submitting)?0.6:1 }}>
+        {submitting?"Submitting...":"Submit Review"}
+      </button>
+    </div>
+  );
+}
+
 function StarRating({ rating, size=16 }) {
   return (
     <div style={{ display:"flex", gap:2 }}>
@@ -122,6 +176,7 @@ export default function BusinessProfilePage({ params }) {
   const [services,           setServices]           = useState([]);
   const [staff,              setStaff]              = useState([]);
   const [reviews,            setReviews]            = useState([]);
+  const [portfolio,          setPortfolio]          = useState([]);
   const [loading,            setLoading]            = useState(true);
   const [notFound,           setNotFound]           = useState(false);
   const [activeTab,          setActiveTab]          = useState("services");
@@ -146,15 +201,17 @@ export default function BusinessProfilePage({ params }) {
     if (error || !biz) { setNotFound(true); setLoading(false); return; }
     setBusiness(biz);
 
-    const [{ data:svcs },{ data:stf },{ data:revs }] = await Promise.all([
+    const [{ data:svcs },{ data:stf },{ data:revs },{ data:port }] = await Promise.all([
       supabase.from("services").select("*").eq("business_id", biz.id).eq("is_active", true),
       supabase.from("staff").select("*, staff_availability(*)").eq("business_id", biz.id).eq("is_active", true).eq("accepts_bookings", true),
       supabase.from("reviews").select("*, profiles(full_name, avatar_url)").eq("business_id", biz.id).eq("is_visible", true).order("created_at", { ascending:false }).limit(10),
+      supabase.from("business_portfolio").select("*").eq("business_id", biz.id).eq("is_active", true).order("created_at", { ascending:false }),
     ]);
 
     setServices(svcs||[]);
     setStaff(stf||[]);
     setReviews(revs||[]);
+    setPortfolio(port||[]);
     setLoading(false);
   };
 
@@ -293,7 +350,7 @@ export default function BusinessProfilePage({ params }) {
             </div>
           </div>
           <div style={{ display:"flex", borderTop:"1px solid #eee", marginTop:8 }}>
-            {["services","staff","reviews","about"].map(tab=>(
+            {["services","staff","portfolio","reviews","about"].map(tab=>(
               <button key={tab} className={`tab ${activeTab===tab?"active":""}`} onClick={()=>setActiveTab(tab)}>
                 {tab==="staff" ? `Team (${staff.length})` : tab.charAt(0).toUpperCase()+tab.slice(1)}
                 {tab==="reviews" && reviews.length>0 && ` (${reviews.length})`}
@@ -448,6 +505,28 @@ export default function BusinessProfilePage({ params }) {
               </div>
             )}
 
+            {/* ── PORTFOLIO TAB ── */}
+            {activeTab==="portfolio" && (
+              <div className="fu">
+                <h2 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:20 }}>Portfolio</h2>
+                {portfolio.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"48px 24px", background:"#f9f9f9", borderRadius:16 }}>
+                    <div style={{ fontSize:48, marginBottom:14 }}>📸</div>
+                    <p style={{ fontSize:14, color:"#888" }}>No portfolio photos yet.</p>
+                  </div>
+                ) : (
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:12 }}>
+                    {portfolio.map(photo=>(
+                      <div key={photo.id} style={{ borderRadius:12, overflow:"hidden", background:"#f0f0f0" }}>
+                        <img src={photo.image_url} alt={photo.caption||""} style={{ width:"100%", height:160, objectFit:"cover", display:"block" }} />
+                        {photo.caption && <div style={{ padding:"8px 10px", fontSize:12, color:"#666" }}>{photo.caption}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ── REVIEWS TAB ── */}
             {activeTab==="reviews" && (
               <div className="fu">
@@ -460,6 +539,10 @@ export default function BusinessProfilePage({ params }) {
                     </div>
                   )}
                 </div>
+
+                {/* LEAVE A REVIEW FORM */}
+                <ReviewForm businessId={business?.id} businessName={business?.business_name} onSubmitted={()=>window.location.reload()} />
+
                 {reviews.length===0 ? (
                   <div style={{ textAlign:"center", padding:40, color:"#888" }}>No reviews yet — be the first!</div>
                 ) : (

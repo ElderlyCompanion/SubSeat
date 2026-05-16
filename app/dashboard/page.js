@@ -130,6 +130,8 @@ const NAV = [
   { id:"bookings",    icon:"📋", label:"All Bookings" },
   { id:"services",    icon:"💼", label:"Services"     },
   { id:"subscribers", icon:"👥", label:"Subscribers"  },
+  { id:"portfolio",   icon:"📸", label:"My Portfolio" },
+  { id:"reviews",     icon:"⭐", label:"Reviews"      },
   { id:"staff",       icon:"🧑‍🤝‍🧑", label:"Staff & Team" },
   { id:"profile",     icon:"🏪", label:"Edit Profile" },
   { id:"share",       icon:"🔗", label:"Share & QR"   },
@@ -1084,6 +1086,157 @@ function ImageUpload({ label, currentUrl, bucket, businessId, onUploaded, aspect
 }
 
 /* ── PROFILE EDITOR — with image upload + mobile barber toggle ── */
+/* ── PORTFOLIO ── */
+function Portfolio({ business }) {
+  const [photos,     setPhotos]   = useState([]);
+  const [uploading,  setUploading]= useState(false);
+  const [caption,    setCaption]  = useState("");
+  const [error,      setError]    = useState("");
+  const [loading,    setLoading]  = useState(true);
+
+  useEffect(() => { loadPhotos(); }, [business?.id]);
+
+  const loadPhotos = async () => {
+    if (!business?.id) return;
+    const { data } = await supabase.from("business_portfolio").select("*").eq("business_id",business.id).order("created_at",{ascending:false});
+    setPhotos(data||[]); setLoading(false);
+  };
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true); setError("");
+    const form = new FormData();
+    form.append("file",       file);
+    form.append("businessId", business.id);
+    form.append("caption",    caption);
+    const res  = await fetch("/api/photo-upload", { method:"POST", body:form });
+    const data = await res.json();
+    if (data.error) setError(data.error);
+    else { setPhotos(prev=>[data.photo,...prev]); setCaption(""); }
+    setUploading(false); e.target.value="";
+  };
+
+  const handleDelete = async (photo) => {
+    if (!confirm("Remove this photo?")) return;
+    await fetch("/api/photo-upload",{ method:"DELETE", headers:{"Content-Type":"application/json"}, body:JSON.stringify({photoId:photo.id, imageUrl:photo.image_url}) });
+    setPhotos(prev=>prev.filter(p=>p.id!==photo.id));
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h2 style={{ fontWeight:800, fontSize:22, color:C }}>My Portfolio</h2>
+        <p style={{ fontSize:13, color:"#888", marginTop:4 }}>Show your best work. Customers see these on your profile.</p>
+      </div>
+      <div style={{ background:G, borderRadius:16, padding:24, marginBottom:24, border:"2px dashed #ddd" }}>
+        <input className="inp" placeholder="Caption e.g. Skin fade with taper (optional)" value={caption} onChange={e=>setCaption(e.target.value)} style={{ marginBottom:12 }} />
+        <label style={{ display:"inline-block", cursor:"pointer" }}>
+          <div style={{ background:P, color:W, borderRadius:10, padding:"11px 22px", fontFamily:"Poppins", fontWeight:700, fontSize:14, display:"inline-flex", alignItems:"center", gap:8, opacity:uploading?0.6:1 }}>
+            {uploading?"Uploading...":"📸 Upload Photo"}
+          </div>
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} disabled={uploading} style={{ display:"none" }} />
+        </label>
+        <p style={{ fontSize:12, color:"#aaa", marginTop:10 }}>JPEG, PNG or WebP. Max 5MB.</p>
+        {error && <div style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#e53e3e", marginTop:10 }}>⚠️ {error}</div>}
+      </div>
+      {loading ? <div style={{ textAlign:"center", padding:40, color:"#aaa" }}>Loading...</div>
+      : photos.length===0 ? (
+        <div style={{ textAlign:"center", padding:"48px 24px", background:G, borderRadius:16 }}>
+          <div style={{ fontSize:48, marginBottom:14 }}>📸</div>
+          <h3 style={{ fontWeight:700, fontSize:18, color:C, marginBottom:8 }}>No photos yet</h3>
+          <p style={{ fontSize:14, color:"#888" }}>Upload your first photo to show customers your work.</p>
+        </div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:14 }}>
+          {photos.map(photo=>(
+            <div key={photo.id} style={{ borderRadius:14, overflow:"hidden", background:G }}>
+              <img src={photo.image_url} alt={photo.caption||""} style={{ width:"100%", height:160, objectFit:"cover", display:"block" }} />
+              <div style={{ padding:"8px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ fontSize:12, color:"#888", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{photo.caption||"No caption"}</span>
+                <button onClick={()=>handleDelete(photo)} style={{ background:"none", border:"none", cursor:"pointer", color:"#e53e3e", fontSize:16, paddingLeft:8 }}>🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── REVIEWS ── */
+function Reviews({ business }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [avg,     setAvg]     = useState(0);
+
+  useEffect(() => { loadReviews(); }, [business?.id]);
+
+  const loadReviews = async () => {
+    if (!business?.id) return;
+    const res  = await fetch(`/api/reviews?businessId=${business.id}`);
+    const data = await res.json();
+    const list = data.reviews||[];
+    setReviews(list);
+    if (list.length>0) setAvg(list.reduce((a,r)=>a+r.rating,0)/list.length);
+    setLoading(false);
+  };
+
+  const stars = (n) => "⭐".repeat(Math.round(n));
+
+  return (
+    <div>
+      <div style={{ marginBottom:20 }}>
+        <h2 style={{ fontWeight:800, fontSize:22, color:C }}>Reviews</h2>
+        <p style={{ fontSize:13, color:"#888", marginTop:4 }}>Collected automatically after appointments.</p>
+      </div>
+      {reviews.length>0&&(
+        <div style={{ background:`linear-gradient(135deg,${P},#7c3aed)`, borderRadius:16, padding:"20px 24px", marginBottom:24, display:"flex", alignItems:"center", gap:20, flexWrap:"wrap" }}>
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:42, fontWeight:900, color:W, letterSpacing:"-2px" }}>{avg.toFixed(1)}</div>
+            <div style={{ fontSize:20 }}>{stars(avg)}</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,.7)", marginTop:4 }}>{reviews.length} review{reviews.length!==1?"s":""}</div>
+          </div>
+          <div style={{ flex:1, minWidth:200 }}>
+            {[5,4,3,2,1].map(n=>{
+              const count=reviews.filter(r=>r.rating===n).length;
+              const pct=reviews.length>0?(count/reviews.length)*100:0;
+              return (
+                <div key={n} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,.8)", width:12 }}>{n}</span>
+                  <div style={{ flex:1, height:6, background:"rgba(255,255,255,.2)", borderRadius:10 }}>
+                    <div style={{ width:`${pct}%`, height:"100%", background:W, borderRadius:10 }} />
+                  </div>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,.6)", width:20 }}>{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {loading ? <div style={{ textAlign:"center", padding:40, color:"#aaa" }}>Loading...</div>
+      : reviews.length===0 ? (
+        <div style={{ textAlign:"center", padding:"48px 24px", background:G, borderRadius:16 }}>
+          <div style={{ fontSize:48, marginBottom:14 }}>⭐</div>
+          <h3 style={{ fontWeight:700, fontSize:18, color:C, marginBottom:8 }}>No reviews yet</h3>
+          <p style={{ fontSize:14, color:"#888", maxWidth:320, margin:"0 auto" }}>Reviews appear here once customers submit them after appointments.</p>
+        </div>
+      ) : reviews.map(r=>(
+        <div key={r.id} style={{ background:W, border:"1.5px solid #eee", borderRadius:16, padding:"18px 20px", marginBottom:12 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+            <div>
+              <div style={{ fontWeight:700, fontSize:14, color:C }}>{r.customer_name}</div>
+              <div style={{ fontSize:18 }}>{stars(r.rating)}</div>
+            </div>
+            <div style={{ fontSize:12, color:"#aaa" }}>{new Date(r.created_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}</div>
+          </div>
+          {r.comment&&<p style={{ fontSize:14, color:"#555", lineHeight:1.65, margin:0 }}>"{r.comment}"</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ProfileEditor({ business, onRefresh }) {
   const [form, setForm] = useState({
     business_name:       business?.business_name       || "",
@@ -1468,6 +1621,8 @@ export default function DashboardPage() {
           {activeSection==="services"    && <Services    {...props} businessId={business?.id} />}
           {activeSection==="subscribers" && <Subscribers {...props} />}
           {activeSection==="staff"       && <StaffSystem business={business} bookings={bookings} subscriptions={subscribers} isOwner={true} />}
+          {activeSection==="portfolio"   && <Portfolio   business={business} />}
+          {activeSection==="reviews"     && <Reviews     business={business} />}
           {activeSection==="profile"     && <ProfileEditor business={business} onRefresh={loadData} />}
           {activeSection==="share"       && <Share       business={business} />}
         </div>
