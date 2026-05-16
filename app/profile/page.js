@@ -1054,20 +1054,33 @@ export default function ProfilePage() {
     if (!user) { window.location.href="/auth"; return; }
     setUser(user);
 
-    const [{ data:prof },{ data:subsByCustomer },{ data:subsByEmail },{ data:bkgs }] = await Promise.all([
+    // Link any guest bookings made with this email to this account
+    supabase.from("bookings")
+      .update({ customer_id: user.id })
+      .eq("customer_email", user.email)
+      .is("customer_id", null)
+      .then(() => {});
+
+    const [{ data:prof },{ data:subsByCustomer },{ data:subsByEmail },{ data:bkgsByCustomer },{ data:bkgsByEmail }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id",user.id).single(),
       supabase.from("subscriptions").select("*, businesses(business_name,city,category,slug,logo_url), services(one_off_price)").eq("customer_id",user.id).in("status",["active","cancelling"]),
       supabase.from("subscriptions").select("*, businesses(business_name,city,category,slug,logo_url), services(one_off_price)").eq("customer_email",user.email).in("status",["active","cancelling"]),
-      supabase.from("bookings").select("*").eq("customer_id",user.id).order("start_time",{ ascending:false }),
+      supabase.from("bookings").select("*, businesses(business_name,category,slug)").eq("customer_id",user.id).order("start_time",{ ascending:false }),
+      supabase.from("bookings").select("*, businesses(business_name,category,slug)").eq("customer_email",user.email).order("start_time",{ ascending:false }),
     ]);
 
-    // Merge subscriptions from both queries (dedup by id)
+    // Merge and dedup subscriptions
     const allSubs = [...(subsByCustomer||[]), ...(subsByEmail||[])];
     const uniqueSubs = allSubs.filter((s,i,arr) => arr.findIndex(x=>x.id===s.id)===i);
 
+    // Merge and dedup bookings
+    const allBkgs = [...(bkgsByCustomer||[]), ...(bkgsByEmail||[])];
+    const uniqueBkgs = allBkgs.filter((b,i,arr) => arr.findIndex(x=>x.id===b.id)===i)
+      .sort((a,b) => new Date(b.start_time) - new Date(a.start_time));
+
     setProfile(prof);
     setSubs(uniqueSubs);
-    setBookings(bkgs||[]);
+    setBookings(uniqueBkgs);
 
     // Calculate loyalty points based on saved profile data
     const completedVisits = (bkgs||[]).filter(b=>b.status==="completed").length;
