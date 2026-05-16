@@ -393,20 +393,33 @@ function Subscriptions({ subscriptions, setActive }) {
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
         {subscriptions.map((s,i)=>{
-          const oneOff  = parseFloat(s.services?.one_off_price||0);
-          const monthly = parseFloat(s.monthly_price||0);
-          const saving  = Math.max(0, oneOff*4 - monthly);
+          const oneOff    = parseFloat(s.services?.one_off_price||0);
+          const monthly   = parseFloat(s.monthly_price||0);
+          const saving    = Math.max(0, oneOff*4 - monthly);
+          const catEmoji  = { barbers:"✂️", "hair-salons":"💇", "nail-techs":"💅", "lash-artists":"👁️", "brow-artists":"🪮", massage:"💆", skincare:"✨", wellness:"🌿" }[s.businesses?.category] || "✂️";
+          const isCancelled = cancelled.includes(s.id) || s.status === "cancelling";
           return (
             <div key={i} className="sub-card">
               <div style={{ display:"flex", gap:16, alignItems:"flex-start" }}>
-                <div style={{ width:56, height:56, borderRadius:14, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0 }}>✂️</div>
+                {/* BUSINESS LOGO / EMOJI */}
+                <div style={{ width:56, height:56, borderRadius:14, background:L, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24, flexShrink:0, overflow:"hidden" }}>
+                  {s.businesses?.logo_url
+                    ? <img src={s.businesses.logo_url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                    : catEmoji}
+                </div>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:8 }}>
                     <div>
-                      <div style={{ fontWeight:800, fontSize:16, color:C, marginBottom:2 }}>{s.businesses?.business_name||"Business"}</div>
-                      <div style={{ fontSize:13, color:"#888" }}>{s.businesses?.city} · {s.businesses?.category}</div>
+                      <div style={{ fontWeight:800, fontSize:16, color:C, marginBottom:2 }}>{s.businesses?.business_name || s.business_name || "Business"}</div>
+                      <div style={{ fontSize:13, color:"#888" }}>
+                        {s.businesses?.category?.replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase())||""}
+                        {s.businesses?.city ? ` · ${s.businesses.city}` : ""}
+                      </div>
+                      <div style={{ fontSize:12, color:"#aaa", marginTop:2 }}>{s.plan_name||"Subscription plan"}</div>
                     </div>
-                    <span style={{ background:"#dcfce7", borderRadius:100, padding:"4px 12px", fontSize:11, fontWeight:700, color:"#166534" }}>Active ✓</span>
+                    <span style={{ background:isCancelled?"#fff5f5":"#dcfce7", borderRadius:100, padding:"4px 12px", fontSize:11, fontWeight:700, color:isCancelled?"#e53e3e":"#166534" }}>
+                      {isCancelled ? "Cancelling" : "Active ✓"}
+                    </span>
                   </div>
 
                   <div style={{ display:"flex", gap:16, marginTop:12, flexWrap:"wrap" }}>
@@ -917,9 +930,16 @@ function Account({ profile, user, onRefresh }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await supabase.from("profiles").update({ ...form, date_of_birth:dob||null }).eq("id",user.id);
+    const updates = { ...form, date_of_birth: dob||null };
+
+    // Award 25 points if profile now complete
+    const isComplete = form.full_name && form.phone && dob;
+    if (isComplete) updates.loyalty_points = (profile?.loyalty_points||0) < 25 ? 25 : profile?.loyalty_points||0;
+
+    const { error } = await supabase.from("profiles").update(updates).eq("id",user.id);
+    if (error) { console.error("Save error:", error); }
     setSaving(false); setSaved(true);
-    setTimeout(()=>setSaved(false),2000);
+    setTimeout(()=>setSaved(false),2500);
     onRefresh();
   };
 
@@ -1005,21 +1025,33 @@ export default function ProfilePage() {
     if (!user) { window.location.href="/auth"; return; }
     setUser(user);
 
-    const [{ data:prof },{ data:subs },{ data:bkgs }] = await Promise.all([
+    const [{ data:prof },{ data:subsByCustomer },{ data:subsByEmail },{ data:bkgs }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id",user.id).single(),
-      supabase.from("subscriptions").select("*, businesses(business_name,city,category,slug), services(one_off_price)").eq("customer_id",user.id).eq("status","active"),
+      supabase.from("subscriptions").select("*, businesses(business_name,city,category,slug,logo_url), services(one_off_price)").eq("customer_id",user.id).in("status",["active","cancelling"]),
+      supabase.from("subscriptions").select("*, businesses(business_name,city,category,slug,logo_url), services(one_off_price)").eq("customer_email",user.email).in("status",["active","cancelling"]),
       supabase.from("bookings").select("*").eq("customer_id",user.id).order("start_time",{ ascending:false }),
     ]);
 
+    // Merge subscriptions from both queries (dedup by id)
+    const allSubs = [...(subsByCustomer||[]), ...(subsByEmail||[])];
+    const uniqueSubs = allSubs.filter((s,i,arr) => arr.findIndex(x=>x.id===s.id)===i);
+
     setProfile(prof);
-    setSubs(subs||[]);
+    setSubs(uniqueSubs);
     setBookings(bkgs||[]);
 
     // Calculate loyalty points
     const completedVisits = (bkgs||[]).filter(b=>b.status==="completed").length;
-    const subsCount       = (subs||[]).length;
-    const profileBonus    = prof?.full_name&&prof?.avatar_url&&prof?.phone&&prof?.date_of_birth ? 25 : 0;
-    setPoints(completedVisits*10 + subsCount*50 + profileBonus);
+    const subsCount       = uniqueSubs.length;
+    const profileBonus    = prof?.full_name && prof?.phone && prof?.date_of_birth ? 25 : 0;
+    const reviewBonus     = 0; // will add when reviews are linked to customer
+    const totalPoints     = completedVisits*10 + subsCount*50 + profileBonus + reviewBonus;
+    setPoints(totalPoints);
+
+    // Save points to profile if changed
+    if (prof && prof.loyalty_points !== totalPoints) {
+      supabase.from("profiles").update({ loyalty_points: totalPoints }).eq("id",user.id).then(()=>{});
+    }
 
     setLoading(false);
   };
