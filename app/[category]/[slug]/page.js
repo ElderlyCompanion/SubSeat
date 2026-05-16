@@ -370,31 +370,81 @@ export default function BusinessProfilePage({ params }) {
             {/* ── SERVICES TAB ── */}
             {activeTab==="services" && (
               <div className="fu">
-                <h2 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:6 }}>Subscription Plans</h2>
-                <p style={{ fontSize:14, color:"#888", marginBottom:20 }}>Subscribe for priority booking and better value every month.</p>
-                {services.filter(s=>s.monthly_price>0).length===0 ? (
-                  <div style={{ textAlign:"center", padding:40, color:"#888" }}>No subscription plans listed yet.</div>
-                ) : (
-                  <div className="services-grid" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16, marginBottom:28 }}>
-                    {services.filter(s=>s.monthly_price>0).map(s=>(
-                      <div key={s.id} className="service-card">
-                        <div style={{ fontWeight:800, fontSize:17, color:C, marginBottom:6 }}>{s.name}</div>
-                        {s.description && <div style={{ fontSize:13, color:"#888", marginBottom:12, lineHeight:1.5 }}>{s.description}</div>}
-                        <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
-                          <div style={{ background:G, borderRadius:8, padding:"4px 10px", fontSize:12, fontWeight:600, color:"#666" }}>⏱ {s.duration_minutes} mins</div>
-                          <div style={{ background:L, borderRadius:8, padding:"4px 10px", fontSize:12, fontWeight:600, color:P }}>Priority member</div>
+
+                {/* SUBSCRIPTION PLANS */}
+                {services.filter(s=>s.monthly_price>0).length > 0 && (
+                  <div style={{ marginBottom:32 }}>
+                    <h2 style={{ fontWeight:800, fontSize:20, color:C, marginBottom:6 }}>Subscription Plans</h2>
+
+                    {/* BENEFITS STRIP */}
+                    <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:20 }}>
+                      {[
+                        ["🔒", "Priority booking — your slot is always secured"],
+                        ["📵", "No-show protection — you pay once, you're in"],
+                        ["🔔", "Automatic reminders before every visit"],
+                        ["❌", "Cancel anytime — no long-term commitment"],
+                      ].map(([icon, text]) => (
+                        <div key={text} style={{ display:"flex", alignItems:"center", gap:6, background:L, borderRadius:100, padding:"5px 12px", fontSize:12, fontWeight:600, color:P }}>
+                          <span>{icon}</span><span>{text}</span>
                         </div>
-                        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                          <div>
-                            <span style={{ fontWeight:900, fontSize:28, color:C, letterSpacing:"-1px" }}>£{parseFloat(s.monthly_price).toFixed(0)}</span>
-                            <span style={{ fontSize:13, color:"#888", fontWeight:500 }}>/month</span>
+                      ))}
+                    </div>
+
+                    <div className="services-grid" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16, marginBottom:16 }}>
+                      {services.filter(s=>s.monthly_price>0).map(s=>{
+                        const oneOff = parseFloat(s.one_off_price||0);
+                        const monthly = parseFloat(s.monthly_price||0);
+                        const saving = oneOff > 0 ? Math.max(0, (oneOff * (s.visits_per_month||2)) - monthly) : 0;
+                        return (
+                          <div key={s.id} className="service-card" style={{ position:"relative", overflow:"hidden" }}>
+                            {saving > 0 && (
+                              <div style={{ position:"absolute", top:12, right:12, background:"#22c55e", color:W, borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>
+                                Save £{saving.toFixed(0)}/mo
+                              </div>
+                            )}
+                            <div style={{ fontWeight:800, fontSize:17, color:C, marginBottom:6 }}>{s.name}</div>
+                            {s.description && <div style={{ fontSize:13, color:"#888", marginBottom:12, lineHeight:1.55 }}>{s.description}</div>}
+
+                            {/* WHAT'S INCLUDED */}
+                            <div style={{ marginBottom:14 }}>
+                              {[
+                                `${s.visits_per_month || "Unlimited"} visit${(s.visits_per_month||0)!==1?"s":""} per month`,
+                                "Priority booking — guaranteed slot",
+                                "WhatsApp and email reminders",
+                                "Cancel anytime, no lock-in",
+                              ].map(item => (
+                                <div key={item} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"#555", marginBottom:5 }}>
+                                  <span style={{ color:"#22c55e", fontWeight:700 }}>✓</span>{item}
+                                </div>
+                              ))}
+                            </div>
+
+                            <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", marginBottom:16 }}>
+                              <div>
+                                <span style={{ fontWeight:900, fontSize:32, color:C, letterSpacing:"-1.5px" }}>£{monthly.toFixed(0)}</span>
+                                <span style={{ fontSize:13, color:"#888", fontWeight:500 }}>/month</span>
+                              </div>
+                              {oneOff > 0 && (
+                                <div style={{ fontSize:12, color:"#aaa", textDecoration:"line-through" }}>
+                                  £{(oneOff*(s.visits_per_month||2)).toFixed(0)} one-off
+                                </div>
+                              )}
+                            </div>
+                            <button className="btn-subscribe" onClick={()=>handleSubscribe(s)} disabled={subLoading}>
+                              {subLoading ? "Processing..." : "Subscribe Now →"}
+                            </button>
+                            <div style={{ textAlign:"center", marginTop:8, fontSize:11, color:"#bbb" }}>
+                              🔒 Stripe-secured payments · Cancel anytime
+                            </div>
                           </div>
-                          <div style={{ fontSize:12, color:"#aaa" }}>Cancel anytime</div>
-                        </div>
-                        <button className="btn-subscribe" onClick={()=>handleSubscribe(s)} disabled={subLoading}>{subLoading?"Processing...":"Subscribe & Book"}</button>
-                      </div>
-                    ))}
+                        );
+                      })}
+                    </div>
                   </div>
+                )}
+
+                {services.filter(s=>s.monthly_price>0).length===0 && (
+                  <div style={{ textAlign:"center", padding:40, color:"#888", marginBottom:28 }}>No subscription plans listed yet.</div>
                 )}
 
                 {/* ONE-OFF SERVICES */}

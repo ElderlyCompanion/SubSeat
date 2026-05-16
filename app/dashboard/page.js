@@ -893,9 +893,29 @@ function Services({ services, businessId, onRefresh }) {
     setSaving(false);
   };
 
+  const [editSvc,    setEditSvc]   = useState(null);
+  const [editSaving, setEditSaving]= useState(false);
+  const [editError,  setEditError] = useState("");
+
   const toggle = async (id, current) => {
     await supabase.from("services").update({ is_active:!current }).eq("id",id);
     onRefresh();
+  };
+
+  const handleEditSave = async () => {
+    if (!editSvc?.name) return;
+    setEditSaving(true); setEditError("");
+    const { error } = await supabase.from("services").update({
+      name:             editSvc.name,
+      description:      editSvc.description,
+      monthly_price:    parseFloat(editSvc.monthly_price) || 0,
+      one_off_price:    parseFloat(editSvc.one_off_price) || null,
+      duration_minutes: parseInt(editSvc.duration_minutes) || 45,
+      visits_per_month: parseInt(editSvc.visits_per_month) || null,
+    }).eq("id", editSvc.id);
+    if (error) { setEditError(error.message); }
+    else       { setEditSvc(null); onRefresh(); }
+    setEditSaving(false);
   };
 
   const renderCard = (s) => (
@@ -906,11 +926,13 @@ function Services({ services, businessId, onRefresh }) {
           {s.monthly_price > 0 && <span style={{ fontSize:13, color:P, fontWeight:700 }}>£{parseFloat(s.monthly_price).toFixed(0)}/month</span>}
           {s.one_off_price > 0 && <span style={{ fontSize:13, color:"#f59e0b", fontWeight:700 }}>£{parseFloat(s.one_off_price).toFixed(0)} one-off</span>}
           <span style={{ fontSize:12, color:"#888" }}>⏱ {s.duration_minutes} mins</span>
+          {s.visits_per_month > 0 && <span style={{ fontSize:12, color:"#888" }}>{s.visits_per_month} visits/mo</span>}
         </div>
-        {s.description && <div style={{ fontSize:12, color:"#aaa" }}>{s.description}</div>}
+        {s.description && <div style={{ fontSize:12, color:"#aaa", lineHeight:1.5 }}>{s.description}</div>}
       </div>
-      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+      <div style={{ display:"flex", gap:8, alignItems:"center", marginTop:10, flexWrap:"wrap" }}>
         <span style={{ background:s.is_active?"#dcfce7":"#fee2e2", color:s.is_active?"#166534":"#991b1b", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>{s.is_active?"Active":"Paused"}</span>
+        <button onClick={()=>setEditSvc({...s})} style={{ background:L, border:"none", borderRadius:8, padding:"7px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer", color:P }}>✏️ Edit</button>
         <button onClick={()=>toggle(s.id, s.is_active)} style={{ background:G, border:"none", borderRadius:8, padding:"7px 14px", fontFamily:"Poppins", fontWeight:600, fontSize:12, cursor:"pointer" }}>{s.is_active?"Pause":"Activate"}</button>
       </div>
     </div>
@@ -922,6 +944,52 @@ function Services({ services, businessId, onRefresh }) {
         <h2 style={{ fontWeight:800, fontSize:22, color:C }}>Services & Pricing</h2>
         <button className="btn-p" onClick={()=>setShowAdd(!showAdd)}>+ Add Service</button>
       </div>
+
+      {/* EDIT MODAL */}
+      {editSvc && (
+        <>
+          <div onClick={()=>setEditSvc(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", zIndex:998, backdropFilter:"blur(4px)" }} />
+          <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:999, background:W, borderRadius:"24px 24px 0 0", padding:"28px 24px 40px", maxWidth:560, margin:"0 auto", boxShadow:"0 -8px 60px rgba(0,0,0,.2)" }}>
+            <div style={{ width:40, height:4, borderRadius:4, background:"#e0e0e0", margin:"0 auto 20px" }} />
+            <h3 style={{ fontWeight:800, fontSize:18, color:C, marginBottom:20 }}>✏️ Edit Service</h3>
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Service Name</label>
+                <input className="inp" value={editSvc.name} onChange={e=>setEditSvc({...editSvc,name:e.target.value})} placeholder="e.g. Skin Fade Subscription" />
+              </div>
+              <div>
+                <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Description</label>
+                <textarea className="inp" rows={3} value={editSvc.description||""} onChange={e=>setEditSvc({...editSvc,description:e.target.value})} placeholder="What's included? What makes this plan special?" style={{ resize:"vertical" }} />
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Monthly Price (£)</label>
+                  <input className="inp" type="number" value={editSvc.monthly_price||""} onChange={e=>setEditSvc({...editSvc,monthly_price:e.target.value})} placeholder="49" />
+                </div>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>One-Off Price (£)</label>
+                  <input className="inp" type="number" value={editSvc.one_off_price||""} onChange={e=>setEditSvc({...editSvc,one_off_price:e.target.value})} placeholder="25" />
+                </div>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Duration (mins)</label>
+                  <input className="inp" type="number" value={editSvc.duration_minutes||45} onChange={e=>setEditSvc({...editSvc,duration_minutes:e.target.value})} placeholder="45" />
+                </div>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:600, color:"#888", display:"block", marginBottom:5 }}>Visits per month</label>
+                  <input className="inp" type="number" value={editSvc.visits_per_month||""} onChange={e=>setEditSvc({...editSvc,visits_per_month:e.target.value})} placeholder="2" />
+                </div>
+              </div>
+              {editError && <div style={{ background:"#fff5f5", border:"1px solid #ffcccc", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#e53e3e" }}>⚠️ {editError}</div>}
+              <div style={{ display:"flex", gap:10 }}>
+                <button className="btn-p" onClick={handleEditSave} disabled={editSaving} style={{ flex:2 }}>
+                  {editSaving ? "Saving..." : "Save Changes ✓"}
+                </button>
+                <button onClick={()=>setEditSvc(null)} style={{ flex:1, background:G, border:"none", borderRadius:10, fontFamily:"Poppins", fontWeight:600, fontSize:14, cursor:"pointer" }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
       {showAdd && (
         <div style={{ background:W, borderRadius:18, padding:24, border:`2px dashed ${P}`, marginBottom:20 }}>
           <h3 style={{ fontWeight:700, fontSize:16, color:C, marginBottom:16 }}>New Service</h3>
