@@ -289,42 +289,44 @@ export default function BookingPage({ params }) {
           }),
         }).catch(() => {});
 
-        // 3. Queue review request — non-blocking, don't let failure stop confirmation
+        // 3. Queue review request — non-blocking
         const reviewTime = new Date(startDt.getTime() + 24 * 60 * 60 * 1000);
-        supabase.from("notification_queue").insert([
-          {
-            business_id:       business.id,
-            booking_id:        booking.id,
-            channel:           "email",
-            notification_type: "booking_confirmation_customer",
-            recipient:         customerInfo.email,
-            subject:           `Booking confirmed with ${business.business_name}`,
-            message:           `Hi ${customerInfo.full_name}, your appointment is confirmed for ${dateStr} at ${selectedTime}.`,
-            status:            "sent",
-            scheduled_for:     new Date().toISOString(),
-          },
-          {
-            business_id:       business.id,
-            booking_id:        booking.id,
-            channel:           "email",
-            notification_type: "review_request",
-            recipient:         customerInfo.email,
-            subject:           `How was your visit to ${business.business_name}?`,
-            message:           JSON.stringify({
-              customerName:     customerInfo.full_name,
-              customerEmail:    customerInfo.email,
-              businessName:     business.business_name,
-              businessSlug:     business.slug,
-              businessCategory: business.category,
-              bookingId:        booking.id,
-              serviceName:      selectedService.name,
-            }),
-            status:        "pending",
-            scheduled_for: reviewTime.toISOString(),
-          },
-        ]).catch(() => {}); // non-blocking
+        try {
+          await supabase.from("notification_queue").insert([
+            {
+              business_id:       business.id,
+              booking_id:        booking.id,
+              channel:           "email",
+              notification_type: "booking_confirmation_customer",
+              recipient:         customerInfo.email,
+              subject:           `Booking confirmed with ${business.business_name}`,
+              message:           `Hi ${customerInfo.full_name}, your appointment is confirmed for ${dateStr} at ${selectedTime}.`,
+              status:            "sent",
+              scheduled_for:     new Date().toISOString(),
+            },
+            {
+              business_id:       business.id,
+              booking_id:        booking.id,
+              channel:           "email",
+              notification_type: "review_request",
+              recipient:         customerInfo.email,
+              subject:           `How was your visit to ${business.business_name}?`,
+              message:           JSON.stringify({
+                customerName:     customerInfo.full_name,
+                customerEmail:    customerInfo.email,
+                businessName:     business.business_name,
+                businessSlug:     business.slug,
+                businessCategory: business.category,
+                bookingId:        booking.id,
+                serviceName:      selectedService.name,
+              }),
+              status:        "pending",
+              scheduled_for: reviewTime.toISOString(),
+            },
+          ]);
+        } catch(qErr) { console.log("Queue insert skipped:", qErr.message); }
 
-        // Always show confirmation regardless of queue status
+        // Always show confirmation
         setConfirmed(true);
       } else if (error) {
         console.error("Booking insert error:", error);
